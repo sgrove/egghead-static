@@ -3,11 +3,11 @@
 
 var OnegraphAuth = require("onegraph-auth");
 
-var appId = "b36150b7-ce64-4a6c-a2af-fbe50da58552";
+var appId = "f1b8d65a-c97c-43c3-ac72-9a289de3c257";
 
 var authConfig = {
   appId: appId,
-  oneGraphOrigin: "https://serve.onegraph.io"
+  oneGraphOrigin: "https://serve.onegraph.com"
 };
 
 var auth = new OnegraphAuth.OneGraphAuth(authConfig);

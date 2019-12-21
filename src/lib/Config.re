@@ -1,9 +1,9 @@
-let appId = "b36150b7-ce64-4a6c-a2af-fbe50da58552";
+let appId = "f1b8d65a-c97c-43c3-ac72-9a289de3c257";
 
 let authConfig =
   OneGraphAuth.createOptions(
     ~appId,
-    ~oneGraphOrigin="https://serve.onegraph.io",
+    ~oneGraphOrigin="https://serve.onegraph.com",
     (),
   );
 

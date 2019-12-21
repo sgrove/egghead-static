@@ -1,0 +1,29 @@
+
+{
+  "name": "egghead-static",
+  "bsc-flags": ["-bs-super-errors"],
+  "reason": {
+    "react-jsx": 3
+  },
+  "sources": {
+    "dir" : "src",
+    "subdirs" : true
+  },
+  "package-specs": [{
+    "module": "commonjs",
+    "in-source": true
+  }],
+  "suffix": ".bs.js",
+  "namespace": true,
+  "bs-dependencies": [
+    "bs-fetch",
+    "bs-onegraph-auth",
+    "reason-react",
+    "reason-urql",
+    "wonka"
+  ],
+  "refmt": 3,
+  "ppx-flags": [
+    "@baransu/graphql_ppx_re/ppx6"
+  ]
+}

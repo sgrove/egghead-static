@@ -8,7 +8,7 @@ import formatDuration from 'lib/formatDuration'
 const Courses = ({ data: { site, allCourse } }) => {
   const { totalCount } = allCourse
 
-  const courses = allCourse.edges.filter(course => course !== undefined)
+  const courses = [...allCourse.edges.filter(course => course !== undefined)]
 
   return (
     <Layout site={site}>

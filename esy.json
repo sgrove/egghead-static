@@ -1,0 +1,14 @@
+{
+  "name": "gh-feeds",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ocaml": "~4.6.1",
+    "@baransu/graphql_ppx_re": "^0.4.6",
+    "@opam/merlin": "*",
+    "@opam/reason": "*"
+  }
+}

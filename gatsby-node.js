@@ -1,6 +1,11 @@
 const path = require('path')
 const _ = require('lodash')
 
+const axios = require('axios')
+const crypto = require('crypto')
+
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin')
+
 exports.createPages = async ({ actions, graphql }) => {
   const { data } = await graphql(`
     query {
@@ -69,6 +74,12 @@ exports.onCreateWebpackConfig = ({ actions, loaders }) => {
         $components: path.resolve(__dirname, 'src/components'),
       },
     },
+    plugins: [
+      new MonacoWebpackPlugin({
+        // available options are documented at https://github.com/Microsoft/monaco-editor-webpack-plugin#options
+        languages: ['markdown'],
+      }),
+    ],
   })
 }
 

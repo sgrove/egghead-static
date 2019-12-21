@@ -1,8 +1,6 @@
-let assign: (string, 'a) => unit = [%raw
-  {|function(name, item) {
+let assign = [%raw {|function(name, item) {
      window[name] = item;
-}|}
-];
+}|}];
 
 [@bs.send]
 external getAttribute: ('t, string) => Js.Nullable.t(string) = "getAttribute";
@@ -137,69 +135,6 @@ module ReactMarkdown = {
           <div onClick> children </div>
       );
   };
-};
-
-module ReactMonaco = {
-  type editor;
-
-  module Editor = {
-    [@bs.module "react-monaco-editor"] [@react.component]
-    external make:
-      (
-        ~width: string=?,
-        ~height: string=?,
-        ~value: string=?,
-        ~defaultValue: string=?,
-        ~language: string=?,
-        ~theme: string=?,
-        ~options: Js.t({..})=?,
-        ~overrideServices: string=?,
-        ~onChange: (string, 'event) => unit=?,
-        ~editorWillMount: 'monaco => unit=?,
-        ~editorDidMount: (editor, 'monaco) => unit=?,
-        ~className: string=?
-      ) =>
-      React.element =
-      "default";
-  };
-
-  module DiffViewer = {
-    [@bs.module "react-monaco-editor"] [@react.component]
-    external make:
-      (
-        ~width: string=?,
-        ~height: string=?,
-        ~original: string,
-        ~value: string,
-        ~defaultValue: string=?,
-        ~language: string=?,
-        ~theme: string=?,
-        ~options: Js.t({..})=?,
-        ~overrideServices: string=?,
-        ~onChange: (string, 'event) => unit=?,
-        ~editorWillMount: 'monaco => unit=?,
-        ~editorDidMount: (editor, 'monaco) => unit=?,
-        ~className: string=?
-      ) =>
-      React.element =
-      "MonacoDiffEditor";
-  };
-
-  [@bs.send] external layout: editor => unit = "layout";
-
-  type selection = {
-    startLineNumber: int,
-    startColumn: int,
-    endLineNumber: int,
-    endColumn: int,
-  };
-
-  [@bs.send]
-  external setSelection: (editor, selection) => unit = "setSelection";
-
-  [@bs.send] external revealLine: (editor, int) => unit = "revealLine";
-
-  [@bs.send] external focus: editor => unit = "focus";
 };
 
 module ReactDraggable = {
@@ -384,7 +319,16 @@ let textEditorStyle =
   ReactDOMRe.Style.make(~width="100%", ~height="20ch", ~fontSize="2em", ());
 
 let submitPr =
-    (~branchName, ~title, ~body, ~editedContent, ~filePath, ~sha, ~username) => {
+    (
+      ~client,
+      ~branchName,
+      ~title,
+      ~body,
+      ~editedContent,
+      ~filePath,
+      ~sha,
+      ~username,
+    ) => {
   open GraphQL;
 
   /*
@@ -398,11 +342,13 @@ let submitPr =
   let requests = [
     () =>
       mutation(
+        ~client,
         CreateBranchMutation.make(~repoOwner, ~repoName, ~branchName, ()),
         "Error creating branch for PR",
       ),
     () =>
       mutation(
+        ~client,
         UpdateFileContentMutation.make(
           ~repoOwner,
           ~repoName,
@@ -417,6 +363,7 @@ let submitPr =
       ),
     () =>
       mutation(
+        ~client,
         CreatePullRequestMutation.make(
           ~repoOwner,
           ~repoName,
@@ -454,7 +401,7 @@ module Editor = {
     | Resize(int);
 
   [@react.component]
-  let make = (~content, ~onInitiateSubmit, ~onLogout, ~jwtMe) => {
+  let make = (~auth, ~content, ~onInitiateSubmit, ~onLogout, ~jwtMe) => {
     open ReasonUrql;
     open React;
     let editorHandle = React.useRef(None);
@@ -465,9 +412,9 @@ module Editor = {
           switch (action) {
           | Login(userId) => {...state, userId: Some(userId)}
           | Logout =>
-            OneGraphAuth.logout(Config.auth, "github", ())
+            OneGraphAuth.logout(auth, "github", ())
             ->Js.Promise.then_(
-                _ => Config.auth->OneGraphAuth.clearToken->Js.Promise.resolve,
+                _ => auth->OneGraphAuth.clearToken->Js.Promise.resolve,
                 _,
               )
             ->ignore;
@@ -475,14 +422,14 @@ module Editor = {
           | Resize(width) =>
             editorHandle
             ->React.Ref.current
-            ->Belt.Option.map(ReactMonaco.layout)
+            ->Belt.Option.map(BsReactMonaco.layout)
             ->ignore;
 
             {...state, width};
           | SetEditing(isEditing) => {...state, isEditing}
           },
         {
-          userId: OneGraphAuth.getLocalUserId(Config.auth),
+          userId: OneGraphAuth.getLocalUserId(auth),
           text: content,
           isEditing: true,
           username: "",
@@ -502,17 +449,16 @@ module Editor = {
           style={ReactDOMRe.Style.make(~width="50%", ())}
           onClick={_ =>
             (
-              OneGraphAuth.login(Config.auth, "github")
+              OneGraphAuth.login(auth, "github")
               |> Js.Promise.then_(() =>
-                   OneGraphAuth.isLoggedIn(Config.auth, "github")
+                   OneGraphAuth.isLoggedIn(auth, "github")
                    ->Js.Promise.then_(
                        isLoggedIn =>
                          (
                            switch (isLoggedIn) {
                            | false => dispatch(Logout)
                            | true =>
-                             let userId =
-                               OneGraphAuth.getLocalUserId(Config.auth);
+                             let userId = OneGraphAuth.getLocalUserId(auth);
                              switch (userId) {
                              | None => ()
                              | Some(userId) => dispatch(Login(userId))
@@ -566,8 +512,8 @@ module Editor = {
             getAttribute(target, "data-sourcepos")
             ->Utils.extractSourcePosition
             ->Belt.Option.map(((from, to_)) => {
-                ReactMonaco.revealLine(editorHandle, from.line);
-                ReactMonaco.setSelection(
+                BsReactMonaco.revealLine(editorHandle, from.line);
+                BsReactMonaco.setSelection(
                   editorHandle,
                   {
                     startLineNumber: from.line,
@@ -576,7 +522,7 @@ module Editor = {
                     endColumn: to_.char,
                   },
                 );
-                ReactMonaco.focus(editorHandle);
+                BsReactMonaco.focus(editorHandle);
               })
             ->ignore;
           }
@@ -604,7 +550,7 @@ module Editor = {
                    {string("Hide Editor")}
                  </button>
                </div>
-               <ReactMonaco.Editor
+               <ReactMonacoLazy.Editor.Lazy
                  className="transcript-editor"
                  value=editedText
                  height="250px"
@@ -654,7 +600,8 @@ module PullRequestPreparation = {
   };
 
   [@react.component]
-  let make = (~editedText, ~content, ~sha, ~filePath, ~onClose, ~username) => {
+  let make =
+      (~client, ~editedText, ~content, ~sha, ~filePath, ~onClose, ~username) => {
     open React;
     let editorHandle = React.useRef(None);
 
@@ -667,8 +614,8 @@ module PullRequestPreparation = {
         Js.log3("Resize detected", editorHandle, size);
         switch (editorHandle->React.Ref.current, size) {
         | (Some(editor), _) =>
-          Js.log3("Resizing editor: ", ReactMonaco.layout, editor);
-          ReactMonaco.layout(editor);
+          Js.log3("Resizing editor: ", BsReactMonaco.layout, editor);
+          BsReactMonaco.layout(editor);
         | _ => ()
         };
       });
@@ -700,18 +647,20 @@ module PullRequestPreparation = {
           ~flexGrow="1",
           (),
         )}>
-        <ReactMonaco.DiffViewer
-          className="transcript-editor"
-          original=content
-          value=editedText
-          height="80vh"
-          theme="vs-dark"
-          language="markdown"
-          options={"renderSideBySide": false}
-          editorDidMount={(editor, _monaco) =>
-            React.Ref.setCurrent(editorHandle, Some(editor))
-          }
-        />
+        <React.Suspense fallback={<div> "Loading..."->React.string </div>}>
+          <ReactMonacoLazy.DiffViewer.Lazy
+            className="transcript-editor"
+            original=content
+            value=editedText
+            height="80vh"
+            theme="vs-dark"
+            language="markdown"
+            options={"renderSideBySide": false}
+            editorDidMount={(editor, _monaco) =>
+              React.Ref.setCurrent(editorHandle, Some(editor))
+            }
+          />
+        </React.Suspense>
       </div>
       <div
         style={ReactDOMRe.Style.make(
@@ -743,6 +692,7 @@ module PullRequestPreparation = {
           onClick={_ => {
             let submitPromise =
               submitPr(
+                ~client,
                 ~branchName=Utils.String.toBranchName(state.title, username),
                 ~username,
                 ~title=state.title,
@@ -779,7 +729,7 @@ module PullRequestPreparation = {
 
 module Conversation = {
   [@react.component]
-  let make = (~username, ~onHide) => {
+  let make = (~client, ~username, ~onHide) => {
     open React;
     open ReasonUrql.Hooks;
     let request =
@@ -815,12 +765,12 @@ module Conversation = {
              );
 
          <PullRequestManager
+           client
            myUsername="sgrove"
            pullRequests
            onHide
            refresh={_ => {
              Js.log(executeQuery);
-             assign("executeQuery", executeQuery);
              executeQuery(None);
            }}
          />;
@@ -840,7 +790,7 @@ module ConversationBubble = {
   };
 
   [@react.component]
-  let make = (~username) => {
+  let make = (~client, ~username) => {
     open React;
 
     let (state, dispatch) =
@@ -862,7 +812,7 @@ module ConversationBubble = {
         (),
       )}>
       {state.isOpen
-         ? <Conversation onHide={_ => dispatch(Hide)} username />
+         ? <Conversation client onHide={_ => dispatch(Hide)} username />
          : <div
              style={ReactDOMRe.Style.make(
                ~position="fixed",
@@ -921,7 +871,8 @@ module Container = {
     | SetSubmitting(string);
 
   [@react.component]
-  let make = (~sha: string, ~content, ~filePath, ~onLogout, ~jwtMe) => {
+  let make =
+      (~auth, ~client, ~sha: string, ~content, ~filePath, ~onLogout, ~jwtMe) => {
     let username = OneJwt.findGitHubLogin(~default="unknown", jwtMe);
     open React;
     let (state, dispatch) =
@@ -955,19 +906,24 @@ module Container = {
     switch (state.mode) {
     | Editing =>
       <div>
-        <ConversationBubble username />
-        <Editor
-          jwtMe
-          content
-          onInitiateSubmit={(~editedContent) =>
-            dispatch(SetSubmitting(editedContent))
-          }
-          onLogout
-        />
+        <ConversationBubble client username />
+        <React.Suspense
+          fallback={<div> "Loading editor..."->React.string </div>}>
+          <Editor
+            auth
+            jwtMe
+            content
+            onInitiateSubmit={(~editedContent) =>
+              dispatch(SetSubmitting(editedContent))
+            }
+            onLogout
+          />
+        </React.Suspense>
       </div>
     | Submitting =>
-      <ReactModal isOpen=true style=modalStyle>
+      <ReactModal isOpen=true style=modalStyle ariaHideApp=false>
         <PullRequestPreparation
+          client
           editedText={state.content.edited}
           content={state.content.original}
           sha
@@ -1001,7 +957,13 @@ module Fetcher = {
     | SetLoggedOut;
 
   [@react.component]
-  let make = (~lesson: Egghead.lesson, ~transcript as _: Egghead.transcript) => {
+  let make =
+      (
+        ~auth,
+        ~client,
+        ~lesson: Egghead.lesson,
+        ~transcript as _: Egghead.transcript,
+      ) => {
     open React;
     open ReasonUrql.Hooks;
 
@@ -1016,10 +978,7 @@ module Fetcher = {
           | SetLoggedIn(jwtMe) => {...state, jwtMe: Some(jwtMe)}
           | SetLoggedOut => {...state, jwtMe: None}
           },
-        {
-          missingAuthServices: [],
-          jwtMe: OneGraphAuth.getLocalJwtMe(Config.auth),
-        },
+        {missingAuthServices: [], jwtMe: OneGraphAuth.getLocalJwtMe(auth)},
       );
 
     let request =
@@ -1037,14 +996,13 @@ module Fetcher = {
           OneGraphAuth.login(auth, service)
           ->Js.Promise.then_(
               () =>
-                OneGraphAuth.isLoggedIn(Config.auth, service)
+                OneGraphAuth.isLoggedIn(auth, service)
                 ->Js.Promise.then_(
                     isLoggedIn =>
                       (
                         switch (isLoggedIn) {
                         | false => dispatch(SetLoggedOut)
-                        | true =>
-                          onLogin(OneGraphAuth.getLocalJwtMe(Config.auth))
+                        | true => onLogin(OneGraphAuth.getLocalJwtMe(auth))
                         }
                       )
                       ->Js.Promise.resolve,
@@ -1058,7 +1016,7 @@ module Fetcher = {
       </button>;
 
     let onLogout = () =>
-      OneGraphAuth.logout(Config.auth, "github", ())
+      OneGraphAuth.logout(auth, "github", ())
       ->Js.Promise.then_(
           _next => dispatch(SetLoggedOut)->Js.Promise.resolve,
           _,
@@ -1072,7 +1030,7 @@ module Fetcher = {
     | None =>
       <div>
         {string("Please ")}
-        {loginButton(Config.auth, "github", ~onLogin=jwtMe =>
+        {loginButton(auth, "github", ~onLogin=jwtMe =>
            switch (jwtMe) {
            | None => ()
            | Some(jwtMe) => dispatch(SetLoggedIn(jwtMe))
@@ -1084,9 +1042,7 @@ module Fetcher = {
       switch (response) {
       | NotFound => <div> {string("Not found")} </div>
       | Error({graphQLErrors}) =>
-        switch (
-          OneGraphAuth.findMissingAuthServices(Config.auth, graphQLErrors)
-        ) {
+        switch (OneGraphAuth.findMissingAuthServices(auth, graphQLErrors)) {
         | [] =>
           <div>
             {string(
@@ -1095,7 +1051,7 @@ module Fetcher = {
              )}
             <button
               onClick={_ =>
-                OneGraphAuth.logout(Config.auth, "github", ())
+                OneGraphAuth.logout(auth, "github", ())
                 ->Js.Promise.then_(
                     _next => dispatch(SetLoggedOut)->Js.Promise.resolve,
                     _,
@@ -1108,7 +1064,7 @@ module Fetcher = {
         | [missingService, ..._rest] =>
           <div>
             {string("Please ")}
-            {loginButton(Config.auth, missingService, ~onLogin=jwtMe =>
+            {loginButton(auth, missingService, ~onLogin=jwtMe =>
                switch (jwtMe) {
                | None => ()
                | Some(jwtMe) => dispatch(SetLoggedIn(jwtMe))
@@ -1135,12 +1091,16 @@ module Fetcher = {
         let content = blob->Option.flatMap(d => d##text);
 
         switch (sha, content, state.jwtMe) {
-        | (None, _, _) => <pre> {string("Unable to determine sha")} </pre>
+        | (None, _, _) =>
+          <>
+            {string("Unable to determine sha: ")}
+            <pre> {data->prettyStringify(Js.Nullable.null, 2)->string} </pre>
+          </>
         | (_, None, _) => <pre> {string("No content to edit")} </pre>
         | (_, _, None) =>
           <pre> {string("Unable to ascertain local user")} </pre>
         | (Some(sha), Some(content), Some(jwtMe)) =>
-          <Container sha content filePath onLogout jwtMe />
+          <Container client auth sha content filePath onLogout jwtMe />
         };
       }
     };
@@ -1153,9 +1113,15 @@ let make = (~lesson: Egghead.lesson, ~transcript: Egghead.transcript) => {
 
   let (isEditing, _setIsEditing) = React.useState(() => true);
 
-  <Provider value=GraphQL.urqlClient>
-    {isEditing ? <Fetcher lesson transcript /> : <ReadOnly lesson transcript />}
-  </Provider>;
+  switch (Config.auth, GraphQL.urqlClient) {
+  | (Some(auth), Some(client)) =>
+    <Provider value=client>
+      {isEditing
+         ? <Fetcher auth client lesson transcript />
+         : <ReadOnly lesson transcript />}
+    </Provider>
+  | _ => "Loading lesson editor..."->React.string
+  };
 };
 
 let default = make;

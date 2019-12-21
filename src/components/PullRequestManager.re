@@ -30,12 +30,13 @@ let timeSince: Js.Date.t => string = [%raw
 }|}
 ];
 
-let submitPrComment = (~message, ~pullRequestId) => {
+let submitPrComment = (~client, ~message, ~pullRequestId) => {
   open GraphQL;
 
   let requests = [
     () =>
       mutation(
+        ~client,
         AddPullRequestCommentMutation.make(~pullRequestId, ~body=message, ()),
         "Error adding comment to PR",
       ),
@@ -119,8 +120,13 @@ module ChatHistory = {
                 "chat-avatar " ++ (messageIsMe ? "float-left" : "float-right")
               }
             />;
+          Js.log2("Comment id: ", comment##id);
 
-          <li className="clearfix">
+          <li
+            className="clearfix"
+            key={
+              comment##id;
+            }>
             <div
               className={
                 "message-data clearfix" ++ (messageIsMe ? "" : " align-right")
@@ -263,10 +269,10 @@ module PullRequestHistory = {
 };
 
 [@react.component]
-let make = (~pullRequests, ~myUsername, ~refresh, ~onHide) => {
+let make = (~client, ~pullRequests, ~myUsername, ~refresh, ~onHide) => {
   open React;
   let onSubmit = (~message, ~pullRequestId) =>
-    submitPrComment(~pullRequestId, ~message)
+    submitPrComment(~client, ~pullRequestId, ~message)
     ->Js.Promise.then_(
         _ =>
           Js.Promise.resolve(

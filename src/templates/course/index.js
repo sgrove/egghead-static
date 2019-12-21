@@ -49,6 +49,7 @@ const Lesson = ({ lesson }) => {
 }
 
 const Course = ({ data: { course, site } }) => {
+  const [focused, setFocused] = useState(() => 0)
   return (
     <Layout site={site}>
       <Container>
@@ -87,10 +88,20 @@ const Course = ({ data: { course, site } }) => {
         <h3>Lessons</h3>
         <ol sx={{ ml: 4 }}>
           {course.lessons &&
-            [course.lessons[0]].map(lesson => {
+            (course.lessons || []).map((lesson, idx) => {
+              const isFocused = idx === focused
+              const child = isFocused ? (
+                <Lesson lesson={lesson} />
+              ) : (
+                lesson.title
+              )
               return (
-                <li key={lesson.id} sx={{ mt: 2, h4: { fontSize: 2 } }}>
-                  <Lesson lesson={lesson} />
+                <li
+                  key={lesson.id}
+                  sx={{ mt: 2, h4: { fontSize: 2 } }}
+                  onClick={() => setFocused(idx)}
+                >
+                  {child}
                 </li>
               )
             })}

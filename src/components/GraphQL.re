@@ -1,23 +1,28 @@
 let urqlClient =
-  ReasonUrql.(
-    Client.make(
-      ~url=
-        "https://serve.onegraph.io/graphql?app_id=b36150b7-ce64-4a6c-a2af-fbe50da58552",
-      ~fetchOptions=
-        FetchFn(
-          () => {
-            let headers =
-              switch (OneGraphAuth.authHeaders(Config.auth)) {
-              | None => None
-              | Some(header) =>
-                Some(Fetch.HeadersInit.make({"Authorization": header}))
-              };
-            Fetch.RequestInit.make(~headers?, ());
-          },
-        ),
-      (),
+  switch (Config.auth) {
+  | None => None
+  | Some(auth) =>
+    Some(
+      ReasonUrql.(
+        Client.make(
+          ~url=Config.oneGraphUrl,
+          ~fetchOptions=
+            FetchFn(
+              () => {
+                let headers =
+                  switch (OneGraphAuth.authHeaders(auth)) {
+                  | None => None
+                  | Some(header) =>
+                    Some(Fetch.HeadersInit.make({"Authorization": header}))
+                  };
+                Fetch.RequestInit.make(~headers?, ());
+              },
+            ),
+          (),
+        )
+      ),
     )
-  );
+  };
 
 module GetFileShaAndContentQuery = [%graphql
   {|query GetFileSha($repoName: String!, $repoOwner: String!, $branchAndFilePath: String!) {
@@ -262,6 +267,7 @@ module SearchForPullRequestsQuery = [%graphql
                number
                comments(last: 100) {
                  nodes {
+                   id
                    author {
                      login
                      avatarUrl
@@ -327,10 +333,10 @@ type result('a, 'b) =
 
 type mutationChainResult = result(unit, string);
 
-let mutation = (request: UrqlTypes.request('a), errorMessage: string) =>
-  ReasonUrql.Client.(
-    executeMutation(~client=urqlClient, ~request, ()) |> Wonka.toPromise
-  )
+let mutation =
+    (~client, request: UrqlTypes.request('a), errorMessage: string) =>
+  ReasonUrql.Client.executeMutation(~client, ~request, ())
+  |> Wonka.toPromise
   |> Js.Promise.(
        then_(
          (

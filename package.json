@@ -91,7 +91,7 @@
   "main": "n/a",
   "scripts": {
     "jsxify": "babel --plugins transform-react-createelement-to-jsx",
-    "build": "rm -rf public && bsb -clean-world && bsb -make-world && gatsby build --prefix-paths && yarn move",
+    "build": "rm -rf public && bsb -clean-world && bsb -make-world && gatsby build --prefix-paths",
     "move": "cd public && mkdir learn | mv * learn",
     "refresh": "node loadStaticDataToFiles",
     "develop": "gatsby develop",

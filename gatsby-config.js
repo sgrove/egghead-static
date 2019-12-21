@@ -14,7 +14,7 @@ module.exports = {
   },
   plugins: [
     `gatsby-transformer-egghead-resources`,
-    `gatsby-plugin-loadable-components-ssr`,
+    // `gatsby-plugin-loadable-components-ssr`,
     {
       resolve: 'gatsby-source-filesystem',
       options: {

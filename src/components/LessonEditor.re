@@ -485,7 +485,7 @@ module Editor = {
           </span>
           <button
             onClick={_ =>
-              confirm("Really logged out? All edits not push will be lost.")
+              confirm("Really logged out? All edits not pushed will be lost.")
                 ? onLogout() : ()
             }>
             {string("Logout")}
@@ -968,6 +968,8 @@ module Fetcher = {
       (
         ~auth,
         ~client,
+        ~jwtMe,
+        ~onLogout,
         ~lesson: Egghead.lesson,
         ~transcript as _: Egghead.transcript,
       ) => {
@@ -978,16 +980,6 @@ module Fetcher = {
     let filePath =
       "the-beginner-s-guide-to-figma/lessons/" ++ lesson.slug ++ ".md";
 
-    let (state, dispatch) =
-      useReducer(
-        (state, action) =>
-          switch (action) {
-          | SetLoggedIn(jwtMe) => {...state, jwtMe: Some(jwtMe)}
-          | SetLoggedOut => {...state, jwtMe: None}
-          },
-        {missingAuthServices: [], jwtMe: OneGraphAuth.getLocalJwtMe(auth)},
-      );
-
     let request =
       GraphQL.GetFileShaAndContentQuery.make(
         ~repoName,
@@ -996,139 +988,237 @@ module Fetcher = {
         (),
       );
 
-    let loginButton = (auth, service, ~onLogin) =>
-      <button
-        style={ReactDOMRe.Style.make(~width="50%", ())}
-        onClick={_ =>
-          OneGraphAuth.login(auth, service)
-          ->Js.Promise.then_(
-              () =>
-                OneGraphAuth.isLoggedIn(auth, service)
-                ->Js.Promise.then_(
-                    isLoggedIn =>
-                      (
-                        switch (isLoggedIn) {
-                        | false => dispatch(SetLoggedOut)
-                        | true => onLogin(OneGraphAuth.getLocalJwtMe(auth))
-                        }
-                      )
-                      ->Js.Promise.resolve,
-                    _,
-                  ),
-              _,
-            )
-          ->ignore
-        }>
-        {string("Login with " ++ service)}
-      </button>;
-
-    let onLogout = () =>
-      OneGraphAuth.logout(auth, "github", ())
-      ->Js.Promise.then_(
-          _next => dispatch(SetLoggedOut)->Js.Promise.resolve,
-          _,
-        )
-      ->ignore;
-
     let ({response}, _) =
       useQuery(~request, ~requestPolicy=`NetworkOnly, ());
 
-    switch (state.jwtMe) {
-    | None =>
+    switch (response) {
+    | NotFound => <div> {string("Not found")} </div>
+    | Error({graphQLErrors}) =>
       <div>
-        {string("Please ")}
-        {loginButton(auth, "github", ~onLogin=jwtMe =>
-           switch (jwtMe) {
-           | None => ()
-           | Some(jwtMe) => dispatch(SetLoggedIn(jwtMe))
-           }
+        {string(
+           "Error: " ++ prettyStringify(graphQLErrors, Js.Nullable.null, 2),
          )}
-        {string(" to edit lesson transcripts")}
+        <button onClick={_ => onLogout()}> {string("Logout")} </button>
       </div>
-    | Some(_jwtMe) =>
-      switch (response) {
-      | NotFound => <div> {string("Not found")} </div>
-      | Error({graphQLErrors}) =>
-        switch (OneGraphAuth.findMissingAuthServices(auth, graphQLErrors)) {
-        | [] =>
-          <div>
-            {string(
-               "Error: "
-               ++ prettyStringify(graphQLErrors, Js.Nullable.null, 2),
-             )}
-            <button
-              onClick={_ =>
-                OneGraphAuth.logout(auth, "github", ())
-                ->Js.Promise.then_(
-                    _next => dispatch(SetLoggedOut)->Js.Promise.resolve,
-                    _,
-                  )
-                ->ignore
-              }>
-              {string("Logout")}
-            </button>
-          </div>
-        | [missingService, ..._rest] =>
-          <div>
-            {string("Please ")}
-            {loginButton(auth, missingService, ~onLogin=jwtMe =>
-               switch (jwtMe) {
-               | None => ()
-               | Some(jwtMe) => dispatch(SetLoggedIn(jwtMe))
-               }
-             )}
-            {string(" to edit lesson transcripts")}
-          </div>
+    | Fetching => <div> {string("Loading...")} </div>
+    | Data(data) =>
+      open Belt;
+
+      let blob =
+        data##gitHub
+        ->Option.flatMap(d => d##repository)
+        ->Option.flatMap(d => d##object_)
+        ->Option.flatMap(
+            fun
+            | `GitHubBlob(d) => Some(d)
+            | `GitHubGitObject(_) => None,
+          );
+
+      let sha = blob->Option.map(d => d##oid);
+      let content = blob->Option.flatMap(d => d##text);
+
+      switch (sha, content, jwtMe) {
+      | (None, _, _) =>
+        <>
+          {string("Unable to determine sha: ")}
+          <pre> {data->prettyStringify(Js.Nullable.null, 2)->string} </pre>
+        </>
+      | (_, None, _) => <pre> {string("No content to edit")} </pre>
+      | (_, _, None) =>
+        <pre> {string("Unable to ascertain local user")} </pre>
+      | (Some(sha), Some(content), Some(jwtMe)) =>
+        <Container client auth sha content filePath onLogout jwtMe />
+      };
+    };
+  };
+};
+
+let amILoggedInto = (auth, ~service, ~ifYes=?, ~ifNo=?, ()) => {
+  Js.log2("Am I logged into ", service);
+  OneGraphAuth.isLoggedIn(auth, service)
+  ->Js.Promise.then_(
+      isLoggedIn =>
+        {
+          Js.log3("Logged in? ", service, isLoggedIn);
+          switch (isLoggedIn) {
+          | false => ifNo->Belt.Option.map(f => f())
+          | true => ifYes->Belt.Option.map(f => f())
+          };
         }
-      | Fetching => <div> {string("Loading...")} </div>
-      | Data(data) =>
-        open Belt;
+        ->Js.Promise.resolve,
+      _,
+    );
+};
 
-        let blob =
-          data##gitHub
-          ->Option.flatMap(d => d##repository)
-          ->Option.flatMap(d => d##object_)
-          ->Option.flatMap(
-              fun
-              | `GitHubBlob(d) => Some(d)
-              | `GitHubGitObject(_) => None,
-            );
+module LoginGuard = {
+  type service =
+    | Egghead
+    | GitHub;
 
-        let sha = blob->Option.map(d => d##oid);
-        let content = blob->Option.flatMap(d => d##text);
+  type authState =
+    | Loading
+    | LoggedIn(OneJwt.t)
+    | LoggedOut;
 
-        switch (sha, content, state.jwtMe) {
-        | (None, _, _) =>
-          <>
-            {string("Unable to determine sha: ")}
-            <pre> {data->prettyStringify(Js.Nullable.null, 2)->string} </pre>
-          </>
-        | (_, None, _) => <pre> {string("No content to edit")} </pre>
-        | (_, _, None) =>
-          <pre> {string("Unable to ascertain local user")} </pre>
-        | (Some(sha), Some(content), Some(jwtMe)) =>
-          <Container client auth sha content filePath onLogout jwtMe />
+  type state = {
+    gitHub: authState,
+    egghead: authState,
+    me: option(OneJwt.t),
+  };
+
+  type action =
+    | SetAuthState(service, authState);
+
+  [@react.component]
+  let make = (~auth, ~client, ~lesson, ~transcript) => {
+    open React;
+
+    let (state, dispatch) =
+      useReducer(
+        (state, action) =>
+          switch (action) {
+          | SetAuthState(service, authState) =>
+            let me =
+              switch (authState) {
+              | LoggedIn(me) => Some(me)
+              | _ => state.me
+              };
+            switch (service) {
+            | Egghead => {...state, egghead: authState, me}
+            | GitHub => {...state, gitHub: authState, me}
+            };
+          },
+        {egghead: LoggedOut, gitHub: LoggedOut, me: None},
+      );
+
+    let checkLogin = (serviceName, service) =>
+      amILoggedInto(
+        auth,
+        ~service=serviceName,
+        ~ifYes=
+          () => {
+            Js.log("WTF mate");
+            OneGraphAuth.getLocalJwtMe(auth)
+            ->Belt.Option.map(me =>
+                dispatch(SetAuthState(service, LoggedIn(me)))
+              )
+            ->ignore;
+          },
+        (),
+      );
+
+    useEffect0(() => {
+      checkLogin("eggheadio", Egghead)->ignore;
+      checkLogin("github", GitHub)->ignore;
+      None;
+    });
+
+    let loggedIn =
+      switch (state.egghead, state.gitHub) {
+      | (LoggedIn(_), LoggedIn(_)) => true
+      | _ => false
+      };
+
+    let onLogout = () => {
+      let services = [Egghead, GitHub];
+
+      services->Belt.List.forEach(service => {
+        let serviceName =
+          switch (service) {
+          | Egghead => "eggheadio"
+          | GitHub => "github"
+          };
+
+        OneGraphAuth.logout(auth, serviceName, ())
+        ->Js.Promise.then_(
+            _next =>
+              dispatch(SetAuthState(service, LoggedOut))->Js.Promise.resolve,
+            _,
+          )
+        ->ignore;
+      });
+    };
+
+    let loginIcon = service => {
+      let (serviceName, friendlyName, state) =
+        switch (service) {
+        | Egghead => ("eggheadio", "Egghead", state.egghead)
+        | GitHub => ("github", "GitHub", state.gitHub)
         };
-      }
+
+      switch (state) {
+      | LoggedIn(_me) => <div> {j|Logged into $friendlyName|j}->string </div>
+      | Loading => <div> {j|Logging into $friendlyName...|j}->string </div>
+      | LoggedOut =>
+        <img
+          style={ReactDOMRe.Style.make(~width="50px", ~cursor="pointer", ())}
+          onClick={_ => {
+            dispatch(SetAuthState(service, Loading));
+            OneGraphAuth.login(auth, serviceName)
+            /* TODO: Report if localJwt me is None, means something went wrong with parsing the JWT */
+            ->Js.Promise.then_(
+                () =>
+                  OneGraphAuth.isLoggedIn(auth, serviceName)
+                  ->Js.Promise.then_(
+                      isLoggedIn =>
+                        (
+                          switch (isLoggedIn) {
+                          | false =>
+                            dispatch(SetAuthState(service, LoggedOut))
+                          | true =>
+                            OneGraphAuth.getLocalJwtMe(auth)
+                            ->Belt.Option.map(me =>
+                                dispatch(
+                                  SetAuthState(service, LoggedIn(me)),
+                                )
+                              )
+                            ->ignore
+                          }
+                        )
+                        ->Js.Promise.resolve,
+                      _,
+                    ),
+                _,
+              )
+            ->ignore;
+          }}
+          src={j|/images/logos/$serviceName.svg|j}
+          alt={j|Login with $friendlyName|j}
+        />
+      };
+    };
+
+    switch (loggedIn, state.me) {
+    | (false, _) =>
+      <div
+        style={ReactDOMRe.Style.make(
+          ~border="1px solid gray",
+          ~borderRadius="4px",
+          ~width="500px",
+          (),
+        )}>
+        "Please log in"->string
+        <br />
+        {loginIcon(GitHub)}
+        {loginIcon(Egghead)}
+      </div>
+    | (true, me) =>
+      <Fetcher auth client lesson transcript onLogout jwtMe=me />
     };
   };
 };
 
 [@react.component]
 let make = (~lesson: Egghead.lesson, ~transcript: Egghead.transcript) => {
-  open ReasonUrql;
-
-  let (isEditing, _setIsEditing) = React.useState(() => true);
-
-  switch (Config.auth, GraphQL.urqlClient) {
-  | (Some(auth), Some(client)) =>
-    <Provider value=client>
-      {isEditing
-         ? <Fetcher auth client lesson transcript />
-         : <ReadOnly lesson transcript />}
-    </Provider>
-  | _ => "Loading lesson editor..."->React.string
-  };
+  ReasonUrql.(
+    switch (Config.auth, GraphQL.urqlClient) {
+    | (Some(auth), Some(client)) =>
+      <Provider value=client>
+        <LoginGuard auth client lesson transcript />
+      </Provider>
+    | _ => "Loading the Egghead™ lesson editor..."->React.string
+    }
+  );
 };
 
 let default = make;

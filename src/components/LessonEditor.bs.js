@@ -7,6 +7,7 @@ import * as Curry from "bs-platform/lib/es6/curry.js";
 import * as React from "react";
 import * as $$String from "bs-platform/lib/es6/string.js";
 import * as Js_math from "bs-platform/lib/es6/js_math.js";
+import * as Belt_List from "bs-platform/lib/es6/belt_List.js";
 import * as Pervasives from "bs-platform/lib/es6/pervasives.js";
 import * as ReactDOMRe from "reason-react/src/ReactDOMRe.js";
 import * as ReasonUrql from "reason-urql/src/ReasonUrql.bs.js";
@@ -307,7 +308,7 @@ function LessonEditor$Editor(Props) {
     var match$4 = editedText === content;
     loginEl = React.createElement("div", undefined, React.createElement("span", undefined, "@" + OneJwt$EggheadStatic.findGitHubLogin("unknown", jwtMe)), React.createElement("button", {
               onClick: (function (param) {
-                  var match = window.confirm("Really logged out? All edits not push will be lost.");
+                  var match = window.confirm("Really logged out? All edits not pushed will be lost.");
                   if (match) {
                     return Curry._1(onLogout, /* () */0);
                   } else {
@@ -801,134 +802,66 @@ var Container = {
 function LessonEditor$Fetcher(Props) {
   var auth = Props.auth;
   var client = Props.client;
+  var jwtMe = Props.jwtMe;
+  var onLogout = Props.onLogout;
   var lesson = Props.lesson;
   Props.transcript;
   var filePath = "the-beginner-s-guide-to-figma/lessons/" + (lesson.slug + ".md");
-  var match = React.useReducer((function (state, action) {
-          if (action) {
-            return {
-                    missingAuthServices: state.missingAuthServices,
-                    jwtMe: Caml_option.some(action[0])
-                  };
-          } else {
-            return {
-                    missingAuthServices: state.missingAuthServices,
-                    jwtMe: undefined
-                  };
-          }
-        }), {
-        missingAuthServices: /* [] */0,
-        jwtMe: getLocalJwtMe(auth)
-      });
-  var dispatch = match[1];
-  var state = match[0];
   var request = GraphQL$EggheadStatic.GetFileShaAndContentQuery.make(repoName, repoOwner, "" + (String("master") + (":" + (String(filePath) + ""))), /* () */0);
-  var loginButton = function (auth, service, onLogin) {
-    return React.createElement("button", {
-                style: {
-                  width: "50%"
-                },
-                onClick: (function (param) {
-                    var __x = auth.login(service);
-                    __x.then((function (param) {
-                            var __x = auth.isLoggedIn(service);
-                            return __x.then((function (isLoggedIn) {
-                                          return Promise.resolve(isLoggedIn ? Curry._1(onLogin, getLocalJwtMe(auth)) : Curry._1(dispatch, /* SetLoggedOut */0));
-                                        }));
-                          }));
-                    return /* () */0;
-                  })
-              }, "Login with " + service);
-  };
-  var onLogout = function (param) {
-    var __x = OneGraphAuth.logout(auth, "github", undefined, /* () */0);
-    __x.then((function (_next) {
-            return Promise.resolve(Curry._1(dispatch, /* SetLoggedOut */0));
-          }));
-    return /* () */0;
-  };
-  var match$1 = Curry._5(ReasonUrql.Hooks.useQuery, request, /* NetworkOnly */971373850, undefined, undefined, /* () */0);
-  var response = match$1[0].response;
-  var match$2 = state.jwtMe;
-  if (match$2 !== undefined) {
-    if (typeof response === "number") {
-      if (response === /* Fetching */0) {
-        return React.createElement("div", undefined, "Loading...");
-      } else {
-        return React.createElement("div", undefined, "Not found");
-      }
-    } else if (response.tag) {
-      var graphQLErrors = response[0].graphQLErrors;
-      var match$3 = OneGraphAuth.findMissingAuthServices(auth, graphQLErrors);
-      if (match$3) {
-        return React.createElement("div", undefined, "Please ", loginButton(auth, match$3[0], (function (jwtMe) {
-                          if (jwtMe !== undefined) {
-                            return Curry._1(dispatch, /* SetLoggedIn */[Caml_option.valFromOption(jwtMe)]);
-                          } else {
-                            return /* () */0;
-                          }
-                        })), " to edit lesson transcripts");
-      } else {
-        return React.createElement("div", undefined, "Error: " + JSON.stringify(graphQLErrors, null, 2), React.createElement("button", {
-                        onClick: (function (param) {
-                            var __x = OneGraphAuth.logout(auth, "github", undefined, /* () */0);
-                            __x.then((function (_next) {
-                                    return Promise.resolve(Curry._1(dispatch, /* SetLoggedOut */0));
-                                  }));
-                            return /* () */0;
-                          })
-                      }, "Logout"));
-      }
+  var match = Curry._5(ReasonUrql.Hooks.useQuery, request, /* NetworkOnly */971373850, undefined, undefined, /* () */0);
+  var response = match[0].response;
+  if (typeof response === "number") {
+    if (response === /* Fetching */0) {
+      return React.createElement("div", undefined, "Loading...");
     } else {
-      var data = response[0];
-      var blob = Belt_Option.flatMap(Belt_Option.flatMap(Belt_Option.flatMap(data.gitHub, (function (d) {
-                      return d.repository;
-                    })), (function (d) {
-                  return d.object_;
-                })), (function (param) {
-              if (param[0] >= -565457906) {
-                return ;
-              } else {
-                return Caml_option.some(param[1]);
-              }
-            }));
-      var sha = Belt_Option.map(blob, (function (d) {
-              return d.oid;
-            }));
-      var content = Belt_Option.flatMap(blob, (function (d) {
-              return d.text;
-            }));
-      var match$4 = state.jwtMe;
-      if (sha !== undefined) {
-        if (content !== undefined) {
-          if (match$4 !== undefined) {
-            return React.createElement(LessonEditor$Container, {
-                        auth: auth,
-                        client: client,
-                        sha: sha,
-                        content: content,
-                        filePath: filePath,
-                        onLogout: onLogout,
-                        jwtMe: Caml_option.valFromOption(match$4)
-                      });
-          } else {
-            return React.createElement("pre", undefined, "Unable to ascertain local user");
-          }
+      return React.createElement("div", undefined, "Not found");
+    }
+  } else if (response.tag) {
+    return React.createElement("div", undefined, "Error: " + JSON.stringify(response[0].graphQLErrors, null, 2), React.createElement("button", {
+                    onClick: (function (param) {
+                        return Curry._1(onLogout, /* () */0);
+                      })
+                  }, "Logout"));
+  } else {
+    var data = response[0];
+    var blob = Belt_Option.flatMap(Belt_Option.flatMap(Belt_Option.flatMap(data.gitHub, (function (d) {
+                    return d.repository;
+                  })), (function (d) {
+                return d.object_;
+              })), (function (param) {
+            if (param[0] >= -565457906) {
+              return ;
+            } else {
+              return Caml_option.some(param[1]);
+            }
+          }));
+    var sha = Belt_Option.map(blob, (function (d) {
+            return d.oid;
+          }));
+    var content = Belt_Option.flatMap(blob, (function (d) {
+            return d.text;
+          }));
+    if (sha !== undefined) {
+      if (content !== undefined) {
+        if (jwtMe !== undefined) {
+          return React.createElement(LessonEditor$Container, {
+                      auth: auth,
+                      client: client,
+                      sha: sha,
+                      content: content,
+                      filePath: filePath,
+                      onLogout: onLogout,
+                      jwtMe: Caml_option.valFromOption(jwtMe)
+                    });
         } else {
-          return React.createElement("pre", undefined, "No content to edit");
+          return React.createElement("pre", undefined, "Unable to ascertain local user");
         }
       } else {
-        return React.createElement(React.Fragment, undefined, "Unable to determine sha: ", React.createElement("pre", undefined, JSON.stringify(data, null, 2)));
+        return React.createElement("pre", undefined, "No content to edit");
       }
+    } else {
+      return React.createElement(React.Fragment, undefined, "Unable to determine sha: ", React.createElement("pre", undefined, JSON.stringify(data, null, 2)));
     }
-  } else {
-    return React.createElement("div", undefined, "Please ", loginButton(auth, "github", (function (jwtMe) {
-                      if (jwtMe !== undefined) {
-                        return Curry._1(dispatch, /* SetLoggedIn */[Caml_option.valFromOption(jwtMe)]);
-                      } else {
-                        return /* () */0;
-                      }
-                    })), " to edit lesson transcripts");
   }
 }
 
@@ -936,28 +869,178 @@ var Fetcher = {
   make: LessonEditor$Fetcher
 };
 
+function amILoggedInto(auth, service, ifYes, ifNo, param) {
+  console.log("Am I logged into ", service);
+  var __x = auth.isLoggedIn(service);
+  return __x.then((function (isLoggedIn) {
+                return Promise.resolve((console.log("Logged in? ", service, isLoggedIn), isLoggedIn ? Belt_Option.map(ifYes, (function (f) {
+                                      return Curry._1(f, /* () */0);
+                                    })) : Belt_Option.map(ifNo, (function (f) {
+                                      return Curry._1(f, /* () */0);
+                                    }))));
+              }));
+}
+
+function LessonEditor$LoginGuard(Props) {
+  var auth = Props.auth;
+  var client = Props.client;
+  var lesson = Props.lesson;
+  var transcript = Props.transcript;
+  var match = React.useReducer((function (state, action) {
+          var authState = action[1];
+          var me = typeof authState === "number" ? state.me : Caml_option.some(authState[0]);
+          if (action[0]) {
+            return {
+                    gitHub: authState,
+                    egghead: state.egghead,
+                    me: me
+                  };
+          } else {
+            return {
+                    gitHub: state.gitHub,
+                    egghead: authState,
+                    me: me
+                  };
+          }
+        }), {
+        gitHub: /* LoggedOut */1,
+        egghead: /* LoggedOut */1,
+        me: undefined
+      });
+  var dispatch = match[1];
+  var state = match[0];
+  var checkLogin = function (serviceName, service) {
+    return amILoggedInto(auth, serviceName, (function (param) {
+                  console.log("WTF mate");
+                  Belt_Option.map(getLocalJwtMe(auth), (function (me) {
+                          return Curry._1(dispatch, /* SetAuthState */[
+                                      service,
+                                      /* LoggedIn */[me]
+                                    ]);
+                        }));
+                  return /* () */0;
+                }), undefined, /* () */0);
+  };
+  React.useEffect((function () {
+          checkLogin("eggheadio", /* Egghead */0);
+          checkLogin("github", /* GitHub */1);
+          return ;
+        }), ([]));
+  var match$1 = state.egghead;
+  var match$2 = state.gitHub;
+  var loggedIn = typeof match$1 === "number" || typeof match$2 === "number" ? false : true;
+  var onLogout = function (param) {
+    return Belt_List.forEach(/* :: */[
+                /* Egghead */0,
+                /* :: */[
+                  /* GitHub */1,
+                  /* [] */0
+                ]
+              ], (function (service) {
+                  var serviceName = service ? "github" : "eggheadio";
+                  var __x = OneGraphAuth.logout(auth, serviceName, undefined, /* () */0);
+                  __x.then((function (_next) {
+                          return Promise.resolve(Curry._1(dispatch, /* SetAuthState */[
+                                          service,
+                                          /* LoggedOut */1
+                                        ]));
+                        }));
+                  return /* () */0;
+                }));
+  };
+  var loginIcon = function (service) {
+    var match = service ? /* tuple */[
+        "github",
+        "GitHub",
+        state.gitHub
+      ] : /* tuple */[
+        "eggheadio",
+        "Egghead",
+        state.egghead
+      ];
+    var state$1 = match[2];
+    var friendlyName = match[1];
+    if (typeof state$1 === "number") {
+      if (state$1 !== 0) {
+        var serviceName = match[0];
+        return React.createElement("img", {
+                    style: {
+                      cursor: "pointer",
+                      width: "50px"
+                    },
+                    alt: "Login with " + (String(friendlyName) + ""),
+                    src: "/images/logos/" + (String(serviceName) + ".svg"),
+                    onClick: (function (param) {
+                        Curry._1(dispatch, /* SetAuthState */[
+                              service,
+                              /* Loading */0
+                            ]);
+                        var __x = auth.login(serviceName);
+                        __x.then((function (param) {
+                                var __x = auth.isLoggedIn(serviceName);
+                                return __x.then((function (isLoggedIn) {
+                                              return Promise.resolve(isLoggedIn ? (Belt_Option.map(getLocalJwtMe(auth), (function (me) {
+                                                                    return Curry._1(dispatch, /* SetAuthState */[
+                                                                                service,
+                                                                                /* LoggedIn */[me]
+                                                                              ]);
+                                                                  })), /* () */0) : Curry._1(dispatch, /* SetAuthState */[
+                                                                service,
+                                                                /* LoggedOut */1
+                                                              ]));
+                                            }));
+                              }));
+                        return /* () */0;
+                      })
+                  });
+      } else {
+        return React.createElement("div", undefined, "Logging into " + (String(friendlyName) + "..."));
+      }
+    } else {
+      return React.createElement("div", undefined, "Logged into " + (String(friendlyName) + ""));
+    }
+  };
+  var match$3 = state.me;
+  if (loggedIn) {
+    return React.createElement(LessonEditor$Fetcher, {
+                auth: auth,
+                client: client,
+                jwtMe: match$3,
+                onLogout: onLogout,
+                lesson: lesson,
+                transcript: transcript
+              });
+  } else {
+    return React.createElement("div", {
+                style: {
+                  border: "1px solid gray",
+                  width: "500px",
+                  borderRadius: "4px"
+                }
+              }, "Please log in", React.createElement("br", undefined), loginIcon(/* GitHub */1), loginIcon(/* Egghead */0));
+  }
+}
+
+var LoginGuard = {
+  make: LessonEditor$LoginGuard
+};
+
 function LessonEditor(Props) {
   var lesson = Props.lesson;
   var transcript = Props.transcript;
-  var match = React.useState((function () {
-          return true;
-        }));
   if (Config$EggheadStatic.auth !== undefined && GraphQL$EggheadStatic.urqlClient !== undefined) {
     var client = Caml_option.valFromOption(GraphQL$EggheadStatic.urqlClient);
     return React.createElement(Urql.Provider, {
                 value: client,
-                children: match[0] ? React.createElement(LessonEditor$Fetcher, {
-                        auth: Caml_option.valFromOption(Config$EggheadStatic.auth),
-                        client: client,
-                        lesson: lesson,
-                        transcript: transcript
-                      }) : React.createElement(LessonEditor$ReadOnly, {
-                        lesson: lesson,
-                        transcript: transcript
-                      })
+                children: React.createElement(LessonEditor$LoginGuard, {
+                      auth: Caml_option.valFromOption(Config$EggheadStatic.auth),
+                      client: client,
+                      lesson: lesson,
+                      transcript: transcript
+                    })
               });
   } else {
-    return "Loading lesson editor...";
+    return "Loading the Egghead\xe2\x84\xa2 lesson editor...";
   }
 }
 
@@ -989,6 +1072,8 @@ export {
   ConversationBubble ,
   Container ,
   Fetcher ,
+  amILoggedInto ,
+  LoginGuard ,
   make ,
   $$default ,
   $$default as default,

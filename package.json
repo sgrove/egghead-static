@@ -96,7 +96,7 @@
     "refresh": "node loadStaticDataToFiles",
     "develop": "gatsby develop",
     "start": "serve public/",
-    "now-build": "npm run build",
+    "now-build": "yarn run build",
     "reason": "bsb -clean-world && bsb -make-world -w",
     "emacs": "emacs",
     "sync-schema": "graphql get-schema && node ./generateFragmentTypes.js",

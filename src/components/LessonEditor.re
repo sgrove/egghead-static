@@ -1,6 +1,10 @@
-let assign = [%raw {|function(name, item) {
+let assign = [%raw
+  {|function(name, item) {
      window[name] = item;
-}|}];
+     }|}
+];
+
+[@bs.val] external confirm: string => bool = "window.confirm";
 
 [@bs.send]
 external getAttribute: ('t, string) => Js.Nullable.t(string) = "getAttribute";
@@ -477,12 +481,15 @@ module Editor = {
       | Some(_userId) =>
         <div>
           <span>
-            {string(
-               "Logged in as "
-               ++ OneJwt.findGitHubLogin(~default="unknown", jwtMe),
-             )}
+            {string("@" ++ OneJwt.findGitHubLogin(~default="unknown", jwtMe))}
           </span>
-          <button onClick={_ => onLogout()}> {string("Logout")} </button>
+          <button
+            onClick={_ =>
+              confirm("Really logged out? All edits not push will be lost.")
+                ? onLogout() : ()
+            }>
+            {string("Logout")}
+          </button>
           {editedText == content
              ? null
              : <button

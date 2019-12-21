@@ -27,7 +27,7 @@ import * as PullRequestManager$EggheadStatic from "./PullRequestManager.bs.js";
 
 var assign = (function(name, item) {
      window[name] = item;
-});
+     });
 
 function random(length) {
   var gen = function (param) {
@@ -305,9 +305,14 @@ function LessonEditor$Editor(Props) {
   var loginEl;
   if (match$3 !== undefined) {
     var match$4 = editedText === content;
-    loginEl = React.createElement("div", undefined, React.createElement("span", undefined, "Logged in as " + OneJwt$EggheadStatic.findGitHubLogin("unknown", jwtMe)), React.createElement("button", {
+    loginEl = React.createElement("div", undefined, React.createElement("span", undefined, "@" + OneJwt$EggheadStatic.findGitHubLogin("unknown", jwtMe)), React.createElement("button", {
               onClick: (function (param) {
-                  return Curry._1(onLogout, /* () */0);
+                  var match = window.confirm("Really logged out? All edits not push will be lost.");
+                  if (match) {
+                    return Curry._1(onLogout, /* () */0);
+                  } else {
+                    return /* () */0;
+                  }
                 })
             }, "Logout"), match$4 ? null : React.createElement("button", {
                 style: {

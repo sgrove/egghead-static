@@ -1,20 +1,12 @@
-[@bs.deriving abstract]
 type user = {
-  [@bs.optional]
-  id: int,
-  [@bs.optional]
-  email: string,
-  [@bs.optional]
-  gitHubLogin: string,
-  [@bs.optional]
-  login: string,
+  id: option(int),
+  email: option(string),
+  gitHubLogin: option(string),
+  login: option(string),
+  avatarUrl: option(string),
 };
 
-[@bs.deriving abstract]
-type t = {
-  [@bs.optional]
-  user,
-};
+type t = {user: option(user)};
 
 [@bs.val] external btoa: string => string = "btoa";
 [@bs.val] external atob: string => string = "atob";
@@ -34,9 +26,8 @@ let payload = (jwt: string): t => {
 /*   | Some(jwt) => Some(payload_(jwt)) */
 /*   }; */
 
-let findGitHubLogin = (~default, jwt: t): string =>
-  Belt.(
-    userGet(jwt)
-    |> Option.flatMap(_, user => gitHubLoginGet(user))
-    |> Option.getWithDefault(_, default)
-  );
+let findGitHubLogin = (jwt: t): option(string) =>
+  Belt.(jwt.user |> Option.flatMap(_, user => user.gitHubLogin));
+
+let avatarUrl = (jwt: t): option(string) =>
+  Belt.(jwt.user |> Option.flatMap(_, user => user.avatarUrl));

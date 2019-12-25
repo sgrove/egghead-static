@@ -57,6 +57,15 @@ function PullRequestManager$MessageCompose(Props) {
         }));
   var setText = match[1];
   var text = match[0];
+  var doSubmit = function (param) {
+    var __x = Curry._1(onSubmit, text);
+    __x.then((function (param) {
+            return Promise.resolve(Curry._1(setText, (function (param) {
+                              return "";
+                            })));
+          }));
+    return /* () */0;
+  };
   return React.createElement("div", {
               className: "chat-message clearfix"
             }, React.createElement("textarea", {
@@ -71,7 +80,7 @@ function PullRequestManager$MessageCompose(Props) {
                       var enterKey = $$event.which === 13;
                       var match = (metaKey || ctrlKey) && enterKey;
                       if (match) {
-                        return Curry._1(onSubmit, text);
+                        return doSubmit(/* () */0);
                       } else {
                         return /* () */0;
                       }
@@ -85,7 +94,7 @@ function PullRequestManager$MessageCompose(Props) {
                       if (match) {
                         return /* () */0;
                       } else {
-                        return Curry._1(onSubmit, text);
+                        return doSubmit(/* () */0);
                       }
                     })
                 }, "Send"));
@@ -301,10 +310,9 @@ function PullRequestManager(Props) {
                       var message$1 = message;
                       var pullRequestId = selectedPullRequest.id;
                       var __x = submitPrComment(client, message$1, pullRequestId);
-                      __x.then((function (param) {
-                              return Promise.resolve(Curry._1(refresh, { }));
-                            }));
-                      return /* () */0;
+                      return __x.then((function (param) {
+                                    return Promise.resolve(Curry._1(refresh, { }));
+                                  }));
                     }),
                   onRefresh: (function (param) {
                       return Curry._1(refresh, { });

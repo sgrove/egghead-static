@@ -51,6 +51,11 @@ module MessageCompose = {
     open React;
     let (text, setText) = useState(() => "");
 
+    let doSubmit = () =>
+      onSubmit(text)
+      ->Js.Promise.(then_(_ => setText(_ => "")->resolve, _))
+      ->ignore;
+
     <div className="chat-message clearfix">
       <textarea
         name="message-to-send"
@@ -64,11 +69,10 @@ module MessageCompose = {
           let ctrlKey = ReactEvent.Keyboard.ctrlKey(event);
           let enterKey = ReactEvent.Keyboard.which(event) == 13;
 
-          (metaKey || ctrlKey) && enterKey ? onSubmit(text) : ();
+          (metaKey || ctrlKey) && enterKey ? doSubmit() : ();
         }}
       />
-      <button
-        onClick={_ => Js.String.trim(text) == "" ? () : onSubmit(text)}>
+      <button onClick={_ => Js.String.trim(text) == "" ? () : doSubmit()}>
         {string({|Send|})}
       </button>
     </div>;
@@ -279,8 +283,7 @@ let make = (~client, ~pullRequests, ~myUsername, ~refresh, ~onHide) => {
             refresh(Some(UrqlClient.ClientTypes.partialOperationContext())),
           ),
         _,
-      )
-    ->ignore;
+      );
 
   let (selectedPullRequest, setSelectedPullRequest) =
     useState(() =>

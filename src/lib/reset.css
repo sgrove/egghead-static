@@ -237,10 +237,10 @@ video {
 .chat {
   width: 490px;
   float: left;
-  background: #F2F5F8;
+  background: #272727;
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;
-  color: #434651;
+  color: #d5d5d5;
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -272,16 +272,21 @@ video {
   margin-top: 12px;
 }
 .chat .chat-history {
-  padding: 30px 30px 20px;
+    padding: 30px 30px 20px;
   border-bottom: 2px solid white;
   overflow-y: scroll;
   flex: 100;
 }
+
+.chat .chat-history .chat-messages {
+    margin-bottom: 250px;
+}
+
 .chat .chat-history .message-data {
   margin-bottom: 15px;
 }
 .chat .chat-avatar {
-    width: 55px;
+    width: 25px;
     border-radius: 26px;
 }
 .chat .chat-history .message-data-time {
@@ -322,17 +327,18 @@ video {
   left: 93%;
 }
 .chat .chat-message {
-  padding: 12px;
-  flex: 1;
+    display: flex;
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
 }
+
 .chat .chat-message textarea {
-  width: 100%;
   border: none;
-  padding: 10px 20px;
   font: 14px/22px "Lato", Arial, sans-serif;
-  margin-bottom: 10px;
-  border-radius: 5px;
   resize: none;
+  width: 80%;
+  margin: 0px;
 }
 .chat .chat-message .fa-file-o, .chat .chat-message .fa-file-image-o {
   font-size: 16px;
@@ -348,6 +354,8 @@ video {
   cursor: pointer;
   font-weight: bold;
   background: #F2F5F8;
+  flex-grow: 1;
+  margin: 0px;
 }
 .chat .chat-message button:hover {
   color: #75b1e8;
@@ -393,4 +401,104 @@ video {
   content: " ";
   clear: both;
   height: 0;
+}
+
+/* Editor CSS */
+#eggy-editor-container {
+    display: flex;
+    background-color: white;
+    border: 1px solid rgb(204, 204, 204);
+    bottom: 0px;
+    left: 0px;
+    min-height: 250px;
+    overflow-x: scroll;
+    position: fixed;
+    opacity: 0.98;
+    width: 100%;
+    flex-direction: column;
+}
+
+#eggy-editor-container .editor-title {
+    background-color: #C4C4C4;
+    flex-grow: 0;
+    flex-shrink: 1;
+    display: flex;
+}
+
+#eggy-editor-container .tree {
+    color: #d5d5d5;
+    fill: white;
+    width: 100%;
+    max-height: 250px;
+    overflow: scroll;
+    max-width: 250px;
+};
+
+#eggy-editor-container .tree span {
+    fontSize: 2em;
+    verticalAlign: middle;
+}
+
+#eggy-editor-container .editor-title .lesson-title {
+    flex-grow: 0;
+    flex-shrink: 1;
+}
+
+#eggy-editor-container .editor-title .spacer {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+#eggy-editor-container .editor-title .chat-control {
+    flex-grow: 0;
+    flex-shrink: 1;
+}
+
+#eggy-editor-container .editor-body {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+#eggy-editor-container .editor-footer {
+    background-color: #C4C4C4;
+    flex-grow: 0;
+    flex-shrink: 1;
+}
+
+#eggy-editor-container .editor-body {
+    display: flex;
+    background-color: white;
+    border: 1px solid rgb(204, 204, 204);
+    bottom: 0px;
+    left: 0px;
+    opacity: 0.98;
+    width: 100%;
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+}
+
+#eggy-editor-container .tree {
+    min-width: 250px;
+    flex-grow: 0;
+    flex-shrink: 1;
+}
+
+#eggy-editor-container .editor {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+
+#eggy-editor-container .chat-open {
+    flex-grow: 0;
+    flex-shrink: 1;
+    width: 500px;
+    max-height: 250px;
+    overflow: hidden;
+    padding-left: 20px;
+    position: relative;
+}
+
+#eggy-editor-container .chat-closed {
+    display: none;
 }

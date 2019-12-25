@@ -2,7 +2,6 @@
 
 import * as Caml_array from "bs-platform/lib/es6/caml_array.js";
 import * as Belt_Option from "bs-platform/lib/es6/belt_Option.js";
-import * as Caml_option from "bs-platform/lib/es6/caml_option.js";
 
 function payload(jwt) {
   var pieces = jwt.split(".");
@@ -10,17 +9,24 @@ function payload(jwt) {
   return JSON.parse(atob(payload$1));
 }
 
-function findGitHubLogin($$default, jwt) {
+function findGitHubLogin(jwt) {
   var __x = jwt.user;
-  var __x$1 = Belt_Option.flatMap(__x === undefined ? undefined : Caml_option.some(__x), (function (user) {
-          return Caml_option.undefined_to_opt(user.gitHubLogin);
-        }));
-  return Belt_Option.getWithDefault(__x$1, $$default);
+  return Belt_Option.flatMap(__x, (function (user) {
+                return user.gitHubLogin;
+              }));
+}
+
+function avatarUrl(jwt) {
+  var __x = jwt.user;
+  return Belt_Option.flatMap(__x, (function (user) {
+                return user.avatarUrl;
+              }));
 }
 
 export {
   payload ,
   findGitHubLogin ,
+  avatarUrl ,
   
 }
 /* No side effect */

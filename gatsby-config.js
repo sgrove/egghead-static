@@ -3,7 +3,6 @@ require('dotenv').config({
 })
 
 module.exports = {
-  pathPrefix: 'learn',
   siteMetadata: {
     title: `egghead.io`,
     description: `Static version of egghead.io`,

@@ -1164,8 +1164,29 @@ var LoginGuard = {
 function CourseEditor(Props) {
   var course = Props.course;
   console.log("Course: ", course);
-  var match = Belt_List.fromArray(course.lessons);
-  if (match) {
+  var match = course.lessons;
+  var lessons = (match == null) ? /* array */[] : match;
+  var course_description = course.description;
+  var course_instructor = course.instructor;
+  var course_published_at = course.published_at;
+  var course_rating_count = course.rating_count;
+  var course_rating_out_of_5 = course.rating_out_of_5;
+  var course_square_cover_480_url = course.square_cover_480_url;
+  var course_summary = course.summary;
+  var course_title = course.title;
+  var course$1 = {
+    description: course_description,
+    instructor: course_instructor,
+    lessons: lessons,
+    published_at: course_published_at,
+    rating_count: course_rating_count,
+    rating_out_of_5: course_rating_out_of_5,
+    square_cover_480_url: course_square_cover_480_url,
+    summary: course_summary,
+    title: course_title
+  };
+  var match$1 = Belt_List.fromArray(lessons);
+  if (match$1) {
     if (Config$EggheadStatic.auth !== undefined && GraphQL$EggheadStatic.urqlClient !== undefined) {
       var client = Caml_option.valFromOption(GraphQL$EggheadStatic.urqlClient);
       return React.createElement(Urql.Provider, {
@@ -1173,7 +1194,7 @@ function CourseEditor(Props) {
                   children: React.createElement(CourseEditor$LoginGuard, {
                         auth: Caml_option.valFromOption(Config$EggheadStatic.auth),
                         client: client,
-                        course: course
+                        course: course$1
                       })
                 });
     } else {

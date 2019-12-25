@@ -312,6 +312,18 @@ module Egghead = {
     title: string,
   };
 
+  type courseWithNullableLessons = {
+    description: string,
+    instructor,
+    lessons: Js.Nullable.t(array(lesson)),
+    published_at: string,
+    rating_count: int,
+    rating_out_of_5: float,
+    square_cover_480_url: string,
+    summary: string,
+    title: string,
+  };
+
   let courseSlug = (course: course) =>
     course.title
     ->Js.String2.replaceByRe([%bs.re "/\W+/g"], "-")
@@ -1458,8 +1470,27 @@ module LoginGuard = {
 };
 
 [@react.component]
-let make = (~course: Egghead.course) => {
+let make = (~course: Egghead.courseWithNullableLessons) => {
   Js.log2("Course: ", course);
+  let lessons =
+    switch (Js.Nullable.toOption(course.lessons)) {
+    | None => [||]
+    | Some(lessons) => lessons
+    };
+
+  /* Protect our code from nullable lessons */
+  let course: Egghead.course = {
+    description: course.description,
+    instructor: course.instructor,
+    lessons,
+    published_at: course.published_at,
+    rating_count: course.rating_count,
+    rating_out_of_5: course.rating_out_of_5,
+    square_cover_480_url: course.square_cover_480_url,
+    summary: course.summary,
+    title: course.title,
+  };
+
   React.(
     switch (course.lessons->Belt.List.fromArray) {
     | [] => "No lessons"->string

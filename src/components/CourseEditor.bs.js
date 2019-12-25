@@ -888,7 +888,7 @@ function CourseEditor$Conversation(Props) {
   var username = Props.username;
   var onHide = Props.onHide;
   var request = GraphQL$EggheadStatic.SearchForPullRequestsQuery.make("repo:OneGraph/egghead-asciicasts-experiment [by " + (String(username) + "] in:title"), 100, /* () */0);
-  var match = Curry._5(ReasonUrql.Hooks.useQuery, request, /* NetworkOnly */971373850, undefined, undefined, /* () */0);
+  var match = Curry._4(ReasonUrql.Hooks.useQuery, request, /* NetworkOnly */971373850, undefined, /* () */0);
   var executeQuery = match[1];
   var response = match[0].response;
   console.log("Response: ", response);

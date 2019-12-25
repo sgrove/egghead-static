@@ -20,13 +20,13 @@ var urqlClient;
 
 if (Config$EggheadStatic.auth !== undefined) {
   var auth = Caml_option.valFromOption(Config$EggheadStatic.auth);
-  urqlClient = Caml_option.some(Curry._6(ReasonUrql.Client.make, Config$EggheadStatic.oneGraphUrl, /* FetchFn */Block.__(1, [(function (param) {
+  urqlClient = Caml_option.some(Curry._5(ReasonUrql.Client.make, Config$EggheadStatic.oneGraphUrl, /* FetchFn */Block.__(1, [(function (param) {
                   var match = OneGraphAuth.authHeaders(auth);
                   var headers = match !== undefined ? ({
                         Authorization: match
                       }) : undefined;
                   return Fetch.RequestInit.make(undefined, headers, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined)(/* () */0);
-                })]), undefined, undefined, undefined, /* () */0));
+                })]), undefined, undefined, /* () */0));
 } else {
   urqlClient = undefined;
 }

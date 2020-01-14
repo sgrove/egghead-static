@@ -623,7 +623,7 @@ module PullRequestPreparation = {
         }
         value={state.title}
       />
-      <h4> {string("Explanation of your change")} </h4>
+      <h4> {string("What did you change?")} </h4>
       <textarea
         onChange={event =>
           dispatch(SetBody(ReactEvent.Form.target(event)##value))

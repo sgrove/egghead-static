@@ -373,7 +373,7 @@ function CourseEditor$PullRequestPreparation(Props) {
                   onChange: (function ($$event) {
                       return Curry._1(dispatch, /* SetTitle */Block.__(0, [$$event.target.value]));
                     })
-                }), React.createElement("h4", undefined, "Explanation of your change"), React.createElement("textarea", {
+                }), React.createElement("h4", undefined, "What did you change?"), React.createElement("textarea", {
                   value: state.body,
                   onChange: (function ($$event) {
                       return Curry._1(dispatch, /* SetBody */Block.__(1, [$$event.target.value]));

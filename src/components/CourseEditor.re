@@ -278,7 +278,7 @@ module ReactDiffViewer = {
 };
 
 let repoOwner = "eggheadio";
-let repoName = "egghead-static";
+let repoName = "egghead-asciicasts";
 
 module Egghead = {
   type transcript = {
@@ -829,7 +829,8 @@ module Editor = {
       | Some(username) =>
         let request =
           GraphQL.SearchForPullRequestsQuery.make(
-            ~query={j|repo:eggheadio/egghead-static [by $username] in:title|j},
+            ~query=
+              {j|repo:eggheadio/egghead-asciicasts [by $username] in:title|j},
             ~last=100,
             (),
           );
@@ -1177,7 +1178,7 @@ module Conversation = {
     open ReasonUrql.Hooks;
     let request =
       GraphQL.SearchForPullRequestsQuery.make(
-        ~query={j|repo:eggheadio/egghead-static [by $username] in:title|j},
+        ~query={j|repo:eggheadio/egghead-asciicasts [by $username] in:title|j},
         ~last=100,
         (),
       );

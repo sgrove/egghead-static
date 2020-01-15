@@ -161,7 +161,7 @@ var ReactDiffViewer = { };
 
 var repoOwner = "eggheadio";
 
-var repoName = "egghead-static";
+var repoName = "egghead-asciicasts";
 
 function courseSlug(course) {
   return course.title.replace((/\W+/g), "-").toLocaleLowerCase();
@@ -560,7 +560,7 @@ function CourseEditor$Editor(Props) {
   React.useEffect((function () {
           var match = OneJwt$EggheadStatic.findGitHubLogin(jwtMe);
           if (match !== undefined) {
-            var request = GraphQL$EggheadStatic.SearchForPullRequestsQuery.make("repo:eggheadio/egghead-static [by " + (String(match) + "] in:title"), 100, /* () */0);
+            var request = GraphQL$EggheadStatic.SearchForPullRequestsQuery.make("repo:eggheadio/egghead-asciicasts [by " + (String(match) + "] in:title"), 100, /* () */0);
             Wonka.subscribe((function (data) {
                       var match = data.response;
                       if (typeof match === "number" || match.tag) {
@@ -887,7 +887,7 @@ function CourseEditor$Conversation(Props) {
   var client = Props.client;
   var username = Props.username;
   var onHide = Props.onHide;
-  var request = GraphQL$EggheadStatic.SearchForPullRequestsQuery.make("repo:eggheadio/egghead-static [by " + (String(username) + "] in:title"), 100, /* () */0);
+  var request = GraphQL$EggheadStatic.SearchForPullRequestsQuery.make("repo:eggheadio/egghead-asciicasts [by " + (String(username) + "] in:title"), 100, /* () */0);
   var match = Curry._4(ReasonUrql.Hooks.useQuery, request, /* NetworkOnly */971373850, undefined, /* () */0);
   var executeQuery = match[1];
   var response = match[0].response;

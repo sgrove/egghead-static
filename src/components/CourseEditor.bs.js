@@ -221,8 +221,36 @@ var textEditorStyle = {
   width: "100%"
 };
 
+function findSourceRepositoryId(client, repoOwner, repoName) {
+  return $$Promise.flatMap(GraphQL$EggheadStatic.query(client, GraphQL$EggheadStatic.FindSourceRepositoryIdQuery.make(repoOwner, repoName, /* () */0), /* CacheFirst */973529774, /* () */0), (function (data) {
+                if (data.tag) {
+                  console.warn("Error for findSourceRepositoryId promise: ", data[0]);
+                  return $$Promise.resolved(/* Error */Block.__(1, ["Unknown error for findSourceRepositoryId"]));
+                } else {
+                  var match = data[0].response;
+                  if (typeof match === "number") {
+                    return $$Promise.resolved(/* Error */Block.__(1, ["Not found"]));
+                  } else if (match.tag) {
+                    return $$Promise.resolved(/* Error */Block.__(1, ["Error getting data response for findSourceRepositoryId"]));
+                  } else {
+                    var sourceRepositoryId = Belt_Option.map(Belt_Option.flatMap(match[0].gitHub, (function (gitHub) {
+                                return gitHub.repository;
+                              })), (function (repo) {
+                            return repo.id;
+                          }));
+                    if (sourceRepositoryId !== undefined) {
+                      return $$Promise.resolved(/* Ok */Block.__(0, [sourceRepositoryId]));
+                    } else {
+                      return $$Promise.resolved(/* Error */Block.__(1, ["Couldn\'t find source repository: " + (String(repoOwner) + ("/" + (String(repoName) + "")))]));
+                    }
+                  }
+                }
+              }));
+}
+
 function checkDoIHaveARepo(client, repoName, username) {
-  return $$Promise.flatMap(GraphQL$EggheadStatic.query(client, GraphQL$EggheadStatic.DoIHaveARepoQuery.make(username, repoName, /* () */0), undefined, /* () */0), (function (data) {
+  return $$Promise.flatMap(GraphQL$EggheadStatic.query(client, GraphQL$EggheadStatic.DoIHaveARepoQuery.make(username, repoName, /* () */0), /* NetworkOnly */971373850, /* () */0), (function (data) {
+                console.log("CheckDoIHaveARepo made proegresse");
                 if (data.tag) {
                   console.warn("Error for getFileSha promise: ", data[0]);
                   return $$Promise.resolved(false);
@@ -288,28 +316,46 @@ function upsertFileContent(client, repoOwner, repoName, branchName, filePath, co
 }
 
 function submitPr(client, branchName, title, body, editedContent, filePath, sha, username, frontMatter) {
+  console.log("SubmitPR: ", {
+        branchName: branchName,
+        title: title,
+        body: body,
+        editedContent: editedContent,
+        filePath: filePath,
+        sha: sha,
+        username: username,
+        frontMatter: frontMatter
+      });
   var masterFilePath = "master:" + (String(filePath) + "");
   var branchFilePath = "" + (String(branchName) + (":" + (String(filePath) + "")));
-  var mutationRequests_000 = function (param) {
-    return GraphQL$EggheadStatic.mutation(client, GraphQL$EggheadStatic.CreateBranchMutation.make(username, repoName, branchName, /* () */0), "Error creating branch for PR");
-  };
-  var mutationRequests_001 = /* :: */[
-    (function (param) {
-        return GraphQL$EggheadStatic.mutation(client, GraphQL$EggheadStatic.UpdateFileContentMutation.make(username, repoName, branchName, filePath, "Updated " + filePath, editedContent, sha, /* () */0), "Error updating file content");
-      }),
-    /* :: */[
-      (function (param) {
-          var frontMatterContent = JSON.stringify(frontMatter, null, 2);
-          var frontMatterText = "---\n" + (String(frontMatterContent) + "\n---");
-          return GraphQL$EggheadStatic.mutation(client, GraphQL$EggheadStatic.CreatePullRequestMutation.make(username, repoName, branchName, title + ("[by " + (username + "]")), "" + (String(frontMatterText) + ("\n\n" + (String(body) + ""))), "master", /* () */0), "Error creating PullRequest");
-        }),
-      /* [] */0
-    ]
-  ];
-  var mutationRequests = /* :: */[
-    mutationRequests_000,
-    mutationRequests_001
-  ];
+  var sourceRepositoryId = findSourceRepositoryId(client, repoOwner, repoName);
+  var mutationRequests = $$Promise.flatMap(sourceRepositoryId, (function (repoId) {
+          if (repoId.tag) {
+            console.warn("Error finding source repository: ", repoId[0]);
+            return $$Promise.resolved(undefined);
+          } else {
+            var repoId$1 = repoId[0];
+            return $$Promise.resolved(/* :: */[
+                        (function (param) {
+                            return GraphQL$EggheadStatic.mutation(client, GraphQL$EggheadStatic.CreateBranchMutation.make(username, repoName, branchName, /* () */0), "Error creating branch for PR");
+                          }),
+                        /* :: */[
+                          (function (param) {
+                              return GraphQL$EggheadStatic.mutation(client, GraphQL$EggheadStatic.UpdateFileContentMutation.make(username, repoName, branchName, filePath, "Updated " + filePath, editedContent, sha, /* () */0), "Error updating file content");
+                            }),
+                          /* :: */[
+                            (function (param) {
+                                var frontMatterContent = JSON.stringify(frontMatter, null, 2);
+                                var frontMatterText = "---\n" + (String(frontMatterContent) + "\n---");
+                                var headRefName = "" + (String(username) + (":" + (String(branchName) + "")));
+                                return GraphQL$EggheadStatic.mutation(client, GraphQL$EggheadStatic.CreatePullRequestMutation.make(repoId$1, title + ("[by " + (username + "]")), headRefName, "master", "" + (String(frontMatterText) + ("\n\n" + (String(body) + ""))), /* () */0), "Error creating PullRequest");
+                              }),
+                            /* [] */0
+                          ]
+                        ]
+                      ]);
+          }
+        }));
   var ensureIHaveARepo = $$Promise.map(checkDoIHaveARepo(client, repoName, username), (function (value) {
           if (value) {
             return $$Promise.resolved(/* () */0);
@@ -372,7 +418,13 @@ function submitPr(client, branchName, title, body, editedContent, filePath, sha,
                 if (result.tag) {
                   return $$Promise.resolved(/* Error */Block.__(1, [result[0]]));
                 } else {
-                  return GraphQL$EggheadStatic.chain(mutationRequests);
+                  return $$Promise.flatMap(mutationRequests, (function (r) {
+                                if (r !== undefined) {
+                                  return GraphQL$EggheadStatic.chain(r);
+                                } else {
+                                  return $$Promise.resolved(/* Error */Block.__(1, ["No mutation chain to run"]));
+                                }
+                              }));
                 }
               }));
 }
@@ -481,8 +533,8 @@ function CourseEditor$PullRequestPreparation(Props) {
                   };
           }
         }), {
-        title: "",
-        body: ""
+        title: "Test",
+        body: "Test"
       });
   var dispatch = match[1];
   var state = match[0];
@@ -515,7 +567,9 @@ function CourseEditor$PullRequestPreparation(Props) {
                         username: username,
                         sha: sha
                       };
+                      console.log("Submitting...");
                       var submitPromise = submitPr(client, toBranchName(state.title, username), state.title, state.body, editedText, filePath, sha, username, frontMatter);
+                      console.log("SubmitPromise...", submitPromise);
                       $$Promise.map(submitPromise, (function (result) {
                               var tmp;
                               if (result.tag) {
@@ -1349,6 +1403,7 @@ export {
   activeEditorStyle ,
   inactiveEditorStyle ,
   textEditorStyle ,
+  findSourceRepositoryId ,
   checkDoIHaveARepo ,
   forkRepo ,
   getFileShaAndContent ,

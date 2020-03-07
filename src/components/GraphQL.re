@@ -38,30 +38,29 @@ module FindSourceRepositoryIdQuery = [%graphql
 
 module GetFileShaAndContentQuery = [%graphql
   {|query GetFileSha($repoName: String!, $repoOwner: String!, $branchAndFilePath: String!) {
-            gitHub {
-              repository(name: $repoName, owner: $repoOwner) {
-                object_: object(expression: $branchAndFilePath) {
-                  ... on GitHubBlob {
-                    oid
-                    text
-                  }
-                }
-              }
-            }
-          }|}
+  gitHub {
+    repository(name: $repoName, owner: $repoOwner) {
+      object_: object(expression: $branchAndFilePath) {
+        ... on GitHubBlob {
+          oid
+          text
+        }
+      }
+    }
+  }
+}|}
 ];
 
 module ForkGitHubRepoMutation = [%graphql
-  {|
-       mutation ForkGitHubRepoMutation($repoOwner: String!, $repoName: String!) {
-         gitHub {
-           createFork_oneGraph(input: {repoOwner: $repoOwner, repoName: $repoName}) {
-             repository {
-               nameWithOwner
-             }
-           }
-         }
-       }
+  {|mutation ForkGitHubRepoMutation($repoOwner: String!, $repoName: String!) {
+    gitHub {
+      createFork_oneGraph(input: {repoOwner: $repoOwner, repoName: $repoName}) {
+        repository {
+          nameWithOwner
+        }
+      }
+    }
+  }
 |}
 ];
 
@@ -131,33 +130,35 @@ module UpdateFileContentMutation = [%graphql
 ];
 
 module CreatePullRequestMutation = [%graphql
-  {|mutation CreatePullRequestMutation(
-       $repoOwner: String!
-       $repoName: String!
-       $sourceBranch: String!
-       $title: String!
-       $body: String
-       $destinationBranch: String
-     ) {
-       gitHub {
-         createPullRequest_oneGraph(
-           input: {
-             sourceBranch: $sourceBranch
-             title: $title
-             repoName: $repoName
-             repoOwner: $repoOwner
-             body: $body
-             destinationBranch: $destinationBranch
-           }
-         ) {
-           pullRequest {
-             id
-             number
-             title
-           }
-         }
-       }
-     }|}
+  {|
+mutation CreatePullRequestMutation(
+  $repoId: ID!
+  $title: String!
+  $headRefName: String!
+  $baseRefName: String!
+  $body: String!
+) {
+  gitHub {
+    createPullRequest(
+      input: {
+        title: $title
+        headRefName: $headRefName
+        baseRefName: $baseRefName
+        repositoryId: $repoId
+        maintainerCanModify: true
+        body: $body
+      }
+    ) {
+      pullRequest {
+        url
+        id
+        number
+        title
+        permalink
+      }
+    }
+  }
+}|}
 ];
 
 module AddLabelsToPullRequestMutation = [%graphql
@@ -400,9 +401,8 @@ let query =
     );
 
   ReasonUrql.Client.executeQuery(~client, ~request, ~opts, ())
-  ->Wonka.toPromise
-  ->Promise.Js.fromBsPromise
-  ->Promise.Js.get(response => {resolve(Ok(response))});
+  |> Wonka.subscribe((. data) => resolve(Ok(data)))
+  |> ignore;
 
   p;
 };

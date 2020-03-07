@@ -1095,7 +1095,7 @@ var UpdateFileContentMutation = {
   MT_Ret: MT_Ret$5
 };
 
-var ppx_printed_query$6 = "mutation CreatePullRequestMutation($repoOwner: String!, $repoName: String!, $sourceBranch: String!, $title: String!, $body: String, $destinationBranch: String)  {\ngitHub  {\ncreatePullRequest_oneGraph(input: {sourceBranch: $sourceBranch, title: $title, repoName: $repoName, repoOwner: $repoOwner, body: $body, destinationBranch: $destinationBranch})  {\npullRequest  {\nid  \nnumber  \ntitle  \n}\n\n}\n\n}\n\n}\n";
+var ppx_printed_query$6 = "mutation CreatePullRequestMutation($repoId: ID!, $title: String!, $headRefName: String!, $baseRefName: String!, $body: String!)  {\ngitHub  {\ncreatePullRequest(input: {title: $title, headRefName: $headRefName, baseRefName: $baseRefName, repositoryId: $repoId, maintainerCanModify: true, body: $body})  {\npullRequest  {\nurl  \nid  \nnumber  \ntitle  \npermalink  \n}\n\n}\n\n}\n\n}\n";
 
 function parse$6(value) {
   var value$1 = Js_option.getExn(Js_json.decodeObject(value));
@@ -1108,57 +1108,89 @@ function parse$6(value) {
       tmp = undefined;
     } else {
       var value$3 = Js_option.getExn(Js_json.decodeObject(value$2));
-      var match$2 = Js_dict.get(value$3, "createPullRequest_oneGraph");
+      var match$2 = Js_dict.get(value$3, "createPullRequest");
       var tmp$1;
       if (match$2 !== undefined) {
-        var value$4 = Js_option.getExn(Js_json.decodeObject(Caml_option.valFromOption(match$2)));
-        var match$3 = Js_dict.get(value$4, "pullRequest");
-        var tmp$2;
+        var value$4 = Caml_option.valFromOption(match$2);
+        var match$3 = Js_json.decodeNull(value$4);
         if (match$3 !== undefined) {
-          var value$5 = Js_option.getExn(Js_json.decodeObject(Caml_option.valFromOption(match$3)));
-          var match$4 = Js_dict.get(value$5, "id");
-          var tmp$3;
+          tmp$1 = undefined;
+        } else {
+          var value$5 = Js_option.getExn(Js_json.decodeObject(value$4));
+          var match$4 = Js_dict.get(value$5, "pullRequest");
+          var tmp$2;
           if (match$4 !== undefined) {
             var value$6 = Caml_option.valFromOption(match$4);
-            var match$5 = Js_json.decodeString(value$6);
-            tmp$3 = match$5 !== undefined ? match$5 : Js_exn.raiseError("graphql_ppx: Expected string, got " + JSON.stringify(value$6));
+            var match$5 = Js_json.decodeNull(value$6);
+            if (match$5 !== undefined) {
+              tmp$2 = undefined;
+            } else {
+              var value$7 = Js_option.getExn(Js_json.decodeObject(value$6));
+              var match$6 = Js_dict.get(value$7, "url");
+              var tmp$3;
+              if (match$6 !== undefined) {
+                var value$8 = Caml_option.valFromOption(match$6);
+                var match$7 = Js_json.decodeString(value$8);
+                tmp$3 = match$7 !== undefined ? match$7 : Js_exn.raiseError("graphql_ppx: Expected string, got " + JSON.stringify(value$8));
+              } else {
+                tmp$3 = Js_exn.raiseError("graphql_ppx: Field url on type GitHubPullRequest is missing");
+              }
+              var match$8 = Js_dict.get(value$7, "id");
+              var tmp$4;
+              if (match$8 !== undefined) {
+                var value$9 = Caml_option.valFromOption(match$8);
+                var match$9 = Js_json.decodeString(value$9);
+                tmp$4 = match$9 !== undefined ? match$9 : Js_exn.raiseError("graphql_ppx: Expected string, got " + JSON.stringify(value$9));
+              } else {
+                tmp$4 = Js_exn.raiseError("graphql_ppx: Field id on type GitHubPullRequest is missing");
+              }
+              var match$10 = Js_dict.get(value$7, "number");
+              var tmp$5;
+              if (match$10 !== undefined) {
+                var value$10 = Caml_option.valFromOption(match$10);
+                var match$11 = Js_json.decodeNumber(value$10);
+                tmp$5 = match$11 !== undefined ? match$11 | 0 : Js_exn.raiseError("graphql_ppx: Expected int, got " + JSON.stringify(value$10));
+              } else {
+                tmp$5 = Js_exn.raiseError("graphql_ppx: Field number on type GitHubPullRequest is missing");
+              }
+              var match$12 = Js_dict.get(value$7, "title");
+              var tmp$6;
+              if (match$12 !== undefined) {
+                var value$11 = Caml_option.valFromOption(match$12);
+                var match$13 = Js_json.decodeString(value$11);
+                tmp$6 = match$13 !== undefined ? match$13 : Js_exn.raiseError("graphql_ppx: Expected string, got " + JSON.stringify(value$11));
+              } else {
+                tmp$6 = Js_exn.raiseError("graphql_ppx: Field title on type GitHubPullRequest is missing");
+              }
+              var match$14 = Js_dict.get(value$7, "permalink");
+              var tmp$7;
+              if (match$14 !== undefined) {
+                var value$12 = Caml_option.valFromOption(match$14);
+                var match$15 = Js_json.decodeString(value$12);
+                tmp$7 = match$15 !== undefined ? match$15 : Js_exn.raiseError("graphql_ppx: Expected string, got " + JSON.stringify(value$12));
+              } else {
+                tmp$7 = Js_exn.raiseError("graphql_ppx: Field permalink on type GitHubPullRequest is missing");
+              }
+              tmp$2 = {
+                url: tmp$3,
+                id: tmp$4,
+                number: tmp$5,
+                title: tmp$6,
+                permalink: tmp$7
+              };
+            }
           } else {
-            tmp$3 = Js_exn.raiseError("graphql_ppx: Field id on type GitHubPullRequest is missing");
+            tmp$2 = undefined;
           }
-          var match$6 = Js_dict.get(value$5, "number");
-          var tmp$4;
-          if (match$6 !== undefined) {
-            var value$7 = Caml_option.valFromOption(match$6);
-            var match$7 = Js_json.decodeNumber(value$7);
-            tmp$4 = match$7 !== undefined ? match$7 | 0 : Js_exn.raiseError("graphql_ppx: Expected int, got " + JSON.stringify(value$7));
-          } else {
-            tmp$4 = Js_exn.raiseError("graphql_ppx: Field number on type GitHubPullRequest is missing");
-          }
-          var match$8 = Js_dict.get(value$5, "title");
-          var tmp$5;
-          if (match$8 !== undefined) {
-            var value$8 = Caml_option.valFromOption(match$8);
-            var match$9 = Js_json.decodeString(value$8);
-            tmp$5 = match$9 !== undefined ? match$9 : Js_exn.raiseError("graphql_ppx: Expected string, got " + JSON.stringify(value$8));
-          } else {
-            tmp$5 = Js_exn.raiseError("graphql_ppx: Field title on type GitHubPullRequest is missing");
-          }
-          tmp$2 = {
-            id: tmp$3,
-            number: tmp$4,
-            title: tmp$5
+          tmp$1 = {
+            pullRequest: tmp$2
           };
-        } else {
-          tmp$2 = Js_exn.raiseError("graphql_ppx: Field pullRequest on type GitHubCreatePullRequest_oneGraphResponsePayload is missing");
         }
-        tmp$1 = {
-          pullRequest: tmp$2
-        };
       } else {
-        tmp$1 = Js_exn.raiseError("graphql_ppx: Field createPullRequest_oneGraph on type GitHubMutation is missing");
+        tmp$1 = undefined;
       }
       tmp = {
-        createPullRequest_oneGraph: tmp$1
+        createPullRequest: tmp$1
       };
     }
   } else {
@@ -1169,33 +1201,29 @@ function parse$6(value) {
         };
 }
 
-function make$6(repoOwner, repoName, sourceBranch, title, body, destinationBranch, param) {
+function make$6(repoId, title, headRefName, baseRefName, body, param) {
   return {
           query: ppx_printed_query$6,
           variables: Js_dict.fromArray([
                   /* tuple */[
-                    "repoOwner",
-                    repoOwner
-                  ],
-                  /* tuple */[
-                    "repoName",
-                    repoName
-                  ],
-                  /* tuple */[
-                    "sourceBranch",
-                    sourceBranch
+                    "repoId",
+                    repoId
                   ],
                   /* tuple */[
                     "title",
                     title
                   ],
                   /* tuple */[
-                    "body",
-                    body !== undefined ? body : null
+                    "headRefName",
+                    headRefName
                   ],
                   /* tuple */[
-                    "destinationBranch",
-                    destinationBranch !== undefined ? destinationBranch : null
+                    "baseRefName",
+                    baseRefName
+                  ],
+                  /* tuple */[
+                    "body",
+                    body
                   ]
                 ].filter((function (param) {
                       return !Js_json.test(param[1], /* Null */5);
@@ -1205,38 +1233,33 @@ function make$6(repoOwner, repoName, sourceBranch, title, body, destinationBranc
 }
 
 function makeWithVariables$6(variables) {
-  var repoOwner = variables.repoOwner;
-  var repoName = variables.repoName;
-  var sourceBranch = variables.sourceBranch;
+  var repoId = variables.repoId;
   var title = variables.title;
+  var headRefName = variables.headRefName;
+  var baseRefName = variables.baseRefName;
   var body = variables.body;
-  var destinationBranch = variables.destinationBranch;
   return {
           query: ppx_printed_query$6,
           variables: Js_dict.fromArray([
                   /* tuple */[
-                    "repoOwner",
-                    repoOwner
-                  ],
-                  /* tuple */[
-                    "repoName",
-                    repoName
-                  ],
-                  /* tuple */[
-                    "sourceBranch",
-                    sourceBranch
+                    "repoId",
+                    repoId
                   ],
                   /* tuple */[
                     "title",
                     title
                   ],
                   /* tuple */[
-                    "body",
-                    body !== undefined ? body : null
+                    "headRefName",
+                    headRefName
                   ],
                   /* tuple */[
-                    "destinationBranch",
-                    destinationBranch !== undefined ? destinationBranch : null
+                    "baseRefName",
+                    baseRefName
+                  ],
+                  /* tuple */[
+                    "body",
+                    body
                   ]
                 ].filter((function (param) {
                       return !Js_json.test(param[1], /* Null */5);
@@ -1245,62 +1268,54 @@ function makeWithVariables$6(variables) {
         };
 }
 
-function makeVariables$6(repoOwner, repoName, sourceBranch, title, body, destinationBranch, param) {
+function makeVariables$6(repoId, title, headRefName, baseRefName, body, param) {
   return Js_dict.fromArray([
                 /* tuple */[
-                  "repoOwner",
-                  repoOwner
-                ],
-                /* tuple */[
-                  "repoName",
-                  repoName
-                ],
-                /* tuple */[
-                  "sourceBranch",
-                  sourceBranch
+                  "repoId",
+                  repoId
                 ],
                 /* tuple */[
                   "title",
                   title
                 ],
                 /* tuple */[
-                  "body",
-                  body !== undefined ? body : null
+                  "headRefName",
+                  headRefName
                 ],
                 /* tuple */[
-                  "destinationBranch",
-                  destinationBranch !== undefined ? destinationBranch : null
+                  "baseRefName",
+                  baseRefName
+                ],
+                /* tuple */[
+                  "body",
+                  body
                 ]
               ].filter((function (param) {
                     return !Js_json.test(param[1], /* Null */5);
                   })));
 }
 
-function definition_002$6(graphql_ppx_use_json_variables_fn, repoOwner, repoName, sourceBranch, title, body, destinationBranch, param) {
+function definition_002$6(graphql_ppx_use_json_variables_fn, repoId, title, headRefName, baseRefName, body, param) {
   return Curry._1(graphql_ppx_use_json_variables_fn, Js_dict.fromArray([
                     /* tuple */[
-                      "repoOwner",
-                      repoOwner
-                    ],
-                    /* tuple */[
-                      "repoName",
-                      repoName
-                    ],
-                    /* tuple */[
-                      "sourceBranch",
-                      sourceBranch
+                      "repoId",
+                      repoId
                     ],
                     /* tuple */[
                       "title",
                       title
                     ],
                     /* tuple */[
-                      "body",
-                      body !== undefined ? body : null
+                      "headRefName",
+                      headRefName
                     ],
                     /* tuple */[
-                      "destinationBranch",
-                      destinationBranch !== undefined ? destinationBranch : null
+                      "baseRefName",
+                      baseRefName
+                    ],
+                    /* tuple */[
+                      "body",
+                      body
                     ]
                   ].filter((function (param) {
                         return !Js_json.test(param[1], /* Null */5);
@@ -3136,9 +3151,9 @@ function query(client, request, $staropt$star, param) {
   var opts = {
     requestPolicy: cachePolicy
   };
-  $$Promise.Js.get($$Promise.Js.fromBsPromise(Wonka.toPromise(Curry._4(ReasonUrql.Client.executeQuery, client, request, Caml_option.some(opts), /* () */0))), (function (response) {
-          return Curry._1(resolve, /* Ok */Block.__(0, [response]));
-        }));
+  Wonka.subscribe((function (data) {
+            return Curry._1(resolve, /* Ok */Block.__(0, [data]));
+          }))(Curry._4(ReasonUrql.Client.executeQuery, client, request, Caml_option.some(opts), /* () */0));
   return match[0];
 }
 

@@ -392,14 +392,61 @@ let inactiveEditorStyle =
 let textEditorStyle =
   ReactDOMRe.Style.make(~width="100%", ~height="20ch", ~fontSize="2em", ());
 
+let findSourceRepositoryId = (~client, ~repoOwner, ~repoName) => {
+  GraphQL.query(
+    ~client,
+    ~request=
+      GraphQL.FindSourceRepositoryIdQuery.make(~repoOwner, ~repoName, ()),
+    ~cachePolicy=`CacheFirst,
+    (),
+  )
+  ->Promise.flatMap(data => {
+      ReasonUrql.Client.(
+        switch (data) {
+        | Ok(data) =>
+          switch (data.response) {
+          | Data(data) =>
+            let sourceRepositoryId =
+              data##gitHub
+              ->Belt.Option.flatMap(gitHub => gitHub##repository)
+              ->Belt.Option.map(repo => repo##id);
+
+            switch (sourceRepositoryId) {
+            | Some(id) => Promise.resolved(Ok(id))
+            | None =>
+              Promise.resolved(
+                Error(
+                  {j|Couldn't find source repository: $repoOwner/$repoName|j},
+                ),
+              )
+            };
+
+          | Error(_err) =>
+            Promise.resolved(
+              Error("Error getting data response for findSourceRepositoryId"),
+            )
+          | NotFound => Promise.resolved(Error("Not found"))
+          }
+        | Error(err) =>
+          Js.Console.warn2("Error for findSourceRepositoryId promise: ", err);
+          Promise.resolved(
+            Error("Unknown error for findSourceRepositoryId"),
+          );
+        }
+      )
+    });
+};
+
 let checkDoIHaveARepo = (~client, ~repoName, ~username) => {
   GraphQL.query(
     ~client,
     ~request=
       GraphQL.DoIHaveARepoQuery.make(~repoOwner=username, ~repoName, ()),
+    ~cachePolicy=`NetworkOnly,
     (),
   )
   ->Promise.flatMap(data => {
+      Js.log("CheckDoIHaveARepo made proegresse");
       ReasonUrql.Client.(
         switch (data) {
         | Ok(data) =>
@@ -422,7 +469,7 @@ let checkDoIHaveARepo = (~client, ~repoName, ~username) => {
           Js.Console.warn2("Error for getFileSha promise: ", err);
           Promise.resolved(false);
         }
-      )
+      );
     });
 };
 
@@ -511,6 +558,17 @@ let upsertFileContent =
   );
 };
 
+type submitPrTemp = {
+  branchName: string,
+  title: string,
+  body: string,
+  editedContent: string,
+  filePath: string,
+  sha: string,
+  username: string,
+  frontMatter,
+};
+
 let submitPr =
     (
       ~client,
@@ -535,60 +593,92 @@ let submitPr =
      5. AddLabelsToPullRequestMutation
    */
 
+  Js.log2(
+    "SubmitPR: ",
+    {
+      branchName,
+      title,
+      body,
+      editedContent,
+      filePath,
+      sha,
+      username,
+      frontMatter,
+    },
+  );
+
   let masterFilePath = {j|master:$filePath|j};
   let branchFilePath = {j|$branchName:$filePath|j};
 
+  let sourceRepositoryId =
+    findSourceRepositoryId(~client, ~repoName, ~repoOwner);
+
   let mutationRequests =
-    GraphQL.[
-      () =>
-        mutation(
-          ~client,
-          CreateBranchMutation.make(
-            ~repoOwner=username,
-            ~repoName,
-            ~branchName,
-            (),
-          ),
-          "Error creating branch for PR",
-        ),
-      () =>
-        mutation(
-          ~client,
-          UpdateFileContentMutation.make(
-            ~repoOwner=username,
-            ~repoName,
-            ~branchName,
-            ~path=filePath,
-            ~message="Updated " ++ filePath,
-            ~content=editedContent,
-            ~sha,
-            (),
-          ),
-          "Error updating file content",
-        ),
-      () => {
-        let frontMatterContent =
-          frontMatter->prettyStringify(Js.Nullable.null, 2);
-        let frontMatterText = {j|---
+    sourceRepositoryId->Promise.flatMap(repoId => {
+      switch (repoId) {
+      | Error(err) =>
+        Js.Console.warn2("Error finding source repository: ", err);
+        Promise.resolved(None);
+      | Ok(repoId) =>
+        Promise.resolved(
+          Some(
+            GraphQL.[
+              () =>
+                mutation(
+                  ~client,
+                  CreateBranchMutation.make(
+                    ~repoOwner=username,
+                    ~repoName,
+                    ~branchName,
+                    (),
+                  ),
+                  "Error creating branch for PR",
+                ),
+              () =>
+                mutation(
+                  ~client,
+                  UpdateFileContentMutation.make(
+                    ~repoOwner=username,
+                    ~repoName,
+                    ~branchName,
+                    ~path=filePath,
+                    ~message="Updated " ++ filePath,
+                    ~content=editedContent,
+                    ~sha,
+                    (),
+                  ),
+                  "Error updating file content",
+                ),
+              () => {
+                let frontMatterContent =
+                  frontMatter->prettyStringify(Js.Nullable.null, 2);
+                let frontMatterText = {j|---
 $frontMatterContent
 ---|j};
-        mutation(
-          ~client,
-          CreatePullRequestMutation.make(
-            ~repoOwner=username,
-            ~repoName,
-            ~sourceBranch=branchName,
-            ~destinationBranch="master",
-            ~title=title ++ "[by " ++ username ++ "]",
-            ~body={j|$frontMatterText
+
+                let headRefName = {j|$username:$branchName|j};
+                let baseRefName = "master";
+
+                mutation(
+                  ~client,
+                  CreatePullRequestMutation.make(
+                    ~repoId,
+                    ~headRefName,
+                    ~baseRefName,
+                    ~title=title ++ "[by " ++ username ++ "]",
+                    ~body={j|$frontMatterText
 
 $body|j},
-            (),
+                    (),
+                  ),
+                  "Error creating PullRequest",
+                );
+              },
+            ],
           ),
-          "Error creating PullRequest",
-        );
-      },
-    ];
+        )
+      }
+    });
 
   let ensureIHaveARepo =
     checkDoIHaveARepo(~client, ~repoName, ~username)
@@ -625,19 +715,19 @@ $body|j},
   let prepareSyncedFileStartingContents =
     currentFileInfo->Promise.flatMap(fileInfo => {
       /* It's possible that the file on our forked branch is out of date from the
-               file on master:
+         file on master:
 
-               imagine we forked the source repo a long time ago, and
-               many edits have been made to every file on the source repo since then.
-               Our fork of the repo will have old files, and so if we create a branch
-               from our master and try to merge, it'll cause a conflict.
+         imagine we forked the source repo a long time ago, and
+         many edits have been made to every file on the source repo since then.
+         Our fork of the repo will have old files, and so if we create a branch
+         from our master and try to merge, it'll cause a conflict.
 
-               To avoid this, we check if the source repo file and our fork file are the
-               same - if not, we copy the source repo file over our file on master as
-               one commit (so now the PR would be a no-op), and *then* copy our newly
-               updated file.
+         To avoid this, we check if the source repo file and our fork file are the
+         same - if not, we copy the source repo file over our file on master as
+         one commit (so now the PR would be a no-op), and *then* copy our newly
+         updated file.
 
-               Now the PR will only show the actual diff that we intended.
+         Now the PR will only show the actual diff that we intended.
 
          */
       let needToSyncFileVersions =
@@ -669,7 +759,13 @@ $body|j},
       switch (result) {
       | Ok () =>
         /* File versions are sync, and we can proceed with creating the branch and PR */
-        GraphQL.chain(mutationRequests)
+        mutationRequests->Promise.flatMap(r =>
+          switch (r) {
+          | Some(chain) => GraphQL.chain(chain)
+          | None => Promise.resolved(Error("No mutation chain to run"))
+          }
+        )
+
       | Error(err) => Promise.resolved(Error(err))
       }
     });
@@ -813,7 +909,7 @@ module PullRequestPreparation = {
           | SetTitle(title) => {...state, title}
           | SetBody(body) => {...state, body}
           },
-        {title: "", body: ""},
+        {title: "Test", body: "Test"},
       );
 
     <div
@@ -845,6 +941,7 @@ module PullRequestPreparation = {
       <button
         onClick={_ => {
           let frontMatter = {lessonId, filePath, sha, username};
+          Js.log("Submitting...");
           let submitPromise =
             submitPr(
               ~client,
@@ -857,8 +954,9 @@ module PullRequestPreparation = {
               ~filePath,
               ~frontMatter,
             );
+
+          Js.log2("SubmitPromise...", submitPromise);
           submitPromise
-          /* onClose()->Js.Promise.resolve; */
           ->Promise.map((result: GraphQL.mutationChainResult) => {
               (
                 switch (result) {

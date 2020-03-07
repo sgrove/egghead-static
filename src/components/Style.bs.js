@@ -25,8 +25,7 @@ function Style$MessageCompose(Props) {
                       var metaKey = $$event.metaKey;
                       var ctrlKey = $$event.ctrlKey;
                       var enterKey = $$event.which === 13;
-                      var match = (metaKey || ctrlKey) && enterKey;
-                      if (match) {
+                      if ((metaKey || ctrlKey) && enterKey) {
                         return Curry._1(onSubmit, text);
                       } else {
                         return /* () */0;
@@ -37,8 +36,7 @@ function Style$MessageCompose(Props) {
                     })
                 }), React.createElement("button", {
                   onClick: (function (param) {
-                      var match = text.trim() === "";
-                      if (match) {
+                      if (text.trim() === "") {
                         return /* () */0;
                       } else {
                         return Curry._1(onSubmit, text);

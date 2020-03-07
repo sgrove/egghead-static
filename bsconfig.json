@@ -17,6 +17,7 @@
   "namespace": true,
   "bs-dependencies": [
     "bs-fetch",
+    "reason-promise",
     "bs-onegraph-auth",
     "reason-react",
     "reason-urql",

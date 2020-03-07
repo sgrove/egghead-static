@@ -330,6 +330,11 @@ module Egghead = {
     ->Js.String2.toLocaleLowerCase;
 };
 
+type repo = {
+  name: string,
+  owner: string,
+};
+
 module ReadOnly = {
   [@react.component]
   let make = (~lesson: Egghead.lesson, ~transcript: Egghead.transcript) => {
@@ -387,6 +392,125 @@ let inactiveEditorStyle =
 let textEditorStyle =
   ReactDOMRe.Style.make(~width="100%", ~height="20ch", ~fontSize="2em", ());
 
+let checkDoIHaveARepo = (~client, ~repoName, ~username) => {
+  GraphQL.query(
+    ~client,
+    ~request=
+      GraphQL.DoIHaveARepoQuery.make(~repoOwner=username, ~repoName, ()),
+    (),
+  )
+  ->Promise.flatMap(data => {
+      ReasonUrql.Client.(
+        switch (data) {
+        | Ok(data) =>
+          switch (data.response) {
+          | Data(data) =>
+            let doIHaveARepo =
+              data##gitHub
+              ->Belt.Option.flatMap(gitHub => gitHub##repository)
+              ->Belt.Option.map(repo => repo##id)
+              ->Belt.Option.isSome;
+            Promise.resolved(doIHaveARepo);
+          | Error(err) =>
+            Js.Console.warn2("Error getting data response: ", err);
+            Promise.resolved(false);
+          | NotFound =>
+            Js.Console.warn("NotFound error for getFileSha");
+            Promise.resolved(false);
+          }
+        | Error(err) =>
+          Js.Console.warn2("Error for getFileSha promise: ", err);
+          Promise.resolved(false);
+        }
+      )
+    });
+};
+
+let forkRepo = (~client, ~repoOwner, ~repoName) => {
+  GraphQL.(
+    mutation(
+      ~client,
+      ForkGitHubRepoMutation.make(~repoOwner, ~repoName, ()),
+      "Error forking source repository",
+    )
+  );
+};
+
+let getFileShaAndContent =
+    (~client, ~repoName, ~repoOwner, ~branchAndFilePath) => {
+  GraphQL.query(
+    ~client,
+    ~request=
+      GraphQL.GetFileShaAndContentQuery.make(
+        ~repoName,
+        ~repoOwner,
+        ~branchAndFilePath,
+        (),
+      ),
+    (),
+  )
+  ->Promise.flatMap(promise =>
+      switch (promise) {
+      | Ok(data) =>
+        ReasonUrql.Client.(
+          switch (data.response) {
+          | Data(data) =>
+            let shaAndContent =
+              data##gitHub
+              ->Belt.Option.flatMap(gitHub => gitHub##repository)
+              ->Belt.Option.flatMap(repo => repo##object_)
+              ->Belt.Option.flatMap(object_ =>
+                  switch (object_) {
+                  | `GitHubBlob(blob) => Some((blob##oid, blob##text))
+                  | _ => None
+                  }
+                );
+
+            Promise.resolved(shaAndContent);
+          | Error(err) =>
+            Js.Console.warn2("Error getting data response: ", err);
+            Promise.resolved(None);
+          | NotFound =>
+            Js.Console.warn("NotFound error for getFileSha");
+            Promise.resolved(None);
+          }
+        )
+      | Error(err) =>
+        Js.Console.warn2("Error getting data response: ", err);
+        Promise.resolved(None);
+      }
+    );
+};
+
+let upsertFileContent =
+    (
+      ~client,
+      ~repoOwner,
+      ~repoName,
+      ~branchName,
+      ~filePath,
+      ~content,
+      ~sha,
+      (),
+    ) => {
+  GraphQL.(
+    mutation(
+      ~client,
+      UpdateFileContentMutation.make(
+        ~repoOwner,
+        ~repoName,
+        ~branchName,
+        ~path=filePath,
+        ~message="Updated " ++ filePath,
+        ~content,
+        ~sha,
+        (),
+      ),
+      "Error updating file content",
+    )
+  );
+};
+
 let submitPr =
     (
       ~client,
@@ -399,63 +523,158 @@ let submitPr =
       ~username,
       ~frontMatter,
     ) => {
-  open GraphQL;
-
   /*
-     1. GetFileShaQuery
+     1. DoIHaveARepoQuery
+     1a. Fork source repo
+     1. GetFileShaQuery in our fork
+     2. GetFileShaQuery in source repo
      2. CreateBranchMutation
-     3. UpdateFileContentMutation
+     3. UpdateFileContentMutation - set to same as source repo
+     4. UpdateFileContentMutation - set to new value
      4. CreatePullRequestMutation
      5. AddLabelsToPullRequestMutation
    */
 
-  let requests = [
-    () =>
-      mutation(
-        ~client,
-        CreateBranchMutation.make(~repoOwner, ~repoName, ~branchName, ()),
-        "Error creating branch for PR",
-      ),
-    () =>
-      mutation(
-        ~client,
-        UpdateFileContentMutation.make(
-          ~repoOwner,
-          ~repoName,
-          ~branchName,
-          ~path=filePath,
-          ~message="Updated " ++ filePath,
-          ~content=editedContent,
-          ~sha,
-          (),
+  let masterFilePath = {j|master:$filePath|j};
+  let branchFilePath = {j|$branchName:$filePath|j};
+
+  let mutationRequests =
+    GraphQL.[
+      () =>
+        mutation(
+          ~client,
+          CreateBranchMutation.make(
+            ~repoOwner=username,
+            ~repoName,
+            ~branchName,
+            (),
+          ),
+          "Error creating branch for PR",
         ),
-        "Error updating file content",
-      ),
-    () => {
-      let frontMatterContent =
-        frontMatter->prettyStringify(Js.Nullable.null, 2);
-      let frontMatterText = {j|---
+      () =>
+        mutation(
+          ~client,
+          UpdateFileContentMutation.make(
+            ~repoOwner=username,
+            ~repoName,
+            ~branchName,
+            ~path=filePath,
+            ~message="Updated " ++ filePath,
+            ~content=editedContent,
+            ~sha,
+            (),
+          ),
+          "Error updating file content",
+        ),
+      () => {
+        let frontMatterContent =
+          frontMatter->prettyStringify(Js.Nullable.null, 2);
+        let frontMatterText = {j|---
 $frontMatterContent
 ---|j};
-      mutation(
-        ~client,
-        CreatePullRequestMutation.make(
-          ~repoOwner,
-          ~repoName,
-          ~sourceBranch=branchName,
-          ~destinationBranch="master",
-          ~title=title ++ "[by " ++ username ++ "]",
-          ~body={j|$frontMatterText
+        mutation(
+          ~client,
+          CreatePullRequestMutation.make(
+            ~repoOwner=username,
+            ~repoName,
+            ~sourceBranch=branchName,
+            ~destinationBranch="master",
+            ~title=title ++ "[by " ++ username ++ "]",
+            ~body={j|$frontMatterText
 
 $body|j},
-          (),
-        ),
-        "Error creating PullRequest",
-      );
-    },
-  ];
+            (),
+          ),
+          "Error creating PullRequest",
+        );
+      },
+    ];
 
-  chain(requests);
+  let ensureIHaveARepo =
+    checkDoIHaveARepo(~client, ~repoName, ~username)
+    ->Promise.map(value => {
+        switch (value) {
+        | false =>
+          forkRepo(~client, ~repoName, ~repoOwner)
+          ->Promise.map(value => Js.log2("Promise value: ", value))
+        | true => Promise.resolved()
+        }
+      });
+
+  /* Now we should have a repo! */
+  let currentFileInfo =
+    ensureIHaveARepo->Promise.flatMap(_ => {
+      let currentMasterShaAndContent =
+        getFileShaAndContent(
+          ~client,
+          ~repoOwner,
+          ~repoName,
+          ~branchAndFilePath=masterFilePath,
+        );
+
+      let branchShaAndContent =
+        getFileShaAndContent(
+          ~client,
+          ~repoOwner,
+          ~repoName,
+          ~branchAndFilePath=branchFilePath,
+        );
+      Promise.all2(currentMasterShaAndContent, branchShaAndContent);
+    });
+
+  let prepareSyncedFileStartingContents =
+    currentFileInfo->Promise.flatMap(fileInfo => {
+      /* It's possible that the file on our forked branch is out of date from the
+               file on master:
+
+               imagine we forked the source repo a long time ago, and
+               many edits have been made to every file on the source repo since then.
+               Our fork of the repo will have old files, and so if we create a branch
+               from our master and try to merge, it'll cause a conflict.
+
+               To avoid this, we check if the source repo file and our fork file are the
+               same - if not, we copy the source repo file over our file on master as
+               one commit (so now the PR would be a no-op), and *then* copy our newly
+               updated file.
+
+               Now the PR will only show the actual diff that we intended.
+
+         */
+      let needToSyncFileVersions =
+        switch (fileInfo) {
+        | (Some((masterSha, content)), Some((forkSha, _))) =>
+          /* We only need to sync if the file exists on both forks and has a different sha */
+          (masterSha == forkSha, Some(masterSha), content)
+        | _ => (false, None, None)
+        };
+
+      switch (needToSyncFileVersions) {
+      | (true, Some(masterSha), Some(content)) =>
+        upsertFileContent(
+          ~client,
+          ~repoOwner=username,
+          ~repoName,
+          ~branchName="master",
+          ~filePath,
+          ~content,
+          ~sha=masterSha,
+          (),
+        )
+      | _ => Promise.resolved(Ok())
+      };
+    });
+
+  let finalResult =
+    prepareSyncedFileStartingContents->Promise.flatMap(result => {
+      switch (result) {
+      | Ok () =>
+        /* File versions are sync, and we can proceed with creating the branch and PR */
+        GraphQL.chain(mutationRequests)
+      | Error(err) => Promise.resolved(Error(err))
+      }
+    });
+
+  finalResult;
 };
 
 module ChatHistory = {
@@ -537,12 +756,6 @@ module ChatHistory = {
 
     let prTitle = PullRequestManager.prTitle(pr);
 
-    let commentCount = List.length(comments);
-    let commentCountString =
-      commentCount->string_of_int
-      ++ " "
-      ++ (commentCount == 1 ? "comment" : "comments");
-
     let pullRequestId = pr##id;
 
     <div className="chat">
@@ -574,8 +787,7 @@ module PullRequestPreparation = {
   };
 
   [@react.component]
-  let make =
-      (~client, ~editedText, ~content, ~sha, ~filePath, ~username, ~lessonId) => {
+  let make = (~client, ~editedText, ~sha, ~filePath, ~username, ~lessonId) => {
     open React;
     let editorHandle = React.useRef(None);
 
@@ -647,18 +859,15 @@ module PullRequestPreparation = {
             );
           submitPromise
           /* onClose()->Js.Promise.resolve; */
-          ->Js.Promise.then_(
-              (result: GraphQL.mutationChainResult) => {
-                (
-                  switch (result) {
-                  | Ok () => Js.log("Ok, PR created!")
-                  | Error(message) => Js.log2("Error creating PR: ", message)
-                  }
-                )
-                ->Js.Promise.resolve
-              },
-              _,
-            )
+          ->Promise.map((result: GraphQL.mutationChainResult) => {
+              (
+                switch (result) {
+                | Ok () => Js.log("Ok, PR created!")
+                | Error(message) => Js.log2("Error creating PR: ", message)
+                }
+              )
+              ->Js.Promise.resolve
+            })
           ->ignore;
         }}>
         {string("Submit PR")}
@@ -1125,7 +1334,6 @@ module Editor = {
                <PullRequestPreparation
                  client
                  editedText={editPayload.edited}
-                 content={editPayload.edited}
                  sha={editPayload.sha}
                  filePath={filepathOfLesson(course, lessonEdit.lesson)}
                  username
@@ -1209,12 +1417,12 @@ module Conversation = {
 
          <PullRequestManager
            client
-           myUsername="sgrove"
+           myUsername=username
            pullRequests
            onHide
            refresh={_ => {
              Js.log(executeQuery);
-             executeQuery(None);
+             executeQuery();
            }}
          />;
        }}

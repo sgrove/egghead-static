@@ -3,6 +3,7 @@
 import * as List from "bs-platform/lib/es6/list.js";
 import * as Curry from "bs-platform/lib/es6/curry.js";
 import * as React from "react";
+import * as $$Promise from "reason-promise/src/js/promise.js";
 import * as Belt_List from "bs-platform/lib/es6/belt_List.js";
 import * as Belt_Option from "bs-platform/lib/es6/belt_Option.js";
 import * as Caml_option from "bs-platform/lib/es6/caml_option.js";
@@ -53,16 +54,26 @@ function submitPrComment(client, message, pullRequestId) {
 function PullRequestManager$MessageCompose(Props) {
   var onSubmit = Props.onSubmit;
   var match = React.useState((function () {
+          return false;
+        }));
+  var setDisabled = match[1];
+  var match$1 = React.useState((function () {
           return "";
         }));
-  var setText = match[1];
-  var text = match[0];
+  var setText = match$1[1];
+  var text = match$1[0];
   var doSubmit = function (param) {
-    var __x = Curry._1(onSubmit, text);
-    __x.then((function (param) {
-            return Promise.resolve(Curry._1(setText, (function (param) {
-                              return "";
-                            })));
+    Curry._1(setDisabled, (function (param) {
+            return true;
+          }));
+    $$Promise.map(Curry._1(onSubmit, text), (function (param) {
+            Curry._1(setDisabled, (function (param) {
+                    return false;
+                  }));
+            Curry._1(setText, (function (param) {
+                    return "";
+                  }));
+            return $$Promise.resolved;
           }));
     return /* () */0;
   };
@@ -70,6 +81,7 @@ function PullRequestManager$MessageCompose(Props) {
               className: "chat-message clearfix"
             }, React.createElement("textarea", {
                   id: "message-to-send",
+                  disabled: match[0],
                   name: "message-to-send",
                   placeholder: "Type your message",
                   rows: 2,
@@ -78,8 +90,7 @@ function PullRequestManager$MessageCompose(Props) {
                       var metaKey = $$event.metaKey;
                       var ctrlKey = $$event.ctrlKey;
                       var enterKey = $$event.which === 13;
-                      var match = (metaKey || ctrlKey) && enterKey;
-                      if (match) {
+                      if ((metaKey || ctrlKey) && enterKey) {
                         return doSubmit(/* () */0);
                       } else {
                         return /* () */0;
@@ -90,8 +101,7 @@ function PullRequestManager$MessageCompose(Props) {
                     })
                 }), React.createElement("button", {
                   onClick: (function (param) {
-                      var match = text.trim() === "";
-                      if (match) {
+                      if (text.trim() === "") {
                         return /* () */0;
                       } else {
                         return doSubmit(/* () */0);
@@ -126,7 +136,7 @@ function PullRequestManager$ChatHistory(Props) {
                   }, authorLogin);
               var timeEl = React.createElement("span", {
                     className: "message-data-time"
-                  }, Curry._1(timeSince, new Date(comment.createdAt)) + " ago");
+                  }, timeSince(new Date(comment.createdAt)) + " ago");
               var avatarEl = React.createElement("img", {
                     className: "chat-avatar " + (
                       messageIsMe ? "float-left" : "float-right"
@@ -150,9 +160,8 @@ function PullRequestManager$ChatHistory(Props) {
             })));
   var prTitle$1 = prTitle(pr);
   var commentCount = List.length(comments);
-  var match = commentCount === 1;
   var commentCountString = String(commentCount) + (" " + (
-      match ? "comment" : "comments"
+      commentCount === 1 ? "comment" : "comments"
     ));
   return React.createElement("div", {
               className: "chat"
@@ -285,7 +294,7 @@ function PullRequestManager(Props) {
           } else {
             throw [
                   Caml_builtin_exceptions.failure,
-                  "No commented Pr found"
+                  "No commented PR found"
                 ];
           }
         }));
@@ -309,9 +318,8 @@ function PullRequestManager(Props) {
                   onSubmit: (function (message) {
                       var message$1 = message;
                       var pullRequestId = selectedPullRequest.id;
-                      var __x = submitPrComment(client, message$1, pullRequestId);
-                      return __x.then((function (param) {
-                                    return Promise.resolve(Curry._1(refresh, { }));
+                      return $$Promise.map(submitPrComment(client, message$1, pullRequestId), (function (param) {
+                                    return Curry._1(refresh, { });
                                   }));
                     }),
                   onRefresh: (function (param) {
@@ -333,4 +341,4 @@ export {
   make ,
   
 }
-/* timeSince Not a pure module */
+/* react Not a pure module */

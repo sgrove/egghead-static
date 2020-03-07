@@ -49,18 +49,26 @@ module MessageCompose = {
   [@react.component]
   let make = (~onSubmit) => {
     open React;
+    let (disabled, setDisabled) = useState(() => false);
     let (text, setText) = useState(() => "");
 
-    let doSubmit = () =>
+    let doSubmit = () => {
+      setDisabled(_ => true);
       onSubmit(text)
-      ->Js.Promise.(then_(_ => setText(_ => "")->resolve, _))
+      ->Promise.map(_ => {
+          setDisabled(_ => false);
+          setText(_ => "");
+          Promise.resolved;
+        })
       ->ignore;
+    };
 
     <div className="chat-message clearfix">
       <textarea
         name="message-to-send"
         id="message-to-send"
         placeholder="Type your message"
+        disabled
         rows=2
         value=text
         onChange={event => ReactEvent.Form.target(event)##value->setText}
@@ -275,15 +283,12 @@ module PullRequestHistory = {
 [@react.component]
 let make = (~client, ~pullRequests, ~myUsername, ~refresh, ~onHide) => {
   open React;
-  let onSubmit = (~message, ~pullRequestId) =>
+  let onSubmit = (~message, ~pullRequestId) => {
     submitPrComment(~client, ~pullRequestId, ~message)
-    ->Js.Promise.then_(
-        _ =>
-          Js.Promise.resolve(
-            refresh(Some(UrqlClient.ClientTypes.partialOperationContext())),
-          ),
-        _,
+    ->Promise.map(_ =>
+        refresh(Some(UrqlClient.ClientTypes.partialOperationContext()))
       );
+  };
 
   let (selectedPullRequest, setSelectedPullRequest) =
     useState(() =>
@@ -295,7 +300,7 @@ let make = (~client, ~pullRequests, ~myUsername, ~refresh, ~onHide) => {
             )
         )
       ) {
-      | None => raise(Failure("No commented Pr found"))
+      | None => raise(Failure("No commented PR found"))
       | Some(pr) => pr
       }
     );

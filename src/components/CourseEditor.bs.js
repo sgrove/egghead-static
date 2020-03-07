@@ -533,8 +533,8 @@ function CourseEditor$PullRequestPreparation(Props) {
                   };
           }
         }), {
-        title: "Test",
-        body: "Test"
+        title: "",
+        body: ""
       });
   var dispatch = match[1];
   var state = match[0];

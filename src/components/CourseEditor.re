@@ -909,7 +909,7 @@ module PullRequestPreparation = {
           | SetTitle(title) => {...state, title}
           | SetBody(body) => {...state, body}
           },
-        {title: "Test", body: "Test"},
+        {title: "", body: ""},
       );
 
     <div

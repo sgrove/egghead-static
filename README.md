@@ -23,11 +23,16 @@ A starter project in [Gatsby.js](https://www.gatsbyjs.org/) with [MDX](https://g
 
 ## [➞ Demo](https://egghead-gatsby-starter.netlify.com/)
 
+Install the [vscode reason](https://marketplace.visualstudio.com/items?itemName=jaredly.reason-vscode) extension for some amazing goodies (it's by the wonderful [Jared Forsyth](https://jaredforsyth.com)!)
+
+![](https://github.com/jaredly/reason-language-server/raw/master/editor-extensions/vscode/screenshot.png)
+
 ## Setup
 
 - `git clone git@github.com:eggheadio/gatsby-starter-egghead-blog.git`
 - `cd gatsby-starter-egghead-blog`
 - `yarn`
+- `yarn reason # in another window to run the reason compiler in watch-mode`
 - `gatsby develop`
 - visit http://localhost:8000
 

@@ -1199,6 +1199,8 @@ module Editor = {
       [|state.chatOpen|],
     );
 
+    let relayEnv = ReasonRelay.useEnvironmentFromContext();
+
     useEffect1(
       () => {
         switch (lesson) {
@@ -1211,49 +1213,50 @@ module Editor = {
           let courseSlug = Egghead.courseSlug(course);
           let filePath = {j|$courseSlug/lessons/$lessonSlug.md|j};
           let request =
-            GraphQL.GetFileShaAndContentQuery.make(
-              ~repoName,
-              ~repoOwner,
-              ~branchAndFilePath={j|$branch:$filePath|j},
-              (),
+            EggheadLessonTranscript.Query.fetch(
+              ~environment=relayEnv,
+              ~variables={
+                repoName,
+                repoOwner,
+                branchAndFilePath: {j|$branch:$filePath|j},
+              },
             );
-          (
-            ReasonUrql.Client.executeQuery(~client, ~request, ())
-            |> Wonka.subscribe((. data) => {
-                 ReasonUrql.Client.(
-                   switch (data.response) {
-                   | Data(data) =>
-                     open Belt;
-                     let blob =
-                       data##gitHub
-                       ->Option.flatMap(d => d##repository)
-                       ->Option.flatMap(d => d##object_)
-                       ->Option.flatMap(
-                           fun
-                           | `GitHubBlob(d) => Some(d)
-                           | `GitHubGitObject(_) => None,
-                         );
 
-                     let sha = blob->Option.map(d => d##oid);
-                     let transcript = blob->Option.flatMap(d => d##text);
-
+          request
+          |> Js.Promise.then_(
+               (query: EggheadLessonTranscript.Query.Operation.response) =>
+               Js.Promise.resolve(
+                 {
+                   Js.log2("Request: ", query);
+                   switch (query) {
+                   | {
+                       gitHub:
+                         Some({
+                           repository:
+                             Some({
+                               object_:
+                                 Some(
+                                   `GitHubBlob({oid: sha, text: transcript}),
+                                 ),
+                             }),
+                         }),
+                     } =>
                      switch (sha, transcript) {
-                     | (Some(sha), Some(transcript)) =>
+                     | (sha, Some(transcript)) =>
                        let editPayload = {
                          transcript,
                          sha,
-                         edited: transcript,
+                         edited: "This is from relay!  " ++ transcript,
                        };
                        dispatch(LoadTranscript(lesson.id, editPayload));
                      | _ => ()
-                     };
-
+                     }
                    | _ => ()
-                   }
-                 )
-               })
-          )
-          ->ignore;
+                   };
+                 },
+               )
+             )
+          |> ignore;
         };
         None;
       },
@@ -1800,13 +1803,18 @@ let make = (~course: Egghead.courseWithNullableLessons) => {
     switch (course.lessons->Belt.List.fromArray) {
     | [] => "No lessons"->string
     | _ =>
-      ReasonUrql.(
-        switch (Config.auth, GraphQL.urqlClient) {
-        | (Some(auth), Some(client)) =>
-          <Provider value=client> <LoginGuard auth client course /> </Provider>
-        | _ => "Loading the Egghead™ lesson editor..."->React.string
-        }
-      )
+      <React.Suspense
+        fallback={<div> "Gimme a second..."->React.string </div>}>
+        ReasonUrql.(
+          switch (Config.auth, GraphQL.urqlClient) {
+          | (Some(auth), Some(client)) =>
+            <Provider value=client>
+              <LoginGuard auth client course />
+            </Provider>
+          | _ => "Loading the Egghead™ lesson editor..."->React.string
+          }
+        )
+      </React.Suspense>
     }
   );
 };

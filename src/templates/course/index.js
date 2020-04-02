@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { graphql } from 'gatsby'
 import { jsx, Container } from 'theme-ui'
 import Layout from 'components/layout'
-import CourseEditor from '../../components/CourseEditor.bs.js'
+import RelayCourseEditor from '../../components/RelayCourseEditor.bs.js'
 // eslint-disable-next-line
 const axios = require('axios')
 // const ReactMarkdown = require('react-markdown')
@@ -14,7 +14,7 @@ const Course = ({ data: { course, site } }) => {
   return (
     <Layout site={site}>
       <Container>
-        <CourseEditor course={course} />
+        <RelayCourseEditor course={course} />
       </Container>
     </Layout>
   )

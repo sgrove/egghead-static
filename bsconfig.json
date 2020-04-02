@@ -1,4 +1,3 @@
-
 {
   "name": "egghead-static",
   "bsc-flags": ["-bs-super-errors"],
@@ -17,14 +16,16 @@
   "namespace": true,
   "bs-dependencies": [
     "bs-fetch",
-    "reason-promise",
     "bs-onegraph-auth",
+    "reason-promise",
     "reason-react",
+    "reason-relay",
     "reason-urql",
     "wonka"
   ],
   "refmt": 3,
   "ppx-flags": [
-    "@baransu/graphql_ppx_re/ppx6"
+    "@baransu/graphql_ppx_re/ppx6",
+    "reason-relay/ppx"
   ]
 }

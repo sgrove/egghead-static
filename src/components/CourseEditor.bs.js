@@ -4,7 +4,7 @@ import * as Urql from "urql";
 import * as $$Array from "bs-platform/lib/es6/array.js";
 import * as Block from "bs-platform/lib/es6/block.js";
 import * as Curry from "bs-platform/lib/es6/curry.js";
-import * as Wonka from "wonka/src/wonka.js";
+import * as Wonka from "wonka/src/Wonka.bs.js";
 import * as React from "react";
 import * as $$String from "bs-platform/lib/es6/string.js";
 import * as Js_math from "bs-platform/lib/es6/js_math.js";
@@ -17,6 +17,7 @@ import * as Belt_MapInt from "bs-platform/lib/es6/belt_MapInt.js";
 import * as Belt_Option from "bs-platform/lib/es6/belt_Option.js";
 import * as Caml_format from "bs-platform/lib/es6/caml_format.js";
 import * as Caml_option from "bs-platform/lib/es6/caml_option.js";
+import * as ReasonRelay from "reason-relay/src/ReasonRelay.bs.js";
 import * as OneGraphAuth from "bs-onegraph-auth/src/OneGraphAuth.bs.js";
 import * as ReactMarkdown from "react-markdown";
 import * as YamlFrontMatter from "yaml-front-matter";
@@ -28,6 +29,7 @@ import * as OneJwt$EggheadStatic from "../lib/bindings/OneJwt.bs.js";
 import * as GraphQL$EggheadStatic from "./GraphQL.bs.js";
 import * as ReactMonacoLazy$EggheadStatic from "./ReactMonacoLazy.bs.js";
 import * as PullRequestManager$EggheadStatic from "./PullRequestManager.bs.js";
+import * as EggheadLessonTranscript$EggheadStatic from "./EggheadLessonTranscript.bs.js";
 
 var assign = (function(name, item) {
      window[name] = item;
@@ -796,6 +798,7 @@ function CourseEditor$Editor(Props) {
                 }));
           return ;
         }), [state.chatOpen]);
+  var relayEnv = ReasonRelay.useEnvironmentFromContext(/* () */0);
   React.useEffect((function () {
           if (lesson !== undefined) {
             var match = lesson;
@@ -805,45 +808,54 @@ function CourseEditor$Editor(Props) {
               var lessonSlug = lesson$1.slug;
               var courseSlug$1 = courseSlug(course);
               var filePath = "" + (String(courseSlug$1) + ("/lessons/" + (String(lessonSlug) + ".md")));
-              var request = GraphQL$EggheadStatic.GetFileShaAndContentQuery.make(repoName, repoOwner, "" + (String("master") + (":" + (String(filePath) + ""))), /* () */0);
-              Wonka.subscribe((function (data) {
-                        var match = data.response;
-                        if (typeof match === "number" || match.tag) {
-                          return /* () */0;
-                        } else {
-                          var blob = Belt_Option.flatMap(Belt_Option.flatMap(Belt_Option.flatMap(match[0].gitHub, (function (d) {
-                                          return d.repository;
-                                        })), (function (d) {
-                                      return d.object_;
-                                    })), (function (param) {
-                                  if (param[0] >= -565457906) {
-                                    return ;
-                                  } else {
-                                    return Caml_option.some(param[1]);
-                                  }
-                                }));
-                          var sha = Belt_Option.map(blob, (function (d) {
-                                  return d.oid;
-                                }));
-                          var transcript = Belt_Option.flatMap(blob, (function (d) {
-                                  return d.text;
-                                }));
-                          if (sha !== undefined && transcript !== undefined) {
-                            var transcript$1 = transcript;
-                            var editPayload = {
-                              transcript: transcript$1,
-                              edited: transcript$1,
-                              sha: sha
-                            };
-                            return Curry._1(dispatch, /* LoadTranscript */Block.__(3, [
-                                          lesson$1.id,
-                                          editPayload
-                                        ]));
+              var request = Curry._2(EggheadLessonTranscript$EggheadStatic.Query.$$fetch, relayEnv, {
+                    repoName: repoName,
+                    repoOwner: repoOwner,
+                    branchAndFilePath: "" + (String("master") + (":" + (String(filePath) + "")))
+                  });
+              request.then((function (query) {
+                      console.log("Request: ", query);
+                      var match = query.gitHub;
+                      var tmp;
+                      if (match !== undefined) {
+                        var match$1 = match.repository;
+                        if (match$1 !== undefined) {
+                          var match$2 = match$1.object_;
+                          if (match$2 !== undefined) {
+                            var match$3 = match$2;
+                            if (typeof match$3 === "number" || match$3[0] !== -678893856) {
+                              tmp = /* () */0;
+                            } else {
+                              var match$4 = match$3[1];
+                              var transcript = match$4.text;
+                              if (transcript !== undefined) {
+                                var transcript$1 = transcript;
+                                var editPayload_edited = "This is from relay!  " + transcript$1;
+                                var editPayload_sha = match$4.oid;
+                                var editPayload = {
+                                  transcript: transcript$1,
+                                  edited: editPayload_edited,
+                                  sha: editPayload_sha
+                                };
+                                tmp = Curry._1(dispatch, /* LoadTranscript */Block.__(3, [
+                                        lesson$1.id,
+                                        editPayload
+                                      ]));
+                              } else {
+                                tmp = /* () */0;
+                              }
+                            }
                           } else {
-                            return /* () */0;
+                            tmp = /* () */0;
                           }
+                        } else {
+                          tmp = /* () */0;
                         }
-                      }))(Curry._4(ReasonUrql.Client.executeQuery, client, request, undefined, /* () */0));
+                      } else {
+                        tmp = /* () */0;
+                      }
+                      return Promise.resolve(tmp);
+                    }));
             }
             
           }
@@ -1359,19 +1371,24 @@ function CourseEditor(Props) {
   };
   var match$1 = Belt_List.fromArray(lessons);
   if (match$1) {
+    var tmp;
     if (Config$EggheadStatic.auth !== undefined && GraphQL$EggheadStatic.urqlClient !== undefined) {
       var client = Caml_option.valFromOption(GraphQL$EggheadStatic.urqlClient);
-      return React.createElement(Urql.Provider, {
-                  value: client,
-                  children: React.createElement(CourseEditor$LoginGuard, {
-                        auth: Caml_option.valFromOption(Config$EggheadStatic.auth),
-                        client: client,
-                        course: course$1
-                      })
-                });
+      tmp = React.createElement(Urql.Provider, {
+            value: client,
+            children: React.createElement(CourseEditor$LoginGuard, {
+                  auth: Caml_option.valFromOption(Config$EggheadStatic.auth),
+                  client: client,
+                  course: course$1
+                })
+          });
     } else {
-      return "Loading the Egghead\xe2\x84\xa2 lesson editor...";
+      tmp = "Loading the Egghead\xe2\x84\xa2 lesson editor...";
     }
+    return React.createElement(React.Suspense, {
+                children: tmp,
+                fallback: React.createElement("div", undefined, "Gimme a second...")
+              });
   } else {
     return "No lessons";
   }

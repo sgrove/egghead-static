@@ -47,6 +47,7 @@
     "gatsby-transformer-json": "^2.2.2",
     "gatsby-transformer-remark": "^2.6.6",
     "gatsby-transformer-sharp": "^2.2.4",
+    "graphql": "^14.5.8",
     "jwks-rsa": "1.6.0",
     "load-script": "^1.0.0",
     "lodash": "^4.17.14",
@@ -60,10 +61,10 @@
     "prism-themes": "^1.1.0",
     "prismjs": "^1.16.0",
     "prop-types": "^15.7.2",
-    "react": "^16.8.6",
+    "react": "0.0.0-experimental-d28bd2994",
     "react-animated-tree": "^1.0.10",
     "react-diff-viewer": "^2.0.6",
-    "react-dom": "^16.8.6",
+    "react-dom": "0.0.0-experimental-d28bd2994",
     "react-draggable": "^4.1.0",
     "react-helmet": "~5.2.1",
     "react-icons": "^3.7.0",
@@ -71,20 +72,28 @@
     "react-markdown": "^4.2.2",
     "react-modal": "^3.11.1",
     "react-monaco-editor": "^0.32.1",
+    "react-relay": "0.0.0-experimental-8cc94ddc",
     "react-resizable": "^1.10.1",
     "react-resize-detector": "^4.2.1",
     "reason-promise": "^1.0.2",
     "reason-react": ">=0.7.0",
+    "reason-relay": "^0.6.0",
     "reason-urql": "1.5.0",
+    "relay-compiler": "9.0.0",
+    "relay-config": "9.0.0",
+    "relay-runtime": "9.0.0",
     "serve": "^11.1.0",
     "theme-ui": "^0.2.14",
     "typescript": "^3.5.3",
+    "urql": "^1.9.5",
     "yaml-front-matter": "^4.0.0"
   },
   "devDependencies": {
     "@baransu/graphql_ppx_re": "^0.4.0",
     "babel-preset-gatsby": "^0.2.6",
     "bs-platform": "^7.1.1",
+    "eslint-plugin-graphql": "^3.1.1",
+    "gentype": "^3.18.0",
     "prettier": "1.18.2"
   },
   "keywords": [
@@ -103,11 +112,18 @@
     "reason": "bsb -clean-world && bsb -make-world -w",
     "emacs": "emacs",
     "sync-schema": "graphql get-schema && node ./generateFragmentTypes.js",
-    "generate-ppx-schema": "node ./node_modules/gql-tools/cli/gqlschema.js -o graphql_schema.json schema.graphql"
+    "generate-ppx-schema": "node ./node_modules/gql-tools/cli/gqlschema.js -o graphql_schema.json schema.graphql",
+    "relay": "reason-relay-compiler",
+    "relay:watch": "reason-relay-compiler --watch"
   },
   "eslint": {
     "ignorePatterns": [
-      "**/*.bs.js"
+      "**/*.bs.js",
+      "**/*.js"
     ]
+  },
+  "resolutions": {
+    "react": "0.0.0-experimental-d28bd2994",
+    "react-dom": "0.0.0-experimental-d28bd2994"
   }
 }

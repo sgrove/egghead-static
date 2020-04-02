@@ -4,7 +4,7 @@ import * as $$Array from "bs-platform/lib/es6/array.js";
 import * as Block from "bs-platform/lib/es6/block.js";
 import * as Curry from "bs-platform/lib/es6/curry.js";
 import * as Fetch from "bs-fetch/src/Fetch.js";
-import * as Wonka from "wonka/src/wonka.js";
+import * as Wonka from "wonka/src/Wonka.bs.js";
 import * as Js_exn from "bs-platform/lib/es6/js_exn.js";
 import * as Js_dict from "bs-platform/lib/es6/js_dict.js";
 import * as Js_json from "bs-platform/lib/es6/js_json.js";

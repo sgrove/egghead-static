@@ -4,6 +4,7 @@ module Unions = {};
 
 module Types = {
   type node = {
+    id: string,
     getFragmentRefs:
       unit =>
       {
@@ -111,6 +112,13 @@ v2 = {
   "name": "clientMutationId",
   "args": null,
   "storageKey": null
+},
+v3 = {
+  "kind": "ScalarField",
+  "alias": null,
+  "name": "id",
+  "args": null,
+  "storageKey": null
 };
 return {
   "kind": "Request",
@@ -158,6 +166,7 @@ return {
                     "concreteType": "GitHubIssueComment",
                     "plural": false,
                     "selections": [
+                      (v3/*: any*/),
                       {
                         "kind": "FragmentSpread",
                         "name": "RelayPRChatHistory_CommentFragment",
@@ -215,13 +224,7 @@ return {
                     "concreteType": "GitHubIssueComment",
                     "plural": false,
                     "selections": [
-                      {
-                        "kind": "ScalarField",
-                        "alias": null,
-                        "name": "id",
-                        "args": null,
-                        "storageKey": null
-                      },
+                      (v3/*: any*/),
                       {
                         "kind": "LinkedField",
                         "alias": null,
@@ -282,7 +285,7 @@ return {
     "operationKind": "mutation",
     "name": "RelayPRChatHistory_AddPullRequestCommentMutation",
     "id": null,
-    "text": "mutation RelayPRChatHistory_AddPullRequestCommentMutation(\n  $body: String!\n  $commentableId: ID!\n) {\n  gitHub {\n    addComment(input: {body: $body, subjectId: $commentableId}) {\n      clientMutationId\n      commentEdge {\n        node {\n          ...RelayPRChatHistory_CommentFragment\n          id\n        }\n      }\n    }\n  }\n}\n\nfragment RelayPRChatHistory_CommentFragment on GitHubComment {\n  id\n  author {\n    __typename\n    login\n    avatarUrl\n  }\n  createdAt\n  body\n}\n",
+    "text": "mutation RelayPRChatHistory_AddPullRequestCommentMutation(\n  $body: String!\n  $commentableId: ID!\n) {\n  gitHub {\n    addComment(input: {body: $body, subjectId: $commentableId}) {\n      clientMutationId\n      commentEdge {\n        node {\n          id\n          ...RelayPRChatHistory_CommentFragment\n        }\n      }\n    }\n  }\n}\n\nfragment RelayPRChatHistory_CommentFragment on GitHubComment {\n  id\n  author {\n    __typename\n    login\n    avatarUrl\n  }\n  createdAt\n  body\n}\n",
     "metadata": {}
   }
 };

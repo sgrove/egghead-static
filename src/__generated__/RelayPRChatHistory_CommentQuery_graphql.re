@@ -4,6 +4,7 @@ module Unions = {
   module Union_response_gitHub_search_edges_node: {
     type wrapped;
     type response_gitHub_search_edges_node_gitHubPullRequest = {
+      id: string,
       getFragmentRefs:
         unit =>
         {
@@ -20,6 +21,7 @@ module Unions = {
   } = {
     type wrapped;
     type response_gitHub_search_edges_node_gitHubPullRequest = {
+      id: string,
       getFragmentRefs:
         unit =>
         {
@@ -167,11 +169,18 @@ v3 = {
 v4 = {
   "kind": "ScalarField",
   "alias": null,
-  "name": "cursor",
+  "name": "id",
   "args": null,
   "storageKey": null
 },
 v5 = {
+  "kind": "ScalarField",
+  "alias": null,
+  "name": "cursor",
+  "args": null,
+  "storageKey": null
+},
+v6 = {
   "kind": "LinkedField",
   "alias": null,
   "name": "pageInfo",
@@ -196,7 +205,7 @@ v5 = {
     }
   ]
 },
-v6 = [
+v7 = [
   {
     "kind": "Variable",
     "name": "last",
@@ -205,13 +214,6 @@ v6 = [
   (v1/*: any*/),
   (v2/*: any*/)
 ],
-v7 = {
-  "kind": "ScalarField",
-  "alias": null,
-  "name": "id",
-  "args": null,
-  "storageKey": null
-},
 v8 = {
   "kind": "ScalarField",
   "alias": null,
@@ -279,6 +281,7 @@ return {
                         "kind": "InlineFragment",
                         "type": "GitHubPullRequest",
                         "selections": [
+                          (v4/*: any*/),
                           {
                             "kind": "FragmentSpread",
                             "name": "RelayPRChatHistory_PullRequestFragment",
@@ -288,10 +291,10 @@ return {
                       }
                     ]
                   },
-                  (v4/*: any*/)
+                  (v5/*: any*/)
                 ]
               },
-              (v5/*: any*/)
+              (v6/*: any*/)
             ]
           }
         ]
@@ -317,7 +320,7 @@ return {
             "alias": null,
             "name": "search",
             "storageKey": null,
-            "args": (v6/*: any*/),
+            "args": (v7/*: any*/),
             "concreteType": "GitHubSearchResultItemConnection",
             "plural": false,
             "selections": [
@@ -344,7 +347,7 @@ return {
                         "kind": "InlineFragment",
                         "type": "GitHubPullRequest",
                         "selections": [
-                          (v7/*: any*/),
+                          (v4/*: any*/),
                           {
                             "kind": "ScalarField",
                             "alias": null,
@@ -394,7 +397,7 @@ return {
                                     "concreteType": "GitHubIssueComment",
                                     "plural": false,
                                     "selections": [
-                                      (v7/*: any*/),
+                                      (v4/*: any*/),
                                       {
                                         "kind": "LinkedField",
                                         "alias": null,
@@ -432,10 +435,10 @@ return {
                                       (v3/*: any*/)
                                     ]
                                   },
-                                  (v4/*: any*/)
+                                  (v5/*: any*/)
                                 ]
                               },
-                              (v5/*: any*/)
+                              (v6/*: any*/)
                             ]
                           },
                           {
@@ -451,17 +454,17 @@ return {
                       }
                     ]
                   },
-                  (v4/*: any*/)
+                  (v5/*: any*/)
                 ]
               },
-              (v5/*: any*/)
+              (v6/*: any*/)
             ]
           },
           {
             "kind": "LinkedHandle",
             "alias": null,
             "name": "search",
-            "args": (v6/*: any*/),
+            "args": (v7/*: any*/),
             "handle": "connection",
             "key": "RelayPRChatHistory_CommentQuery_gitHub_search",
             "filters": [
@@ -477,7 +480,7 @@ return {
     "operationKind": "query",
     "name": "RelayPRChatHistory_CommentQuery",
     "id": null,
-    "text": "query RelayPRChatHistory_CommentQuery(\n  $query: String!\n  $last: Int!\n) {\n  gitHub {\n    search(query: $query, type: ISSUE, last: $last) {\n      edges {\n        node {\n          __typename\n          ... on GitHubPullRequest {\n            ...RelayPRChatHistory_PullRequestFragment\n          }\n        }\n        cursor\n      }\n      pageInfo {\n        hasPreviousPage\n        startCursor\n      }\n    }\n  }\n}\n\nfragment RelayPRChatHistory_CommentFragment on GitHubComment {\n  id\n  author {\n    __typename\n    login\n    avatarUrl\n  }\n  createdAt\n  body\n}\n\nfragment RelayPRChatHistory_PullRequestFragment on GitHubPullRequest {\n  id\n  title\n  body\n  state\n  number\n  comments(last: 100) {\n    edges {\n      node {\n        ...RelayPRChatHistory_CommentFragment\n        id\n        __typename\n      }\n      cursor\n    }\n    pageInfo {\n      hasPreviousPage\n      startCursor\n    }\n  }\n}\n",
+    "text": "query RelayPRChatHistory_CommentQuery(\n  $query: String!\n  $last: Int!\n) {\n  gitHub {\n    search(query: $query, type: ISSUE, last: $last) {\n      edges {\n        node {\n          __typename\n          ... on GitHubPullRequest {\n            id\n            ...RelayPRChatHistory_PullRequestFragment\n          }\n        }\n        cursor\n      }\n      pageInfo {\n        hasPreviousPage\n        startCursor\n      }\n    }\n  }\n}\n\nfragment RelayPRChatHistory_CommentFragment on GitHubComment {\n  id\n  author {\n    __typename\n    login\n    avatarUrl\n  }\n  createdAt\n  body\n}\n\nfragment RelayPRChatHistory_PullRequestFragment on GitHubPullRequest {\n  id\n  title\n  body\n  state\n  number\n  comments(last: 100) {\n    edges {\n      node {\n        id\n        ...RelayPRChatHistory_CommentFragment\n        __typename\n      }\n      cursor\n    }\n    pageInfo {\n      hasPreviousPage\n      startCursor\n    }\n  }\n}\n",
     "metadata": {
       "connection": [
         {

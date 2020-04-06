@@ -25,6 +25,7 @@ module Unions = {};
 
 module Types = {
   type node = {
+    id: string,
     getFragmentRefs:
       unit =>
       {
@@ -93,7 +94,15 @@ module Utils = {
 type operationType = ReasonRelay.fragmentNode;
 
 let node: operationType = [%bs.raw
-  {| {
+  {| (function(){
+var v0 = {
+  "kind": "ScalarField",
+  "alias": null,
+  "name": "id",
+  "args": null,
+  "storageKey": null
+};
+return {
   "kind": "Fragment",
   "name": "RelayPRChatHistory_PullRequestFragment",
   "type": "GitHubPullRequest",
@@ -111,13 +120,7 @@ let node: operationType = [%bs.raw
   },
   "argumentDefinitions": [],
   "selections": [
-    {
-      "kind": "ScalarField",
-      "alias": null,
-      "name": "id",
-      "args": null,
-      "storageKey": null
-    },
+    (v0/*: any*/),
     {
       "kind": "ScalarField",
       "alias": null,
@@ -173,6 +176,7 @@ let node: operationType = [%bs.raw
               "concreteType": "GitHubIssueComment",
               "plural": false,
               "selections": [
+                (v0/*: any*/),
                 {
                   "kind": "ScalarField",
                   "alias": null,
@@ -224,5 +228,6 @@ let node: operationType = [%bs.raw
       ]
     }
   ]
-} |}
+};
+})() |}
 ];

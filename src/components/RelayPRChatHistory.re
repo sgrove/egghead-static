@@ -29,6 +29,7 @@ module AddPullRequestCommentMutation = [%relay.mutation
       clientMutationId
       commentEdge {
         node {
+          id
           ...RelayPRChatHistory_CommentFragment
         }
       }
@@ -49,6 +50,7 @@ fragment RelayPRChatHistory_PullRequestFragment on GitHubPullRequest {
   comments(last: 100) @connection(key: "RelayPRChatHistory_PullRequestFragment_comments") {
     edges {
       node {
+      id
        ...RelayPRChatHistory_CommentFragment
       }
     }
@@ -85,7 +87,8 @@ query RelayPRChatHistory_CommentQuery(
            node {
              __typename
              ... on GitHubPullRequest {
-               ...RelayPRChatHistory_PullRequestFragment
+              id
+              ...RelayPRChatHistory_PullRequestFragment
              }
            }
          }
@@ -172,46 +175,38 @@ module CommentableMessageCompose = {
       addComment(
         ~variables={body, commentableId},
         ~updater=
-          (store, _response) => {
-            let parentID = commentableId |> ReasonRelay.makeDataId;
-
-            let _r =
-              ReasonRelay.RecordSourceSelectorProxy.get(
-                store,
-                ~dataId=parentID,
-              )
-              ->Belt.Option.map(node =>
-                  ReasonRelay.RecordProxy.invalidateRecord(node)
-                );
-
-            /* let valueToLog = */
-            /*   ReasonRelay.RecordSourceSelectorProxy.getRootField( */
-            /*     store, */
-            /*     ~fieldName="gitHub", */
-            /*   ); */
-
-            Js.log2("PullREquestId: ", parentID);
+          (store, response) => {
+            ReasonRelay.(
+              switch (response) {
+              | {
+                  gitHub:
+                    Some({
+                      addComment:
+                        Some({commentEdge: Some({node: Some({id})})}),
+                    }),
+                } =>
+                switch (
+                  store->RecordSourceSelectorProxy.get(~dataId=id->makeDataId)
+                ) {
+                | None => ()
+                | Some(node) =>
+                  ReasonRelayUtils.createAndAddEdgeToConnections(
+                    ~store,
+                    ~node,
+                    ~connections=[
+                      {
+                        key: "RelayPRChatHistory_PullRequestFragment_comments",
+                        parentID: commentableId->makeDataId,
+                      },
+                    ],
+                    ~edgeName="GitHubIssueEdge",
+                    ~insertAt=End,
+                  )
+                }
+              | _ => Js.log("Could not find node id")
+              }
+            )
           },
-        /* [%bs.debugger]; */
-        /* Js.log2("Value zth", valueToLog); */
-        /* let nodeProxy = */
-        /*   ReasonRelayUtils.resolveNestedRecordFromRoot( */
-        /*     ~store, */
-        /*     ~path=["gitHub", "addComment", "commentEdge", "node"], */
-        /*   ); */
-        /* switch (nodeProxy) { */
-        /* | None => Js.log("No addComment node found after mutation") */
-        /* | Some(node) => */
-        /*   let key = "RelayPRChatHistory_PullRequestFragment_comments"; */
-        /*   let edgeName = "GitHubIssueCommentEdge"; */
-        /*   ReasonRelayUtils.createAndAddEdgeToConnections( */
-        /*     ~store, */
-        /*     ~node, */
-        /*     ~edgeName, */
-        /*     ~connections=[{parentID, key}], */
-        /*     ~insertAt=End, */
-        /*   ); */
-        /* }; */
         (),
       );
 
@@ -242,12 +237,7 @@ module CommentableMessageCompose = {
             (metaKey || ctrlKey) && enterKey ? mutation(body)->ignore : ();
           }}
         />
-        <button
-          onClick={_ =>
-            Js.String.trim(body) == "" ? () : mutation(body)->ignore
-          }>
-          {React.string({|Send|})}
-        </button>
+        <button> {React.string({|Send|})} </button>
       </form>
     </div>;
   };
@@ -261,7 +251,9 @@ module Chat = {
     let historyEl =
       comments
       ->Belt.Array.map(comment => {
-          <li> <Comment comment={comment.getFragmentRefs()} /> </li>
+          <li key={comment.id}>
+            <Comment comment={comment.getFragmentRefs()} />
+          </li>
         })
       ->array;
 
@@ -339,7 +331,7 @@ let make = () => {
       ->Belt.Array.map(node => {
           switch (node) {
           | `GitHubPullRequest(pr) =>
-            <PullRequestChat pr={pr.getFragmentRefs()} />
+            <PullRequestChat key={pr.id} pr={pr.getFragmentRefs()} />
           | _ => React.null
           }
         })
@@ -347,8 +339,5 @@ let make = () => {
     | _ => string("No pull requests found for you")
     };
 
-  <>
-    element
-    <pre> {prettyStringify(query, Js.Nullable.null, 2)->string} </pre>
-  </>;
+  <> element </>;
 };

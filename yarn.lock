@@ -12120,10 +12120,10 @@ reason-react@>=0.7.0:
     react ">=16.8.1"
     react-dom ">=16.8.1"
 
-reason-relay@^0.6.0:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/reason-relay/-/reason-relay-0.6.0.tgz#c644dc5d96eaf6ce3cb3f04752dc05ac5e2112a3"
-  integrity sha512-rSI12r8QwkAU4QMDdfK3Z5VBoYrY0QyzjV/UjN0O+iNcUL5SRz0v8rBHRid4sZ6mKX7DoeVhK+0DmwviOoD4wA==
+reason-relay@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/reason-relay/-/reason-relay-0.7.0.tgz#2274bdb23472fe07c6220db969ac83239a5a71a7"
+  integrity sha512-W49hygI41G/mJxsnLoCpx0QPXSvJhsbLCbPli9C9c4mU9wcfAwJrL810izSGFPBSluOeY/x/ncE1c2s4CQnOcA==
   dependencies:
     mkdirp-sync "^0.0.3"
     reason "^3.3.4"

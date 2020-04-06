@@ -1220,43 +1220,38 @@ module Editor = {
                 repoOwner,
                 branchAndFilePath: {j|$branch:$filePath|j},
               },
-            );
+              ~onResult=result => {
+                Js.log2("EggheadLessonTranscript: ", result);
 
-          request
-          |> Js.Promise.then_(
-               (query: EggheadLessonTranscript.Query.Operation.response) =>
-               Js.Promise.resolve(
-                 {
-                   Js.log2("Request: ", query);
-                   switch (query) {
-                   | {
-                       gitHub:
-                         Some({
-                           repository:
-                             Some({
-                               object_:
-                                 Some(
-                                   `GitHubBlob({oid: sha, text: transcript}),
-                                 ),
-                             }),
-                         }),
-                     } =>
-                     switch (sha, transcript) {
-                     | (sha, Some(transcript)) =>
-                       let editPayload = {
-                         transcript,
-                         sha,
-                         edited: "This is from relay!  " ++ transcript,
-                       };
-                       dispatch(LoadTranscript(lesson.id, editPayload));
-                     | _ => ()
-                     }
-                   | _ => ()
-                   };
-                 },
-               )
-             )
-          |> ignore;
+                /* TODO: Handle error */
+                switch (result) {
+                | Ok({
+                    gitHub:
+                      Some({
+                        repository:
+                          Some({
+                            object_:
+                              Some(
+                                `GitHubBlob({oid: sha, text: transcript}),
+                              ),
+                          }),
+                      }),
+                  }) =>
+                  switch (sha, transcript) {
+                  | (sha, Some(transcript)) =>
+                    let editPayload = {
+                      transcript,
+                      sha,
+                      edited: "This is from relay!  " ++ transcript,
+                    };
+                    dispatch(LoadTranscript(lesson.id, editPayload));
+                  | _ => ()
+                  }
+                | _ => ()
+                };
+              },
+            );
+          ();
         };
         None;
       },
@@ -1442,15 +1437,18 @@ module Editor = {
                />
              | (Some(pr), Some(myUsername), _, _) =>
                <div>
-                 <ChatHistory
-                   client
-                   myUsername
-                   comments={Some(pr##comments)->GraphQL.unwrapGHConn}
-                   pr
-                   onSubmit={_ => ()}
-                   onRefresh={_ => ()}
+                 <RelayPRChatHistory.PullRequestContainer
+                   pullRequestId={pr##id}
                  />
                </div>
+             /* <ChatHistory */
+             /*   client */
+             /*   myUsername */
+             /*   comments={Some(pr##comments)->GraphQL.unwrapGHConn} */
+             /*   pr */
+             /*   onSubmit={_ => ()} */
+             /*   onRefresh={_ => ()} */
+             /* /> */
              | _ => null
              }}
           </div>
@@ -1805,6 +1803,7 @@ let make = (~course: Egghead.courseWithNullableLessons) => {
     | _ =>
       <React.Suspense
         fallback={<div> "Gimme a second..."->React.string </div>}>
+        <RelayPRChatHistory />
         ReasonUrql.(
           switch (Config.auth, GraphQL.urqlClient) {
           | (Some(auth), Some(client)) =>

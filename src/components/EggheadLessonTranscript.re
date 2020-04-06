@@ -27,7 +27,7 @@ let make = (~branchAndFilePath: string) => {
   switch (query) {
   | {gitHub: Some({repository: Some({object_: Some(obj)})})} =>
     switch (obj) {
-    | `FutureAddedValue(_) => string("I told you so")
+    | `UnselectedUnionMember(_) => string("UnselectedUnionMember")
     | `GitHubBlob({oid: sha, text}) =>
       string(
         "Found "

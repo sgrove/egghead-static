@@ -8,7 +8,7 @@ module Unions = {
       oid: string,
     };
     type gitHubBlob = response_gitHub_repository_object__gitHubBlob;
-    type t = [ | `GitHubBlob(gitHubBlob) | `FutureAddedValue(Js.Json.t)];
+    type t = [ | `GitHubBlob(gitHubBlob) | `UnselectedUnionMember(string)];
     let unwrap: wrapped => t;
   } = {
     type wrapped;
@@ -19,21 +19,21 @@ module Unions = {
     type gitHubBlob = response_gitHub_repository_object__gitHubBlob;
     external __unwrap_union: wrapped => {. "__typename": string} =
       "%identity";
-    type t = [ | `GitHubBlob(gitHubBlob) | `FutureAddedValue(Js.Json.t)];
+    type t = [ | `GitHubBlob(gitHubBlob) | `UnselectedUnionMember(string)];
     external __unwrap_gitHubBlob: wrapped => gitHubBlob = "%identity";
     external __toJson: wrapped => Js.Json.t = "%identity";
     let unwrap = wrapped => {
       let unwrappedUnion = wrapped |> __unwrap_union;
       switch (unwrappedUnion##__typename) {
       | "GitHubBlob" => `GitHubBlob(wrapped |> __unwrap_gitHubBlob)
-      | _ => `FutureAddedValue(wrapped |> __toJson)
+      | typename => `UnselectedUnionMember(typename)
       };
     };
   };
 
   type union_response_gitHub_repository_object_ = [
     | `GitHubBlob(Union_response_gitHub_repository_object_.gitHubBlob)
-    | `FutureAddedValue(Js.Json.t)
+    | `UnselectedUnionMember(string)
   ];
 };
 

@@ -1803,7 +1803,6 @@ let make = (~course: Egghead.courseWithNullableLessons) => {
     | _ =>
       <React.Suspense
         fallback={<div> "Gimme a second..."->React.string </div>}>
-        <RelayPRChatHistory />
         ReasonUrql.(
           switch (Config.auth, GraphQL.urqlClient) {
           | (Some(auth), Some(client)) =>

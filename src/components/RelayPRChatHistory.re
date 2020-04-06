@@ -134,34 +134,53 @@ module Comment = {
   [@react.component]
   let make = (~comment) => {
     let comment = CommentFragment.use(comment);
-    let author = comment.author;
 
     let messageIsMe = true;
+    /* let messageIsMe = authorLogin == myUsername; */
+    open React;
+
+    let timeEl =
+      <span className="message-data-time">
+        {(comment.createdAt->Js.Date.fromString->timeSince ++ " ago")
+         ->React.string}
+      </span>;
+
+    let authorLogin =
+      comment.author
+      ->Belt.Option.mapWithDefault("Unknown", author => author.login);
+
+    let avatarUrl =
+      comment.author
+      ->Belt.Option.mapWithDefault("", author => author.avatarUrl);
+
+    let authorEl =
+      <span className="message-data-name"> {string(authorLogin)} </span>;
 
     let avatarEl =
-      switch (author) {
-      | None => "Swedish coward"->React.string
-      | Some({login, avatarUrl}) =>
-        React.(
-          <>
-            <img
-              src=avatarUrl
-              alt="avatar"
-              style={ReactDOMRe.Style.make(
-                ~maxWidth="50px",
-                ~borderRadius="50px",
-                (),
-              )}
-              className={
-                "chat-avatar " ++ (messageIsMe ? "float-left" : "float-right")
-              }
-            />
-            {string(login)}
-          </>
-        )
-      };
+      <img
+        src=avatarUrl
+        alt="avatar"
+        className={
+          "chat-avatar " ++ (messageIsMe ? "float-left" : "float-right")
+        }
+      />;
 
-    React.(<div> avatarEl <br /> comment.body->string <br /> </div>);
+    <>
+      <div
+        className={
+          "message-data clearfix" ++ (messageIsMe ? "" : " align-right")
+        }>
+        {messageIsMe
+           ? <> avatarEl authorEl timeEl </> : <> timeEl authorEl avatarEl </>}
+      </div>
+      <div
+        className={
+          "message "
+          ++ (messageIsMe ? " my-message" : " other-message align-right")
+        }>
+        {string(comment.body)}
+      </div>
+    </>;
   };
 };
 
@@ -210,8 +229,9 @@ module CommentableMessageCompose = {
         (),
       );
 
-    <div className="chat-message clearfix">
+    <div>
       <form
+        className="chat-message clearfix"
         onSubmit={event => {
           ReactEvent.Form.preventDefault(event);
           ReactEvent.Form.stopPropagation(event);
@@ -251,7 +271,7 @@ module Chat = {
     let historyEl =
       comments
       ->Belt.Array.map(comment => {
-          <li key={comment.id}>
+          <li className="clearfix" key={comment.id}>
             <Comment comment={comment.getFragmentRefs()} />
           </li>
         })
@@ -260,6 +280,9 @@ module Chat = {
     <ul> historyEl </ul>;
   };
 };
+
+let prTitle = (pr: PullRequestFragment.Operation.fragment): string =>
+  "#" ++ pr.number->string_of_int ++ ": " ++ pr.title;
 
 module PullRequestChat = {
   [@react.component]
@@ -270,19 +293,14 @@ module PullRequestChat = {
     let comments =
       PullRequestFragment.getConnectionNodes_comments(pr.comments);
 
-    let prTitle = pr.title;
-
-    let commentCountString = Array.length(comments)->string_of_int;
+    let prTitle = prTitle(pr);
 
     <div className="chat">
-      <div className="chat-header clearfix">
+      <div className="chat-meta clearfix">
         <div className="chat-about">
           <div className="chat-with">
-            {string({j|Chat about $prTitle|j})}
-            <div className="chat-num-messages">
-              {string(commentCountString)}
-              <button> {string("Refresh")} </button>
-            </div>
+            {string(prTitle)}
+            <button> {string("Refresh")} </button>
           </div>
         </div>
       </div>

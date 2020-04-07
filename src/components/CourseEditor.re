@@ -119,35 +119,6 @@ let getFileShaAndContent = (~repoName, ~repoOwner, ~branchAndFilePath) => {
   promise;
 };
 
-let upsertFileContent =
-    (
-      ~client,
-      ~repoOwner,
-      ~repoName,
-      ~branchName,
-      ~filePath,
-      ~content,
-      ~sha,
-      (),
-    ) => {
-  GraphQL.(
-    mutation(
-      ~client,
-      UpdateFileContentMutation.make(
-        ~repoOwner,
-        ~repoName,
-        ~branchName,
-        ~path=filePath,
-        ~message="Updated " ++ filePath,
-        ~content,
-        ~sha,
-        (),
-      ),
-      "Error updating file content",
-    )
-  );
-};
-
 let filepathOfLesson =
     (course: EggheadData.course, lesson: EggheadData.lesson) => {
   let lessonSlug = lesson.slug;
@@ -720,13 +691,10 @@ let make = (~course: EggheadData.courseWithNullableLessons) => {
     | _ =>
       <React.Suspense
         fallback={<div> "Gimme a second..."->React.string </div>}>
-        ReasonUrql.(
-          switch (Config.auth, GraphQL.urqlClient) {
-          | (Some(auth), Some(client)) =>
-            <Provider value=client> <LoginGuard auth course /> </Provider>
-          | _ => "Loading the Egghead™ lesson editor..."->React.string
-          }
-        )
+        {switch (Config.auth) {
+         | Some(auth) => <LoginGuard auth course />
+         | _ => "Loading the Egghead™ lesson editor..."->React.string
+         }}
       </React.Suspense>
     }
   );

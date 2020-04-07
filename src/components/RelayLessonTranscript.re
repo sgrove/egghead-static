@@ -1,5 +1,5 @@
 module GetFileShaAndContentQuery = [%relay.query
-  {|query EggheadLessonTranscript_GetFileShaQuery($repoName: String!, $repoOwner: String!, $branchAndFilePath: String!) {
+  {|query RelayLessonTranscript_GetFileShaQuery($repoName: String!, $repoOwner: String!, $branchAndFilePath: String!) {
   gitHub {
     repository(name: $repoName, owner: $repoOwner) {
       object_: object(expression: $branchAndFilePath) {

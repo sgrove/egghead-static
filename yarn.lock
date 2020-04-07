@@ -7129,11 +7129,6 @@ graphql-request@^1.5.0:
   dependencies:
     cross-fetch "2.2.2"
 
-graphql-tag@^2.10.1:
-  version "2.10.1"
-  resolved "https://registry.yarnpkg.com/graphql-tag/-/graphql-tag-2.10.1.tgz#10aa41f1cd8fae5373eaf11f1f67260a3cad5e02"
-  integrity sha512-jApXqWBzNXQ8jYa/HLkZJaVw9jgwNqZkywa2zfFn16Iv1Zb7ELNHkJaXHR7Quvd5SIGsy6Ny7SUKATgnu05uEg==
-
 graphql-type-json@^0.2.4:
   version "0.2.4"
   resolved "https://registry.yarnpkg.com/graphql-type-json/-/graphql-type-json-0.2.4.tgz#545af27903e40c061edd30840a272ea0a49992f9"
@@ -12128,15 +12123,6 @@ reason-relay@^0.7.0:
     mkdirp-sync "^0.0.3"
     reason "^3.3.4"
 
-reason-urql@1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/reason-urql/-/reason-urql-1.5.0.tgz#9207226b37ec35b4ebcfa75e1fa86cf3a7f85e42"
-  integrity sha512-7zQj6dcCSQTd9VdYFB+6OAoe++j188jyvxXm6RzhxlCHJT9UCWKDFOGl6+JtRU8xOAEzgldrUbc0Ln0AubYqjg==
-  dependencies:
-    graphql "^14.1.1"
-    urql "1.3.0"
-    wonka "^3.1.0"
-
 reason@^3.3.4:
   version "3.3.4"
   resolved "https://registry.yarnpkg.com/reason/-/reason-3.3.4.tgz#a294ef8aa14fa85c6fd8a7db5dcab053f2382f68"
@@ -14521,16 +14507,6 @@ url@^0.11.0:
     punycode "1.3.2"
     querystring "0.2.0"
 
-urql@1.3.0:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/urql/-/urql-1.3.0.tgz#b5961becc3db58a8e5089f981ab5c8a3ad1a9aaa"
-  integrity sha512-AuZtyhvgq06vek1m5OAyUE50fevjGinT//AEK1N25vqWlFmB/nxNXdSfEmaSf2ZzRDIwu9w19l7BxWIs0D4Bcg==
-  dependencies:
-    fast-json-stable-stringify "^2.0.0"
-    graphql-tag "^2.10.1"
-    prop-types "^15.6.0"
-    wonka "^3.2.0"
-
 urql@^1.9.5:
   version "1.9.5"
   resolved "https://registry.yarnpkg.com/urql/-/urql-1.9.5.tgz#6458738c029c4ed3692cb3ac9c1ba4d4260e37b9"
@@ -14958,16 +14934,6 @@ with-open-file@^0.1.6:
     p-finally "^1.0.0"
     p-try "^2.1.0"
     pify "^4.0.1"
-
-wonka@^3.1.0:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/wonka/-/wonka-3.2.1.tgz#f66123fabbb260f23a4e89f1526317169203e258"
-  integrity sha512-LpquZ9PJtYJ31AlMPp5tEba1y+S+wUmY7OyFLGZCmGSNO1ZOTTZGp/HbieFzP5fVJ9fWXCus3ecgDjwAssHSGg==
-
-wonka@^3.2.0:
-  version "3.2.2"
-  resolved "https://registry.yarnpkg.com/wonka/-/wonka-3.2.2.tgz#4d5c79fee2e6042066ba7aa86bd2f180487cc0c3"
-  integrity sha512-btmYyFDuDpJXJfELkFkoTjfyn0M+/a54/kjqt3qGN/h/90A8Ynq8qxG4b0uXBAOvJNRnWnL8+d0C3r6Clt8PYA==
 
 wonka@^4.0.9:
   version "4.0.9"

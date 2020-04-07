@@ -20,7 +20,6 @@
     "reason-promise",
     "reason-react",
     "reason-relay",
-    "reason-urql",
     "wonka"
   ],
   "refmt": 3,

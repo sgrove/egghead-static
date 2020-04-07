@@ -132,11 +132,8 @@ let username = "sgrove";
 
 module Comment = {
   [@react.component]
-  let make = (~comment) => {
+  let make = (~comment, ~myUsername) => {
     let comment = CommentFragment.use(comment);
-
-    let messageIsMe = true;
-    /* let messageIsMe = authorLogin == myUsername; */
     open React;
 
     let timeEl =
@@ -148,6 +145,8 @@ module Comment = {
     let authorLogin =
       comment.author
       ->Belt.Option.mapWithDefault("Unknown", author => author.login);
+
+    let messageIsMe = authorLogin == myUsername;
 
     let avatarUrl =
       comment.author
@@ -265,14 +264,18 @@ module CommentableMessageCompose = {
 
 module Chat = {
   [@react.component]
-  let make = (~comments: array(PullRequestFragment.Operation.Types.node)) => {
+  let make =
+      (
+        ~comments: array(PullRequestFragment.Operation.Types.node),
+        ~myUsername: string,
+      ) => {
     open React;
 
     let historyEl =
       comments
       ->Belt.Array.map(comment => {
           <li className="clearfix" key={comment.id}>
-            <Comment comment={comment.getFragmentRefs()} />
+            <Comment comment={comment.getFragmentRefs()} myUsername />
           </li>
         })
       ->array;
@@ -286,8 +289,8 @@ let prTitle = (pr: PullRequestFragment.Operation.fragment): string =>
 
 module PullRequestChat = {
   [@react.component]
-  let make = (~pr) => {
-    let pr = PullRequestFragment.use(pr);
+  let make = (~pullRequest, ~myUsername) => {
+    let pr = PullRequestFragment.use(pullRequest);
     open React;
 
     let comments =
@@ -304,7 +307,7 @@ module PullRequestChat = {
           </div>
         </div>
       </div>
-      <div className="chat-history"> <Chat comments /> </div>
+      <div className="chat-history"> <Chat comments myUsername /> </div>
       <CommentableMessageCompose commentableId={pr.id} />
     </div>;
   };
@@ -312,50 +315,24 @@ module PullRequestChat = {
 
 module PullRequestContainer = {
   [@react.component]
-  let make = (~pullRequestId) => {
+  let make = (~pullRequestId, ~myUsername) => {
     let query =
       PullRequestContainerQuery.use(
         ~variables={pullRequestId: pullRequestId},
         (),
       );
+
     React.(
       <div className="chat-widget-container clearfix">
         {switch (query) {
-         | {gitHub: Some({node: Some(`GitHubPullRequest(pr))})} =>
-           <PullRequestChat pr={pr.getFragmentRefs()} />
+         | {gitHub: Some({node: Some(`GitHubPullRequest(pullRequest))})} =>
+           <PullRequestChat
+             pullRequest={pullRequest.getFragmentRefs()}
+             myUsername
+           />
          | _ => null
          }}
       </div>
     );
   };
-};
-
-[@react.component]
-let make = () => {
-  let query =
-    Query.use(
-      ~variables={
-        query: {j|repo:eggheadio/egghead-asciicasts [by $username] in:title|j},
-        last: 100,
-      },
-      (),
-    );
-  open React;
-  let element =
-    switch (query) {
-    | {gitHub: Some({search})} =>
-      let nodes = Query.getConnectionNodes_search(search);
-      nodes
-      ->Belt.Array.map(node => {
-          switch (node) {
-          | `GitHubPullRequest(pr) =>
-            <PullRequestChat key={pr.id} pr={pr.getFragmentRefs()} />
-          | _ => React.null
-          }
-        })
-      ->array;
-    | _ => string("No pull requests found for you")
-    };
-
-  <> element </>;
 };

@@ -1,4 +1,4 @@
-module Query = [%relay.query
+module GetFileShaAndContentQuery = [%relay.query
   {|query EggheadLessonTranscript_GetFileShaQuery($repoName: String!, $repoOwner: String!, $branchAndFilePath: String!) {
   gitHub {
     repository(name: $repoName, owner: $repoOwner) {
@@ -19,7 +19,7 @@ let make = (~branchAndFilePath: string) => {
   open React;
 
   let query =
-    Query.use(
+    GetFileShaAndContentQuery.use(
       ~variables={repoOwner: "sgrove", repoName: "tehila", branchAndFilePath},
       (),
     );

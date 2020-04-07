@@ -20,57 +20,6 @@ type frontMatter = {
   sha: string,
 };
 
-module Utils = {
-  module String = {
-    let random = length => {
-      let gen = () =>
-        switch (Js.Math.random_int(0, 26 + 26 + 10)) {
-        | n when n < 26 => int_of_char('a') + n
-        | n when n < 26 + 26 => int_of_char('A') + n - 26
-        | n => int_of_char('0') + n - 26 - 26
-        };
-      let gen = _ => String.make(1, char_of_int(gen()));
-      String.concat("", Array.to_list(Array.init(length, gen)));
-    };
-    let toBranchName = (string, username) => {
-      let sanitized =
-        Js.String.replaceByRe([%bs.re {|/[^a-zA-Z0-9]+/g|}], "-", string);
-      Js.String.toLocaleLowerCase(
-        "branch-name-" ++ sanitized ++ {j|$username|j},
-      );
-    };
-  };
-
-  type lineChar = {
-    line: int,
-    char: int,
-  };
-  type sourcePosition = (lineChar, lineChar);
-  let extractSourcePosition = string =>
-    switch (Js.Nullable.toOption(string)) {
-    | None => None
-    | Some(string) =>
-      switch (Js.String.split("-", string)) {
-      | [|from, to_|] =>
-        switch (Js.String.(split(":", from), split(":", to_))) {
-        | ([|fromLine, fromChar|], [|toLine, toChar|]) =>
-          Some((
-            {line: int_of_string(fromLine), char: int_of_string(fromChar)},
-            {line: int_of_string(toLine), char: int_of_string(toChar)},
-          ))
-        | _ => None
-        }
-
-      | _ => None
-      }
-    };
-};
-
-module YamlFrontMatter = {
-  [@bs.module "yaml-front-matter"]
-  external loadFront: string => 'a = "loadFront";
-};
-
 module OneGraphAuth = {
   include OneGraphAuth;
 
@@ -94,261 +43,12 @@ module OneGraphAuth = {
   };
 };
 
-module ReactAnimatedTree = {
-  [@bs.module "react-animated-tree"] [@react.component]
-  external make:
-    (
-      ~content: React.element,
-      ~_type: React.element=?,
-      ~_open: bool=?,
-      ~canHide: bool=?,
-      ~visible: bool=?,
-      ~onClick: ReactEvent.Mouse.t => unit=?,
-      ~children: 'children=?
-    ) =>
-    React.element =
-    "default";
-};
-
-module Tree = ReactAnimatedTree;
-
-module ReactResizable = {
-  type size = {
-    width: int,
-    height: int,
-  };
-
-  type resizeCallbackData('handle) = {
-    element: React.element,
-    size,
-    handle: 'handle,
-  };
-
-  module Box = {
-    [@bs.module "react-resizable"] [@react.component]
-    external make:
-      (
-        ~width: int=?,
-        ~height: int=?,
-        ~className: string=?,
-        // If you change this=?, be sure to update your css
-        ~handleSize: array(int)=?,
-        ~lockAspectRatio: bool=?,
-        ~axis: [@bs.string] [ | `both | `x | `y | `none]=?,
-        ~minConstraints: array(int)=?,
-        ~maxConstraints: array(int)=?,
-        ~onResizeStop: ('event, resizeCallbackData('handle)) => unit=?,
-        ~onResizeStart: ('event, resizeCallbackData('handle)) => unit=?,
-        ~onResize: ('event, resizeCallbackData('handle)) => unit=?,
-        /* ~draggableOpts?: ?Object=?, */
-        ~resizeHandles: array(string)=?,
-        ~children: 'children
-      ) =>
-      React.element =
-      "ResizableBox";
-  };
-};
-
-module ReactMarkdown = {
-  [@bs.module] [@react.component]
-  external make:
-    (
-      ~source: string,
-      ~onClick: 'a => unit=?,
-      ~sourcePos: bool=?,
-      ~renderers: Js.t({..})=?
-    ) =>
-    React.element =
-    "react-markdown";
-
-  module WrapRoot = {
-    let wrapper = (~onClick: 'b) =>
-      [@react.component]
-      (
-        (~value as _: React.element, ~children: 'a) =>
-          <div onClick> children </div>
-      );
-  };
-};
-
-module ReactDraggable = {
-  [@bs.module] [@react.component]
-  external make:
-    (
-      ~allowAnyClick: bool=?,
-      ~axis: string=?,
-      ~bounds: {
-                 .
-                 "left": int,
-                 "top": int,
-                 "right": int,
-                 "bottom": int,
-               }
-                 =?,
-      ~cancel: string=?,
-      ~defaultClassName: string=?,
-      ~defaultClassNameDragging: string=?,
-      ~defaultClassNameDragged: string=?,
-      ~defaultPosition: {
-                          .
-                          "x": int,
-                          "y": int,
-                        }
-                          =?,
-      ~disabled: bool=?,
-      ~grid: array(int)=?,
-      ~handle: string=?,
-      ~offsetParent: React.element=?,
-      ~onMouseDown: 'mouseEvent => unit=?,
-      ~positionOffset: {
-                         .
-                         "x": int,
-                         "y": int,
-                       }
-                         =?,
-      ~scale: int=?,
-      ~children: 'b
-    ) =>
-    React.element =
-    "react-draggable";
-};
-
-module ReactModal = {
-  [@bs.module "react-modal"] [@bs.val]
-  external defaultStyles: ReactDOMRe.style = "defaultStyles";
-
-  [@bs.module] [@react.component]
-  external make:
-    (
-      ~isOpen: bool,
-      ~onAfterOpen: unit => unit=?,
-      ~onRequestClose: unit => unit=?,
-      ~closeTimeoutMS: int=?,
-      ~style: {
-                .
-                "overlay": ReactDOMRe.style,
-                "content": ReactDOMRe.style,
-              }
-                =?,
-      ~contentLabel: string=?,
-      ~portalClassName: string=?,
-      ~overlayClassName: string=?,
-      ~className: string=?,
-      ~bodyOpenClassName: string=?,
-      ~htmlOpenClassName: string=?,
-      ~ariaHideApp: bool=?,
-      ~shouldFocusAfterRender: bool=?,
-      ~shouldCloseOnOverlayClick: bool=?,
-      ~shouldCloseOnEsc: bool=?,
-      ~shouldReturnFocusAfterClose: bool=?,
-      ~role: string=?,
-      ~parentSelector: unit => React.element=?,
-      ~aria: {
-               .
-               "labelledby": string,
-               "describedby": string,
-             }
-               =?,
-      ~data: {..}=?,
-      ~overlayRef: 'ref=?,
-      ~contentRef: 'ref=?,
-      ~children: 'b
-    ) =>
-    React.element =
-    "react-modal";
-};
-
-module ReactDiffViewer = {
-  [@bs.module "react-diff-viewer"] [@react.component]
-  external make:
-    (
-      ~oldValue: string,
-      ~newValue: string,
-      ~splitView: bool=?,
-      ~disableWordDiff: bool=?,
-      ~hideLineNumbers: bool=?,
-      ~onLineNumberClick: {. "lineId": string} => unit=?,
-      ~highlightLines: array(string)=?,
-      ~showDiffOnly: bool=?,
-      ~extraLinesSurroundingDiff: int=?,
-      ~styles: {.}=?
-    ) =>
-    React.element =
-    "default";
-};
-
 let repoOwner = "eggheadio";
 let repoName = "egghead-asciicasts";
-
-module Egghead = {
-  type transcript = {
-    enhanced: bool,
-    text: string,
-  };
-
-  type lesson = {
-    title: string,
-    duration: int,
-    enhanced_transcript_url: string,
-    id: int,
-    slug: string,
-    transcript_url: string,
-  };
-
-  type instructor = {
-    avatar_32_url: string,
-    full_name: string,
-  };
-
-  type course = {
-    description: string,
-    instructor,
-    lessons: array(lesson),
-    published_at: string,
-    rating_count: int,
-    rating_out_of_5: float,
-    square_cover_480_url: string,
-    summary: string,
-    title: string,
-  };
-
-  type courseWithNullableLessons = {
-    description: string,
-    instructor,
-    lessons: Js.Nullable.t(array(lesson)),
-    published_at: string,
-    rating_count: int,
-    rating_out_of_5: float,
-    square_cover_480_url: string,
-    summary: string,
-    title: string,
-  };
-
-  let courseSlug = (course: course) =>
-    course.title
-    ->Js.String2.replaceByRe([%bs.re "/\W+/g"], "-")
-    ->Js.String2.toLocaleLowerCase;
-};
 
 type repo = {
   name: string,
   owner: string,
-};
-
-module ReadOnly = {
-  [@react.component]
-  let make = (~lesson: Egghead.lesson, ~transcript: Egghead.transcript) => {
-    ignore(0);
-    let result =
-      React.(
-        <div>
-          <h4> {string(lesson.title)} </h4>
-          <ReactMarkdown source={transcript.text} />
-        </div>
-      );
-
-    result;
-  };
 };
 
 let modalStyle =
@@ -392,141 +92,31 @@ let inactiveEditorStyle =
 let textEditorStyle =
   ReactDOMRe.Style.make(~width="100%", ~height="20ch", ~fontSize="2em", ());
 
-let findSourceRepositoryId = (~client, ~repoOwner, ~repoName) => {
-  GraphQL.query(
-    ~client,
-    ~request=
-      GraphQL.FindSourceRepositoryIdQuery.make(~repoOwner, ~repoName, ()),
-    ~cachePolicy=`CacheFirst,
-    (),
-  )
-  ->Promise.flatMap(data => {
-      ReasonUrql.Client.(
-        switch (data) {
-        | Ok(data) =>
-          switch (data.response) {
-          | Data(data) =>
-            let sourceRepositoryId =
-              data##gitHub
-              ->Belt.Option.flatMap(gitHub => gitHub##repository)
-              ->Belt.Option.map(repo => repo##id);
+let getFileShaAndContent = (~repoName, ~repoOwner, ~branchAndFilePath) => {
+  let relayEnv = ReasonRelay.useEnvironmentFromContext();
 
-            switch (sourceRepositoryId) {
-            | Some(id) => Promise.resolved(Ok(id))
-            | None =>
-              Promise.resolved(
-                Error(
-                  {j|Couldn't find source repository: $repoOwner/$repoName|j},
-                ),
-              )
-            };
+  let (promise, resolve) = Promise.pending();
 
-          | Error(_err) =>
-            Promise.resolved(
-              Error("Error getting data response for findSourceRepositoryId"),
-            )
-          | NotFound => Promise.resolved(Error("Not found"))
-          }
-        | Error(err) =>
-          Js.Console.warn2("Error for findSourceRepositoryId promise: ", err);
-          Promise.resolved(
-            Error("Unknown error for findSourceRepositoryId"),
-          );
-        }
-      )
-    });
-};
+  RelayLessonTranscript.GetFileShaAndContentQuery.fetch(
+    ~environment=relayEnv,
+    ~variables={repoName, repoOwner, branchAndFilePath},
+    ~onResult=result => {
+    switch (result) {
+    | Ok({
+        gitHub:
+          Some({repository: Some({object_: Some(`GitHubBlob(blob))})}),
+      }) =>
+      resolve(Some((blob.oid, blob.text)))
+    | Ok(_) =>
+      Js.Console.warn2("No such repo or file:  ", branchAndFilePath);
+      resolve(None);
+    | Error(err) =>
+      Js.Console.warn2("Error getting data response: ", err);
+      resolve(None);
+    }
+  });
 
-let checkDoIHaveARepo = (~client, ~repoName, ~username) => {
-  GraphQL.query(
-    ~client,
-    ~request=
-      GraphQL.DoIHaveARepoQuery.make(~repoOwner=username, ~repoName, ()),
-    ~cachePolicy=`NetworkOnly,
-    (),
-  )
-  ->Promise.flatMap(data => {
-      Js.log("CheckDoIHaveARepo made proegresse");
-      ReasonUrql.Client.(
-        switch (data) {
-        | Ok(data) =>
-          switch (data.response) {
-          | Data(data) =>
-            let doIHaveARepo =
-              data##gitHub
-              ->Belt.Option.flatMap(gitHub => gitHub##repository)
-              ->Belt.Option.map(repo => repo##id)
-              ->Belt.Option.isSome;
-            Promise.resolved(doIHaveARepo);
-          | Error(err) =>
-            Js.Console.warn2("Error getting data response: ", err);
-            Promise.resolved(false);
-          | NotFound =>
-            Js.Console.warn("NotFound error for getFileSha");
-            Promise.resolved(false);
-          }
-        | Error(err) =>
-          Js.Console.warn2("Error for getFileSha promise: ", err);
-          Promise.resolved(false);
-        }
-      );
-    });
-};
-
-let forkRepo = (~client, ~repoOwner, ~repoName) => {
-  GraphQL.(
-    mutation(
-      ~client,
-      ForkGitHubRepoMutation.make(~repoOwner, ~repoName, ()),
-      "Error forking source repository",
-    )
-  );
-};
-
-let getFileShaAndContent =
-    (~client, ~repoName, ~repoOwner, ~branchAndFilePath) => {
-  GraphQL.query(
-    ~client,
-    ~request=
-      GraphQL.GetFileShaAndContentQuery.make(
-        ~repoName,
-        ~repoOwner,
-        ~branchAndFilePath,
-        (),
-      ),
-    (),
-  )
-  ->Promise.flatMap(promise =>
-      switch (promise) {
-      | Ok(data) =>
-        ReasonUrql.Client.(
-          switch (data.response) {
-          | Data(data) =>
-            let shaAndContent =
-              data##gitHub
-              ->Belt.Option.flatMap(gitHub => gitHub##repository)
-              ->Belt.Option.flatMap(repo => repo##object_)
-              ->Belt.Option.flatMap(object_ =>
-                  switch (object_) {
-                  | `GitHubBlob(blob) => Some((blob##oid, blob##text))
-                  | _ => None
-                  }
-                );
-
-            Promise.resolved(shaAndContent);
-          | Error(err) =>
-            Js.Console.warn2("Error getting data response: ", err);
-            Promise.resolved(None);
-          | NotFound =>
-            Js.Console.warn("NotFound error for getFileSha");
-            Promise.resolved(None);
-          }
-        )
-      | Error(err) =>
-        Js.Console.warn2("Error getting data response: ", err);
-        Promise.resolved(None);
-      }
-    );
+  promise;
 };
 
 let upsertFileContent =
@@ -558,426 +148,10 @@ let upsertFileContent =
   );
 };
 
-type submitPrTemp = {
-  branchName: string,
-  title: string,
-  body: string,
-  editedContent: string,
-  filePath: string,
-  sha: string,
-  username: string,
-  frontMatter,
-};
-
-let submitPr =
-    (
-      ~client,
-      ~branchName,
-      ~title,
-      ~body,
-      ~editedContent,
-      ~filePath,
-      ~sha,
-      ~username,
-      ~frontMatter,
-    ) => {
-  /*
-     1. DoIHaveARepoQuery
-     1a. Fork source repo
-     1. GetFileShaQuery in our fork
-     2. GetFileShaQuery in source repo
-     2. CreateBranchMutation
-     3. UpdateFileContentMutation - set to same as source repo
-     4. UpdateFileContentMutation - set to new value
-     4. CreatePullRequestMutation
-     5. AddLabelsToPullRequestMutation
-   */
-
-  Js.log2(
-    "SubmitPR: ",
-    {
-      branchName,
-      title,
-      body,
-      editedContent,
-      filePath,
-      sha,
-      username,
-      frontMatter,
-    },
-  );
-
-  let masterFilePath = {j|master:$filePath|j};
-  let branchFilePath = {j|$branchName:$filePath|j};
-
-  let sourceRepositoryId =
-    findSourceRepositoryId(~client, ~repoName, ~repoOwner);
-
-  let mutationRequests =
-    sourceRepositoryId->Promise.flatMap(repoId => {
-      switch (repoId) {
-      | Error(err) =>
-        Js.Console.warn2("Error finding source repository: ", err);
-        Promise.resolved(None);
-      | Ok(repoId) =>
-        Promise.resolved(
-          Some(
-            GraphQL.[
-              () =>
-                mutation(
-                  ~client,
-                  CreateBranchMutation.make(
-                    ~repoOwner=username,
-                    ~repoName,
-                    ~branchName,
-                    (),
-                  ),
-                  "Error creating branch for PR",
-                ),
-              () =>
-                mutation(
-                  ~client,
-                  UpdateFileContentMutation.make(
-                    ~repoOwner=username,
-                    ~repoName,
-                    ~branchName,
-                    ~path=filePath,
-                    ~message="Updated " ++ filePath,
-                    ~content=editedContent,
-                    ~sha,
-                    (),
-                  ),
-                  "Error updating file content",
-                ),
-              () => {
-                let frontMatterContent =
-                  frontMatter->prettyStringify(Js.Nullable.null, 2);
-                let frontMatterText = {j|---
-$frontMatterContent
----|j};
-
-                let headRefName = {j|$username:$branchName|j};
-                let baseRefName = "master";
-
-                mutation(
-                  ~client,
-                  CreatePullRequestMutation.make(
-                    ~repoId,
-                    ~headRefName,
-                    ~baseRefName,
-                    ~title=title ++ "[by " ++ username ++ "]",
-                    ~body={j|$frontMatterText
-
-$body|j},
-                    (),
-                  ),
-                  "Error creating PullRequest",
-                );
-              },
-            ],
-          ),
-        )
-      }
-    });
-
-  let ensureIHaveARepo =
-    checkDoIHaveARepo(~client, ~repoName, ~username)
-    ->Promise.map(value => {
-        switch (value) {
-        | false =>
-          forkRepo(~client, ~repoName, ~repoOwner)
-          ->Promise.map(value => Js.log2("Promise value: ", value))
-        | true => Promise.resolved()
-        }
-      });
-
-  /* Now we should have a repo! */
-  let currentFileInfo =
-    ensureIHaveARepo->Promise.flatMap(_ => {
-      let currentMasterShaAndContent =
-        getFileShaAndContent(
-          ~client,
-          ~repoOwner,
-          ~repoName,
-          ~branchAndFilePath=masterFilePath,
-        );
-
-      let branchShaAndContent =
-        getFileShaAndContent(
-          ~client,
-          ~repoOwner,
-          ~repoName,
-          ~branchAndFilePath=branchFilePath,
-        );
-      Promise.all2(currentMasterShaAndContent, branchShaAndContent);
-    });
-
-  let prepareSyncedFileStartingContents =
-    currentFileInfo->Promise.flatMap(fileInfo => {
-      /* It's possible that the file on our forked branch is out of date from the
-         file on master:
-
-         imagine we forked the source repo a long time ago, and
-         many edits have been made to every file on the source repo since then.
-         Our fork of the repo will have old files, and so if we create a branch
-         from our master and try to merge, it'll cause a conflict.
-
-         To avoid this, we check if the source repo file and our fork file are the
-         same - if not, we copy the source repo file over our file on master as
-         one commit (so now the PR would be a no-op), and *then* copy our newly
-         updated file.
-
-         Now the PR will only show the actual diff that we intended.
-
-         */
-      let needToSyncFileVersions =
-        switch (fileInfo) {
-        | (Some((masterSha, content)), Some((forkSha, _))) =>
-          /* We only need to sync if the file exists on both forks and has a different sha */
-          (masterSha == forkSha, Some(masterSha), content)
-        | _ => (false, None, None)
-        };
-
-      switch (needToSyncFileVersions) {
-      | (true, Some(masterSha), Some(content)) =>
-        upsertFileContent(
-          ~client,
-          ~repoOwner=username,
-          ~repoName,
-          ~branchName="master",
-          ~filePath,
-          ~content,
-          ~sha=masterSha,
-          (),
-        )
-      | _ => Promise.resolved(Ok())
-      };
-    });
-
-  let finalResult =
-    prepareSyncedFileStartingContents->Promise.flatMap(result => {
-      switch (result) {
-      | Ok () =>
-        /* File versions are sync, and we can proceed with creating the branch and PR */
-        mutationRequests->Promise.flatMap(r =>
-          switch (r) {
-          | Some(chain) => GraphQL.chain(chain)
-          | None => Promise.resolved(Error("No mutation chain to run"))
-          }
-        )
-
-      | Error(err) => Promise.resolved(Error(err))
-      }
-    });
-
-  finalResult;
-};
-
-module ChatHistory = {
-  [@react.component]
-  let make = (~client, ~comments, ~myUsername, ~pr, ~onSubmit, ~onRefresh) => {
-    open React;
-    let commentsEl =
-      comments
-      ->Belt.List.map(comment => {
-          let author =
-            comment##author
-            ->Belt.Option.map(
-                fun
-                | `GitHubActor(author) => author,
-              );
-
-          let authorLogin =
-            author->Belt.Option.mapWithDefault("Unknown", author =>
-              author##login
-            );
-
-          let avatarUrl =
-            author->Belt.Option.mapWithDefault("", author =>
-              author##avatarUrl
-            );
-
-          let messageIsMe = authorLogin == myUsername;
-
-          let authorEl =
-            <span className="message-data-name">
-              {string(authorLogin)}
-            </span>;
-
-          let timeEl =
-            <span className="message-data-time">
-              {(
-                 comment##createdAt
-                 ->Js.Date.fromString
-                 ->PullRequestManager.timeSince
-                 ++ " ago"
-               )
-               ->string}
-            </span>;
-
-          let avatarEl =
-            <img
-              src=avatarUrl
-              alt="avatar"
-              className={
-                "chat-avatar " ++ (messageIsMe ? "float-left" : "float-right")
-              }
-            />;
-          Js.log2("Comment id: ", comment##id);
-
-          <li
-            className="clearfix"
-            key={
-              comment##id;
-            }>
-            <div
-              className={
-                "message-data clearfix" ++ (messageIsMe ? "" : " align-right")
-              }>
-              {messageIsMe
-                 ? <> avatarEl authorEl timeEl </>
-                 : <> timeEl authorEl avatarEl </>}
-            </div>
-            <div
-              className={
-                "message "
-                ++ (messageIsMe ? " my-message" : " other-message align-right")
-              }>
-              {string(comment##body)}
-            </div>
-          </li>;
-        })
-      ->Belt.List.toArray
-      ->array;
-
-    let prTitle = PullRequestManager.prTitle(pr);
-
-    let pullRequestId = pr##id;
-
-    <div className="chat">
-      <div className="chat-meta"> prTitle->string </div>
-      <div className="chat-history">
-        <ul className="chat-messages"> commentsEl </ul>
-      </div>
-      <PullRequestManager.MessageCompose
-        onSubmit={message =>
-          PullRequestManager.submitPrComment(
-            ~client,
-            ~pullRequestId,
-            ~message,
-          )
-        }
-      />
-    </div>;
-  };
-};
-
-module PullRequestPreparation = {
-  type action =
-    | SetTitle(string)
-    | SetBody(string);
-
-  type state = {
-    title: string,
-    body: string,
-  };
-
-  [@react.component]
-  let make = (~client, ~editedText, ~sha, ~filePath, ~username, ~lessonId) => {
-    open React;
-    let editorHandle = React.useRef(None);
-
-    Js.log2("basic editor handle: ", editorHandle);
-
-    let _windowSize =
-      Hooks.useWindowSize(size => {
-        Js.log2("basic editor handle: ", editorHandle);
-
-        Js.log3("Resize detected", editorHandle, size);
-        switch (editorHandle->React.Ref.current, size) {
-        | (Some(editor), _) =>
-          Js.log3("Resizing editor: ", BsReactMonaco.layout, editor);
-          BsReactMonaco.layout(editor);
-        | _ => ()
-        };
-      });
-
-    let (state, dispatch) =
-      useReducer(
-        (state, action) =>
-          switch (action) {
-          | SetTitle(title) => {...state, title}
-          | SetBody(body) => {...state, body}
-          },
-        {title: "", body: ""},
-      );
-
-    <div
-      style={ReactDOMRe.Style.make(
-        ~flex="0 0 auto",
-        ~display="flex",
-        ~flexWrap="nowrap",
-        ~flexDirection="column",
-        ~justifyContent="flex-start",
-        ~alignItems="stretch",
-        ~alignContent="stretch",
-        (),
-      )}>
-      <h4> {string("Title of your change")} </h4>
-      <input
-        type_="text"
-        onChange={event =>
-          dispatch(SetTitle(ReactEvent.Form.target(event)##value))
-        }
-        value={state.title}
-      />
-      <h4> {string("What did you change?")} </h4>
-      <textarea
-        onChange={event =>
-          dispatch(SetBody(ReactEvent.Form.target(event)##value))
-        }
-        value={state.body}
-      />
-      <button
-        onClick={_ => {
-          let frontMatter = {lessonId, filePath, sha, username};
-          Js.log("Submitting...");
-          let submitPromise =
-            submitPr(
-              ~client,
-              ~branchName=Utils.String.toBranchName(state.title, username),
-              ~username,
-              ~title=state.title,
-              ~body=state.body,
-              ~editedContent=editedText,
-              ~sha,
-              ~filePath,
-              ~frontMatter,
-            );
-
-          Js.log2("SubmitPromise...", submitPromise);
-          submitPromise
-          ->Promise.map((result: GraphQL.mutationChainResult) => {
-              (
-                switch (result) {
-                | Ok () => Js.log("Ok, PR created!")
-                | Error(message) => Js.log2("Error creating PR: ", message)
-                }
-              )
-              ->Js.Promise.resolve
-            })
-          ->ignore;
-        }}>
-        {string("Submit PR")}
-      </button>
-    </div>;
-    /* onClick={_ => onClose()} */
-  };
-};
-
-let filepathOfLesson = (course: Egghead.course, lesson: Egghead.lesson) => {
+let filepathOfLesson =
+    (course: EggheadData.course, lesson: EggheadData.lesson) => {
   let lessonSlug = lesson.slug;
-  let courseSlug = Egghead.courseSlug(course);
+  let courseSlug = EggheadData.courseSlug(course);
   let filePath = {j|$courseSlug/lessons/$lessonSlug.md|j};
   filePath;
 };
@@ -990,7 +164,7 @@ module Editor = {
   };
 
   type lessonEdit = {
-    lesson: Egghead.lesson,
+    lesson: EggheadData.lesson,
     editPayload: option(editPayload),
   };
 
@@ -1032,13 +206,11 @@ module Editor = {
   let make =
       (
         ~auth as _,
-        ~client,
-        ~onInitiateSubmit,
         ~onLogout as _,
         ~jwtMe: OneJwt.t,
-        ~course: Egghead.course,
+        ~course: EggheadData.course,
+        ~username: string,
       ) => {
-    open ReasonUrql;
     open React;
     let editorHandle = React.useRef(None);
 
@@ -1127,67 +299,6 @@ module Editor = {
       | _ => None
       };
 
-    Js.log2("Selected lesson: ", lesson);
-    Js.log2("Selected PullRequest: ", pullRequest);
-
-    useEffect0(() => {
-      switch (OneJwt.findGitHubLogin(jwtMe)) {
-      | None => ()
-      | Some(username) =>
-        let request =
-          GraphQL.SearchForPullRequestsQuery.make(
-            ~query=
-              {j|repo:eggheadio/egghead-asciicasts [by $username] in:title|j},
-            ~last=100,
-            (),
-          );
-
-        (
-          ReasonUrql.Client.executeQuery(~client, ~request, ())
-          |> Wonka.subscribe((. data) => {
-               ReasonUrql.Client.(
-                 switch (data.response) {
-                 | Data(data) =>
-                   open Belt.Option;
-                   let pullRequests =
-                     data##gitHub
-                     ->map(d => d##search)
-                     ->GraphQL.filterGHConn((acc, next) =>
-                         switch (next) {
-                         | Some(`GitHubPullRequest(pr)) =>
-                           let body = pr##body;
-                           let parsed = YamlFrontMatter.loadFront(body);
-                           Js.log2("PR: ", parsed);
-
-                           let next =
-                             switch (parsed##lessonId) {
-                             | None => acc
-                             | Some(lessonId) =>
-                               let pr = {lessonId, pr};
-                               [pr, ...acc];
-                             };
-
-                           Js.log2("Next: ", next);
-                           next;
-
-                         | _ => acc
-                         }
-                       );
-
-                   dispatch(LoadPrs(pullRequests));
-
-                 | _ => ()
-                 }
-               )
-             })
-        )
-        ->ignore;
-        ();
-      };
-
-      None;
-    });
-
     useEffect1(
       () => {
         editorHandle
@@ -1210,47 +321,45 @@ module Editor = {
           Js.log2("Lesson Id: ", state.lessonId);
           let branch = "master";
           let lessonSlug = lesson.slug;
-          let courseSlug = Egghead.courseSlug(course);
+          let courseSlug = EggheadData.courseSlug(course);
           let filePath = {j|$courseSlug/lessons/$lessonSlug.md|j};
-          let request =
-            EggheadLessonTranscript.Query.fetch(
-              ~environment=relayEnv,
-              ~variables={
-                repoName,
-                repoOwner,
-                branchAndFilePath: {j|$branch:$filePath|j},
-              },
-              ~onResult=result => {
-                Js.log2("EggheadLessonTranscript: ", result);
 
-                /* TODO: Handle error */
-                switch (result) {
-                | Ok({
-                    gitHub:
-                      Some({
-                        repository:
-                          Some({
-                            object_:
-                              Some(
-                                `GitHubBlob({oid: sha, text: transcript}),
-                              ),
-                          }),
-                      }),
-                  }) =>
-                  switch (sha, transcript) {
-                  | (sha, Some(transcript)) =>
-                    let editPayload = {
-                      transcript,
-                      sha,
-                      edited: "This is from relay!  " ++ transcript,
-                    };
-                    dispatch(LoadTranscript(lesson.id, editPayload));
-                  | _ => ()
-                  }
+          RelayLessonTranscript.GetFileShaAndContentQuery.fetch(
+            ~environment=relayEnv,
+            ~variables={
+              repoName,
+              repoOwner,
+              branchAndFilePath: {j|$branch:$filePath|j},
+            },
+            ~onResult=result => {
+              Js.log2("EggheadLessonTranscript: ", result);
+
+              /* TODO: Handle error */
+              switch (result) {
+              | Ok({
+                  gitHub:
+                    Some({
+                      repository:
+                        Some({
+                          object_:
+                            Some(`GitHubBlob({oid: sha, text: transcript})),
+                        }),
+                    }),
+                }) =>
+                switch (sha, transcript) {
+                | (sha, Some(transcript)) =>
+                  let editPayload = {
+                    transcript,
+                    sha,
+                    edited: "This is from relay!  " ++ transcript,
+                  };
+                  dispatch(LoadTranscript(lesson.id, editPayload));
                 | _ => ()
-                };
-              },
-            );
+                }
+              | _ => ()
+              };
+            },
+          );
           ();
         };
         None;
@@ -1341,84 +450,30 @@ module Editor = {
         </div>
         <div className="editor-body">
           <div className="tree">
-            <Tree content={course.title->string} _open=true>
-              {course.lessons
-               ->Belt.Array.map(lesson => {
-                   let prs =
-                     state.prs->Belt.Map.Int.getWithDefault(lesson.id, []);
-                   <Tree
-                     key={lesson.id->string_of_int}
-                     content={
-                       <span
-                         style={ReactDOMRe.Style.make(~cursor="pointer", ())}
-                         onClick={_ => dispatch(SelectLesson(lesson.id))}>
-                         lesson.title->string
-                       </span>
-                     }>
-                     {switch (prs) {
-                      | [] => null
-                      | prs =>
-                        prs
-                        ->Belt.List.map(pr =>
-                            <Tree
-                              key={pr##id}
-                              _type={
-                                <span>
-                                  (
-                                    switch (pr##state) {
-                                    | `OPEN => {j|📖|j}
-                                    | `MERGED => {j|✅|j}
-                                    | `CLOSED => {j|❌|j}
-                                    }
-                                  )
-                                  ->string
-                                </span>
-                              }
-                              content={
-                                <span
-                                  style={ReactDOMRe.Style.make(
-                                    ~cursor="pointer",
-                                    (),
-                                  )}
-                                  onClick={_ =>
-                                    dispatch(SelectPR(lesson.id, pr##id))
-                                  }>
-                                  {pr##title->string}
-                                </span>
-                              }
-                            />
-                          )
-                        ->Belt.List.toArray
-                        ->array
-                      }}
-                   </Tree>;
-                 })}
-            </Tree>
+            <RelayCourseTree
+              course
+              username
+              selectedLessonId={state.lessonId}
+              onLessonSelected={(~lessonId) => {
+                dispatch(SelectLesson(lessonId));
+                Js.log2("Selected lesson ", lessonId);
+              }}
+              onPullRequestSelected={(~lessonId, ~pullRequestId) => {
+                dispatch(SelectPR(lessonId, pullRequestId));
+                Js.log4("Selected PR ", pullRequestId, " for ", lessonId);
+              }}
+            />
           </div>
-          <div className="editor">
-            {switch (lesson) {
-             | Some({lesson, editPayload: Some({edited})}) =>
-               <ReactMonacoLazy.Editor.Lazy
-                 className="transcript-editor"
-                 value=edited
-                 height="250px"
-                 theme="vs-dark"
-                 language="markdown"
-                 options={
-                   "minimap": {
-                     "enabled": false,
-                   },
-                 }
-                 editorDidMount={(editor, _monaco) =>
-                   React.Ref.setCurrent(editorHandle, Some(editor))
-                 }
-                 onChange={(newValue, _event) =>
-                   dispatch(EditLesson(lesson.id, newValue))
-                 }
-               />
-             | _ => null
-             }}
-          </div>
+          <LessonEditor
+            lesson={lesson->Belt.Option.map(lesson => lesson.lesson)}
+            course
+            onChange={(~lessonId, ~value) => {
+              dispatch(EditLesson(lessonId, value))
+            }}
+            onEditorDidMount={(~editor) => {
+              React.Ref.setCurrent(editorHandle, Some(editor))
+            }}
+          />
           <div className={state.chatOpen ? "chat-open" : "chat-closed"}>
             {switch (
                pullRequest,
@@ -1427,165 +482,32 @@ module Editor = {
                lesson->Belt.Option.flatMap(lesson => lesson.editPayload),
              ) {
              | (None, Some(username), Some(lessonEdit), Some(editPayload)) =>
-               <PullRequestPreparation
-                 client
+               <RelaySubmitPullRequest
+                 repoOwner
+                 repoName
                  editedText={editPayload.edited}
                  sha={editPayload.sha}
                  filePath={filepathOfLesson(course, lessonEdit.lesson)}
                  username
-                 lessonId={lessonEdit.lesson.id}
+                 lesson={lessonEdit.lesson}
                />
              | (Some(pr), Some(myUsername), _, _) =>
                <div>
                  <RelayPRChatHistory.PullRequestContainer
                    pullRequestId={pr##id}
+                   myUsername
                  />
                </div>
-             /* <ChatHistory */
-             /*   client */
-             /*   myUsername */
-             /*   comments={Some(pr##comments)->GraphQL.unwrapGHConn} */
-             /*   pr */
-             /*   onSubmit={_ => ()} */
-             /*   onRefresh={_ => ()} */
-             /* /> */
              | _ => null
              }}
           </div>
         </div>
         <div className="editor-footer">
-          {string("Egghead editor powered by OneGraph")}
-          {switch (lesson) {
-           | Some({editPayload: Some({edited, transcript})}) =>
-             switch (transcript == edited) {
-             | false =>
-               <button
-                 onClick={_ => onInitiateSubmit(~editedContent=edited)}
-                 style={ReactDOMRe.Style.make(
-                   ~position="absolute",
-                   ~right="10px",
-                   (),
-                 )}>
-                 {string("Create PR")}
-               </button>
-             | true => null
-             }
-           | _ => null
-           }}
+          {string(
+             "Egghead editor powered by OneGraph, written in ReasonML using Relay",
+           )}
         </div>
       </div>
-    </div>;
-  };
-};
-
-module Conversation = {
-  [@react.component]
-  let make = (~client, ~username, ~onHide) => {
-    open React;
-    open ReasonUrql.Hooks;
-    let request =
-      GraphQL.SearchForPullRequestsQuery.make(
-        ~query={j|repo:eggheadio/egghead-asciicasts [by $username] in:title|j},
-        ~last=100,
-        (),
-      );
-
-    let ({response}, executeQuery) =
-      useQuery(~request, ~requestPolicy=`NetworkOnly, ());
-
-    Js.log2("Response: ", response);
-
-    <div>
-      {switch (response) {
-       | NotFound => <div> {string("Not found")} </div>
-       | Error({graphQLErrors: _}) =>
-         <div> {string("Error loading conversation")} </div>
-       | Fetching => <div> {string("Loading conversation...")} </div>
-       | Data(data) =>
-         open Belt.Option;
-
-         let pullRequests =
-           data##gitHub
-           ->map(d => d##search)
-           ->GraphQL.filterGHConn((acc, next) =>
-               switch (next) {
-               | Some(`GitHubPullRequest(pr)) => [pr, ...acc]
-               | _ => acc
-               }
-             );
-
-         <PullRequestManager
-           client
-           myUsername=username
-           pullRequests
-           onHide
-           refresh={_ => {
-             Js.log(executeQuery);
-             executeQuery();
-           }}
-         />;
-       }}
-    </div>;
-  };
-};
-
-module ConversationBubble = {
-  type action =
-    | Hide
-    | Show;
-
-  type state = {
-    username: string,
-    isOpen: bool,
-  };
-
-  [@react.component]
-  let make = (~client, ~username) => {
-    open React;
-
-    let (state, dispatch) =
-      useReducer(
-        (state, action) =>
-          switch (action) {
-          | Hide => {...state, isOpen: false}
-          | Show => {...state, isOpen: true}
-          },
-        {username, isOpen: false},
-      );
-
-    <div
-      style={ReactDOMRe.Style.make(
-        ~height="100vh",
-        ~position="fixed",
-        ~top="0px",
-        ~right="0px",
-        (),
-      )}>
-      {state.isOpen
-         ? <Conversation client onHide={_ => dispatch(Hide)} username />
-         : <div
-             style={ReactDOMRe.Style.make(
-               ~position="fixed",
-               ~bottom="10px",
-               ~right="10px",
-               ~display=state.isOpen ? "none" : "block",
-               (),
-             )}>
-             <button
-               style={ReactDOMRe.Style.make(
-                 ~cursor="pointer",
-                 ~borderRadius="50px",
-                 ~width="60px",
-                 ~height="60px",
-                 ~backgroundColor="black",
-                 ~color="white",
-                 ~border="none",
-                 (),
-               )}
-               onClick={_ => dispatch(Show)}>
-               <Icons.Chat />
-             </button>
-           </div>}
     </div>;
   };
 };
@@ -1627,7 +549,7 @@ module LoginGuard = {
     | SetAuthState(service, authState);
 
   [@react.component]
-  let make = (~auth, ~client, ~course) => {
+  let make = (~auth, ~course) => {
     open React;
 
     let (state, dispatch) =
@@ -1748,15 +670,10 @@ module LoginGuard = {
     | (true, Some(me)) =>
       <React.Suspense
         fallback={<div> "Loading editor..."->React.string </div>}>
-        <Editor
-          auth
-          client
-          jwtMe=me
-          course
-          onInitiateSubmit={(~editedContent) => Js.log(editedContent)}
-          onLogout
-          /* dispatch(SetSubmitting(editedContent)) */
-        />
+        {switch (OneJwt.findGitHubLogin(me)) {
+         | None => "Sorry, we couldn't verify your GitHub username"->string
+         | Some(username) => <Editor auth jwtMe=me course onLogout username />
+         }}
       </React.Suspense>
     | (_, _) =>
       <div
@@ -1776,7 +693,7 @@ module LoginGuard = {
 };
 
 [@react.component]
-let make = (~course: Egghead.courseWithNullableLessons) => {
+let make = (~course: EggheadData.courseWithNullableLessons) => {
   Js.log2("Course: ", course);
   let lessons =
     switch (Js.Nullable.toOption(course.lessons)) {
@@ -1785,7 +702,7 @@ let make = (~course: Egghead.courseWithNullableLessons) => {
     };
 
   /* Protect our code from nullable lessons */
-  let course: Egghead.course = {
+  let course: EggheadData.course = {
     description: course.description,
     instructor: course.instructor,
     lessons,
@@ -1806,9 +723,7 @@ let make = (~course: Egghead.courseWithNullableLessons) => {
         ReasonUrql.(
           switch (Config.auth, GraphQL.urqlClient) {
           | (Some(auth), Some(client)) =>
-            <Provider value=client>
-              <LoginGuard auth client course />
-            </Provider>
+            <Provider value=client> <LoginGuard auth course /> </Provider>
           | _ => "Loading the Egghead™ lesson editor..."->React.string
           }
         )

@@ -36,21 +36,6 @@ module FindSourceRepositoryIdQuery = [%graphql
      |}
 ];
 
-module GetFileShaAndContentQuery = [%graphql
-  {|query GetFileSha($repoName: String!, $repoOwner: String!, $branchAndFilePath: String!) {
-  gitHub {
-    repository(name: $repoName, owner: $repoOwner) {
-      object_: object(expression: $branchAndFilePath) {
-        ... on GitHubBlob {
-          oid
-          text
-        }
-      }
-    }
-  }
-}|}
-];
-
 module ForkGitHubRepoMutation = [%graphql
   {|mutation ForkGitHubRepoMutation($repoOwner: String!, $repoName: String!) {
     gitHub {
@@ -234,24 +219,6 @@ module GetPRListQuery = [%graphql
                    }
                  }
                }
-             }
-           }
-         }
-       }
-     }|}
-];
-
-module GetPRSingleFileQuery = [%graphql
-  {|query GetPRSingleFileQuery(
-       $repoName: String!
-       $repoOwner: String!
-       $branchAndFilePath: String = "master:package.json"
-     ) {
-       gitHub {
-         repository(name: $repoName, owner: $repoOwner) {
-           object_: object(expression: $branchAndFilePath) {
-             ... on GitHubBlob {
-               text
              }
            }
          }

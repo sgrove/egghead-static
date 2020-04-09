@@ -1,3 +1,8 @@
+[@bs.val]
+external prettyStringify:
+  ('a, [@bs.as {json|null|json}] _, [@bs.as {json|2|json}] _) => string =
+  "JSON.stringify";
+
 module String = {
   let random = length => {
     let gen = () =>

@@ -19,12 +19,11 @@
     "bs-onegraph-auth",
     "reason-promise",
     "reason-react",
-    "reason-relay",
-    "wonka"
+    "reason-relay"
   ],
   "refmt": 3,
   "ppx-flags": [
-    "@baransu/graphql_ppx_re/ppx6",
+    "bs-let/ppx",
     "reason-relay/ppx"
   ]
 }

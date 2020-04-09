@@ -1,28 +1,28 @@
 /* @generated */
 
-module Unions = {};
-
 module Types = {
-  type pullRequest = {
+  type response_gitHub_createPullRequest_pullRequest = {
     url: string,
     id: string,
     number: int,
     title: string,
     permalink: string,
   };
-  type createPullRequest = {pullRequest: option(pullRequest)};
-  type gitHub = {createPullRequest: option(createPullRequest)};
-};
+  type response_gitHub_createPullRequest = {
+    pullRequest: option(response_gitHub_createPullRequest_pullRequest),
+  };
+  type response_gitHub = {
+    createPullRequest: option(response_gitHub_createPullRequest),
+  };
 
-open Types;
-
-type response = {gitHub: option(gitHub)};
-type variables = {
-  repoId: string,
-  title: string,
-  headRefName: string,
-  baseRefName: string,
-  body: string,
+  type response = {gitHub: option(response_gitHub)};
+  type variables = {
+    repoId: string,
+    title: string,
+    headRefName: string,
+    baseRefName: string,
+    body: string,
+  };
 };
 
 module Internal = {
@@ -65,7 +65,38 @@ module Internal = {
       );
 };
 
-module Utils = {};
+module Utils = {
+  open Types;
+  let makeVariables =
+      (~repoId, ~title, ~headRefName, ~baseRefName, ~body): variables => {
+    repoId,
+    title,
+    headRefName,
+    baseRefName,
+    body,
+  };
+
+  let make_response_gitHub_createPullRequest_pullRequest =
+      (~url, ~id, ~number, ~title, ~permalink)
+      : response_gitHub_createPullRequest_pullRequest => {
+    url,
+    id,
+    number,
+    title,
+    permalink,
+  };
+
+  let make_response_gitHub_createPullRequest =
+      (~pullRequest=?, ()): response_gitHub_createPullRequest => {
+    pullRequest: pullRequest,
+  };
+
+  let make_response_gitHub = (~createPullRequest=?, ()): response_gitHub => {
+    createPullRequest: createPullRequest,
+  };
+
+  let makeOptimisticResponse = (~gitHub=?, ()): response => {gitHub: gitHub};
+};
 
 type operationType = ReasonRelay.mutationNode;
 
@@ -214,7 +245,7 @@ return {
   "kind": "Request",
   "fragment": {
     "kind": "Fragment",
-    "name": "RelaySubmitPullRequest_CreatePullRequestMutation",
+    "name": "RelaySubmitLessonPullRequest_CreatePullRequestMutation",
     "type": "Mutation",
     "metadata": null,
     "argumentDefinitions": (v0/*: any*/),
@@ -222,15 +253,15 @@ return {
   },
   "operation": {
     "kind": "Operation",
-    "name": "RelaySubmitPullRequest_CreatePullRequestMutation",
+    "name": "RelaySubmitLessonPullRequest_CreatePullRequestMutation",
     "argumentDefinitions": (v0/*: any*/),
     "selections": (v1/*: any*/)
   },
   "params": {
     "operationKind": "mutation",
-    "name": "RelaySubmitPullRequest_CreatePullRequestMutation",
+    "name": "RelaySubmitLessonPullRequest_CreatePullRequestMutation",
     "id": null,
-    "text": "mutation RelaySubmitPullRequest_CreatePullRequestMutation(\n  $repoId: ID!\n  $title: String!\n  $headRefName: String!\n  $baseRefName: String!\n  $body: String!\n) {\n  gitHub {\n    createPullRequest(input: {title: $title, headRefName: $headRefName, baseRefName: $baseRefName, repositoryId: $repoId, maintainerCanModify: true, body: $body}) {\n      pullRequest {\n        url\n        id\n        number\n        title\n        permalink\n      }\n    }\n  }\n}\n",
+    "text": "mutation RelaySubmitLessonPullRequest_CreatePullRequestMutation(\n  $repoId: ID!\n  $title: String!\n  $headRefName: String!\n  $baseRefName: String!\n  $body: String!\n) {\n  gitHub {\n    createPullRequest(input: {title: $title, headRefName: $headRefName, baseRefName: $baseRefName, repositoryId: $repoId, maintainerCanModify: true, body: $body}) {\n      pullRequest {\n        url\n        id\n        number\n        title\n        permalink\n      }\n    }\n  }\n}\n",
     "metadata": {}
   }
 };

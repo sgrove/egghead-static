@@ -1,15 +1,13 @@
 /* @generated */
 
-module Unions = {};
-
-module Types = {};
-
-type fragment = {
-  bio: option(string),
-  avatarUrl: string,
-  isHireable: bool,
-  name: option(string),
-  login: string,
+module Types = {
+  type fragment = {
+    bio: option(string),
+    avatarUrl: string,
+    isHireable: bool,
+    name: option(string),
+    login: string,
+  };
 };
 
 module Internal = {

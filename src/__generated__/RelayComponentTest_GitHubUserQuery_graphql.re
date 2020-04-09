@@ -1,9 +1,7 @@
 /* @generated */
 
-module Unions = {};
-
 module Types = {
-  type user = {
+  type response_gitHub_user = {
     getFragmentRefs:
       unit =>
       {
@@ -11,24 +9,22 @@ module Types = {
         "__$fragment_ref__RelayComponentTest_GitHubUser": RelayComponentTest_GitHubUser_graphql.t,
       },
   };
-  type licenses = {
+  type response_gitHub_licenses = {
     body: string,
     name: string,
   };
-  type gitHub = {
-    licenses: array(option(licenses)),
-    user: option(user),
+  type response_gitHub = {
+    licenses: array(option(response_gitHub_licenses)),
+    user: option(response_gitHub_user),
   };
-};
 
-open Types;
-
-type response = {gitHub: option(gitHub)};
-type refetchVariables = {login: option(string)};
-let makeRefetchVariables = (~login=?, ()): refetchVariables => {
-  login: login,
+  type response = {gitHub: option(response_gitHub)};
+  type refetchVariables = {login: option(string)};
+  let makeRefetchVariables = (~login=?, ()): refetchVariables => {
+    login: login,
+  };
+  type variables = {login: string};
 };
-type variables = {login: string};
 
 module Internal = {
   type responseRaw;
@@ -57,7 +53,12 @@ module Internal = {
       );
 };
 
-module Utils = {};
+type preloadToken;
+
+module Utils = {
+  open Types;
+  let makeVariables = (~login): variables => {login: login};
+};
 
 type operationType = ReasonRelay.queryNode;
 

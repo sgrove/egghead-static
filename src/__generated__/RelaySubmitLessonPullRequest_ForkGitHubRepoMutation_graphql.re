@@ -1,24 +1,21 @@
 /* @generated */
 
-module Unions = {};
-
 module Types = {
-  type commit = {message: string};
-  type createOrUpdateFileContent_oneGraph = {commit};
-  type gitHub = {createOrUpdateFileContent_oneGraph};
-};
+  type response_gitHub_createFork_oneGraph_repository = {
+    nameWithOwner: string,
+  };
+  type response_gitHub_createFork_oneGraph = {
+    repository: response_gitHub_createFork_oneGraph_repository,
+  };
+  type response_gitHub = {
+    createFork_oneGraph: response_gitHub_createFork_oneGraph,
+  };
 
-open Types;
-
-type response = {gitHub: option(gitHub)};
-type variables = {
-  repoOwner: string,
-  repoName: string,
-  branchName: string,
-  path: string,
-  message: string,
-  content: string,
-  sha: string,
+  type response = {gitHub: option(response_gitHub)};
+  type variables = {
+    repoOwner: string,
+    repoName: string,
+  };
 };
 
 module Internal = {
@@ -61,7 +58,29 @@ module Internal = {
       );
 };
 
-module Utils = {};
+module Utils = {
+  open Types;
+  let makeVariables = (~repoOwner, ~repoName): variables => {
+    repoOwner,
+    repoName,
+  };
+
+  let make_response_gitHub_createFork_oneGraph_repository =
+      (~nameWithOwner): response_gitHub_createFork_oneGraph_repository => {
+    nameWithOwner: nameWithOwner,
+  };
+
+  let make_response_gitHub_createFork_oneGraph =
+      (~repository): response_gitHub_createFork_oneGraph => {
+    repository: repository,
+  };
+
+  let make_response_gitHub = (~createFork_oneGraph): response_gitHub => {
+    createFork_oneGraph: createFork_oneGraph,
+  };
+
+  let makeOptimisticResponse = (~gitHub=?, ()): response => {gitHub: gitHub};
+};
 
 type operationType = ReasonRelay.mutationNode;
 
@@ -79,36 +98,6 @@ var v0 = [
     "name": "repoName",
     "type": "String!",
     "defaultValue": null
-  },
-  {
-    "kind": "LocalArgument",
-    "name": "branchName",
-    "type": "String!",
-    "defaultValue": null
-  },
-  {
-    "kind": "LocalArgument",
-    "name": "path",
-    "type": "String!",
-    "defaultValue": null
-  },
-  {
-    "kind": "LocalArgument",
-    "name": "message",
-    "type": "String!",
-    "defaultValue": null
-  },
-  {
-    "kind": "LocalArgument",
-    "name": "content",
-    "type": "String!",
-    "defaultValue": null
-  },
-  {
-    "kind": "LocalArgument",
-    "name": "sha",
-    "type": "String!",
-    "defaultValue": null
   }
 ],
 v1 = [
@@ -116,31 +105,6 @@ v1 = [
     "kind": "ObjectValue",
     "name": "input",
     "fields": [
-      {
-        "kind": "Variable",
-        "name": "branchName",
-        "variableName": "branchName"
-      },
-      {
-        "kind": "Variable",
-        "name": "existingFileSha",
-        "variableName": "sha"
-      },
-      {
-        "kind": "Variable",
-        "name": "message",
-        "variableName": "message"
-      },
-      {
-        "kind": "Variable",
-        "name": "path",
-        "variableName": "path"
-      },
-      {
-        "kind": "Variable",
-        "name": "plainContent",
-        "variableName": "content"
-      },
       {
         "kind": "Variable",
         "name": "repoName",
@@ -157,7 +121,7 @@ v1 = [
 v2 = {
   "kind": "ScalarField",
   "alias": null,
-  "name": "message",
+  "name": "nameWithOwner",
   "args": null,
   "storageKey": null
 };
@@ -165,7 +129,7 @@ return {
   "kind": "Request",
   "fragment": {
     "kind": "Fragment",
-    "name": "RelaySubmitPullRequest_UpdateFileMutation",
+    "name": "RelaySubmitLessonPullRequest_ForkGitHubRepoMutation",
     "type": "Mutation",
     "metadata": null,
     "argumentDefinitions": (v0/*: any*/),
@@ -182,19 +146,19 @@ return {
           {
             "kind": "LinkedField",
             "alias": null,
-            "name": "createOrUpdateFileContent_oneGraph",
+            "name": "createFork_oneGraph",
             "storageKey": null,
             "args": (v1/*: any*/),
-            "concreteType": "GitHubCreateOrUpdateFileContent_oneGraphResponsePayload",
+            "concreteType": "GitHubCreateFork_oneGraphResponsePayload",
             "plural": false,
             "selections": [
               {
                 "kind": "LinkedField",
                 "alias": null,
-                "name": "commit",
+                "name": "repository",
                 "storageKey": null,
                 "args": null,
-                "concreteType": "GitHubCommit",
+                "concreteType": "GitHubRepository",
                 "plural": false,
                 "selections": [
                   (v2/*: any*/)
@@ -208,7 +172,7 @@ return {
   },
   "operation": {
     "kind": "Operation",
-    "name": "RelaySubmitPullRequest_UpdateFileMutation",
+    "name": "RelaySubmitLessonPullRequest_ForkGitHubRepoMutation",
     "argumentDefinitions": (v0/*: any*/),
     "selections": [
       {
@@ -223,19 +187,19 @@ return {
           {
             "kind": "LinkedField",
             "alias": null,
-            "name": "createOrUpdateFileContent_oneGraph",
+            "name": "createFork_oneGraph",
             "storageKey": null,
             "args": (v1/*: any*/),
-            "concreteType": "GitHubCreateOrUpdateFileContent_oneGraphResponsePayload",
+            "concreteType": "GitHubCreateFork_oneGraphResponsePayload",
             "plural": false,
             "selections": [
               {
                 "kind": "LinkedField",
                 "alias": null,
-                "name": "commit",
+                "name": "repository",
                 "storageKey": null,
                 "args": null,
-                "concreteType": "GitHubCommit",
+                "concreteType": "GitHubRepository",
                 "plural": false,
                 "selections": [
                   (v2/*: any*/),
@@ -256,9 +220,9 @@ return {
   },
   "params": {
     "operationKind": "mutation",
-    "name": "RelaySubmitPullRequest_UpdateFileMutation",
+    "name": "RelaySubmitLessonPullRequest_ForkGitHubRepoMutation",
     "id": null,
-    "text": "mutation RelaySubmitPullRequest_UpdateFileMutation(\n  $repoOwner: String!\n  $repoName: String!\n  $branchName: String!\n  $path: String!\n  $message: String!\n  $content: String!\n  $sha: String!\n) {\n  gitHub {\n    createOrUpdateFileContent_oneGraph(input: {message: $message, path: $path, repoName: $repoName, repoOwner: $repoOwner, branchName: $branchName, plainContent: $content, existingFileSha: $sha}) {\n      commit {\n        message\n        id\n      }\n    }\n  }\n}\n",
+    "text": "mutation RelaySubmitLessonPullRequest_ForkGitHubRepoMutation(\n  $repoOwner: String!\n  $repoName: String!\n) {\n  gitHub {\n    createFork_oneGraph(input: {repoOwner: $repoOwner, repoName: $repoName}) {\n      repository {\n        nameWithOwner\n        id\n      }\n    }\n  }\n}\n",
     "metadata": {}
   }
 };

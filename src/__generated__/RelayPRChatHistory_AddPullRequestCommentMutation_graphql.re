@@ -1,31 +1,21 @@
 /* @generated */
 
-module Unions = {};
-
 module Types = {
-  type node = {
-    id: string,
-    getFragmentRefs:
-      unit =>
-      {
-        .
-        "__$fragment_ref__RelayPRChatHistory_CommentFragment": RelayPRChatHistory_CommentFragment_graphql.t,
-      },
+  type response_gitHub_addComment_commentEdge_node = {id: string};
+  type response_gitHub_addComment_commentEdge = {
+    node: option(response_gitHub_addComment_commentEdge_node),
   };
-  type commentEdge = {node: option(node)};
-  type addComment = {
+  type response_gitHub_addComment = {
     clientMutationId: option(string),
-    commentEdge: option(commentEdge),
+    commentEdge: option(response_gitHub_addComment_commentEdge),
   };
-  type gitHub = {addComment: option(addComment)};
-};
+  type response_gitHub = {addComment: option(response_gitHub_addComment)};
 
-open Types;
-
-type response = {gitHub: option(gitHub)};
-type variables = {
-  body: string,
-  commentableId: string,
+  type response = {gitHub: option(response_gitHub)};
+  type variables = {
+    body: string,
+    commentableId: string,
+  };
 };
 
 module Internal = {
@@ -68,7 +58,35 @@ module Internal = {
       );
 };
 
-module Utils = {};
+module Utils = {
+  open Types;
+  let makeVariables = (~body, ~commentableId): variables => {
+    body,
+    commentableId,
+  };
+
+  let make_response_gitHub_addComment_commentEdge_node =
+      (~id): response_gitHub_addComment_commentEdge_node => {
+    id: id,
+  };
+
+  let make_response_gitHub_addComment_commentEdge =
+      (~node=?, ()): response_gitHub_addComment_commentEdge => {
+    node: node,
+  };
+
+  let make_response_gitHub_addComment =
+      (~clientMutationId=?, ~commentEdge=?, ()): response_gitHub_addComment => {
+    clientMutationId,
+    commentEdge,
+  };
+
+  let make_response_gitHub = (~addComment=?, ()): response_gitHub => {
+    addComment: addComment,
+  };
+
+  let makeOptimisticResponse = (~gitHub=?, ()): response => {gitHub: gitHub};
+};
 
 type operationType = ReasonRelay.mutationNode;
 

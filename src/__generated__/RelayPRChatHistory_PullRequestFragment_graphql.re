@@ -21,10 +21,8 @@ let wrap_enum_GitHubPullRequestState: enum_GitHubPullRequestState => string =
   | `OPEN => "OPEN"
   | `FutureAddedValue(v) => v;
 
-module Unions = {};
-
 module Types = {
-  type node = {
+  type fragment_comments_edges_node = {
     id: string,
     getFragmentRefs:
       unit =>
@@ -33,19 +31,21 @@ module Types = {
         "__$fragment_ref__RelayPRChatHistory_CommentFragment": RelayPRChatHistory_CommentFragment_graphql.t,
       },
   };
-  type edges = {node: option(node)};
-  type comments = {edges: option(array(option(edges)))};
-};
+  type fragment_comments_edges = {
+    node: option(fragment_comments_edges_node),
+  };
+  type fragment_comments = {
+    edges: option(array(option(fragment_comments_edges))),
+  };
 
-open Types;
-
-type fragment = {
-  id: string,
-  title: string,
-  body: string,
-  state: enum_GitHubPullRequestState,
-  number: int,
-  comments,
+  type fragment = {
+    id: string,
+    title: string,
+    body: string,
+    state: [ | `CLOSED | `MERGED | `OPEN | `FutureAddedValue(string)],
+    number: int,
+    comments: fragment_comments,
+  };
 };
 
 module Internal = {
@@ -72,7 +72,9 @@ type fragmentRefSelector('a) =
 external getFragmentRef: fragmentRefSelector('a) => fragmentRef = "%identity";
 
 module Utils = {
-  let getConnectionNodes_comments: comments => array(node) =
+  open Types;
+  let getConnectionNodes_comments:
+    fragment_comments => array(fragment_comments_edges_node) =
     connection =>
       switch (connection.edges) {
       | None => [||]

@@ -5,7 +5,9 @@ module GetFileShaAndContentQuery = [%relay.query
       object_: object(expression: $branchAndFilePath) {
         __typename
         ... on GitHubBlob {
-          oid
+          # GitHub uses the object sha as its object id (oid)
+          # Rename it so `sha` is used everywhere in our codebase
+          sha: oid
           text
         }
       }
@@ -13,6 +15,16 @@ module GetFileShaAndContentQuery = [%relay.query
   }
 }|}
 ];
+
+let extractFileShaAndContents =
+    (query: GetFileShaAndContentQuery.Types.response) => {
+  switch (query) {
+  | {gitHub: Some({repository: Some({object_: Some(`GitHubBlob(blob))})})} =>
+    Some(blob)
+
+  | _ => None
+  };
+};
 
 [@react.component]
 let make = (~branchAndFilePath: string) => {
@@ -24,21 +36,17 @@ let make = (~branchAndFilePath: string) => {
       (),
     );
 
-  switch (query) {
-  | {gitHub: Some({repository: Some({object_: Some(obj)})})} =>
-    switch (obj) {
-    | `UnselectedUnionMember(_) => string("UnselectedUnionMember")
-    | `GitHubBlob({oid: sha, text}) =>
-      string(
-        "Found "
-        ++ sha
-        ++ " with value: "
-        ++ Belt.Option.getWithDefault(text, "[binary file]"),
-      )
-    }
+  let message =
+    switch (extractFileShaAndContents(query)) {
+    | None => "No such file found " ++ branchAndFilePath
+    | Some({sha, text}) =>
+      "Found "
+      ++ sha
+      ++ " with value: "
+      ++ Belt.Option.getWithDefault(text, "[binary file]")
+    };
 
-  | _ => string("No such file found " ++ branchAndFilePath)
-  };
+  string(message);
 };
 
 let default = make;

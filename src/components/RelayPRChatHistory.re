@@ -215,13 +215,14 @@ module CommentableMessageCompose = {
                       {
                         key: "RelayPRChatHistory_PullRequestFragment_comments",
                         parentID: commentableId->makeDataId,
+                        filters: None,
                       },
                     ],
                     ~edgeName="GitHubIssueEdge",
                     ~insertAt=End,
                   )
                 }
-              | _ => Js.log("Could not find node id")
+              | _ => Js.Console.warn("Could not find node id")
               }
             )
           },
@@ -266,7 +267,8 @@ module Chat = {
   [@react.component]
   let make =
       (
-        ~comments: array(PullRequestFragment.Operation.Types.node),
+        ~comments:
+           array(PullRequestFragment.Types.fragment_comments_edges_node),
         ~myUsername: string,
       ) => {
     open React;
@@ -284,7 +286,7 @@ module Chat = {
   };
 };
 
-let prTitle = (pr: PullRequestFragment.Operation.fragment): string =>
+let prTitle = (pr: PullRequestFragment.Types.fragment): string =>
   "#" ++ pr.number->string_of_int ++ ": " ++ pr.title;
 
 module PullRequestChat = {

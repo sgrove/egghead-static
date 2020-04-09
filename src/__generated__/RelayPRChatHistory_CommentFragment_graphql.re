@@ -1,22 +1,18 @@
 /* @generated */
 
-module Unions = {};
-
 module Types = {
-  type author = {
+  type fragment_author = {
     __typename: string,
     login: string,
     avatarUrl: string,
   };
-};
 
-open Types;
-
-type fragment = {
-  id: string,
-  author: option(author),
-  createdAt: string,
-  body: string,
+  type fragment = {
+    id: string,
+    author: option(fragment_author),
+    createdAt: string,
+    body: string,
+  };
 };
 
 module Internal = {

@@ -1,72 +1,57 @@
 /* @generated */
 
-module Unions = {
-  module Union_response_gitHub_node: {
-    type wrapped;
-    type response_gitHub_node_gitHubPullRequest = {
-      getFragmentRefs:
-        unit =>
-        {
-          .
-          "__$fragment_ref__RelayPRChatHistory_PullRequestFragment": RelayPRChatHistory_PullRequestFragment_graphql.t,
-        },
-    };
-    type gitHubPullRequest = response_gitHub_node_gitHubPullRequest;
-    type t = [
-      | `GitHubPullRequest(gitHubPullRequest)
-      | `UnselectedUnionMember(string)
-    ];
-    let unwrap: wrapped => t;
-  } = {
-    type wrapped;
-    type response_gitHub_node_gitHubPullRequest = {
-      getFragmentRefs:
-        unit =>
-        {
-          .
-          "__$fragment_ref__RelayPRChatHistory_PullRequestFragment": RelayPRChatHistory_PullRequestFragment_graphql.t,
-        },
-    };
-    type gitHubPullRequest = response_gitHub_node_gitHubPullRequest;
-    external __unwrap_union: wrapped => {. "__typename": string} =
-      "%identity";
-    type t = [
-      | `GitHubPullRequest(gitHubPullRequest)
-      | `UnselectedUnionMember(string)
-    ];
-    external __unwrap_gitHubPullRequest: wrapped => gitHubPullRequest =
-      "%identity";
-    external __toJson: wrapped => Js.Json.t = "%identity";
-    let unwrap = wrapped => {
-      let unwrappedUnion = wrapped |> __unwrap_union;
-      switch (unwrappedUnion##__typename) {
-      | "GitHubPullRequest" =>
-        `GitHubPullRequest(wrapped |> __unwrap_gitHubPullRequest)
-      | typename => `UnselectedUnionMember(typename)
-      };
-    };
+module Types = {
+  type response_gitHub_node_GitHubPullRequest = {
+    getFragmentRefs:
+      unit =>
+      {
+        .
+        "__$fragment_ref__RelayPRChatHistory_PullRequestFragment": RelayPRChatHistory_PullRequestFragment_graphql.t,
+      },
   };
-
-  type union_response_gitHub_node = [
-    | `GitHubPullRequest(Union_response_gitHub_node.gitHubPullRequest)
+  type response_gitHub_node = [
+    | `GitHubPullRequest(response_gitHub_node_GitHubPullRequest)
     | `UnselectedUnionMember(string)
   ];
+  type response_gitHub = {
+    node:
+      option(
+        [
+          | `GitHubPullRequest(response_gitHub_node_GitHubPullRequest)
+          | `UnselectedUnionMember(string)
+        ],
+      ),
+  };
+
+  type response = {gitHub: option(response_gitHub)};
+  type refetchVariables = {pullRequestId: option(string)};
+  let makeRefetchVariables = (~pullRequestId=?, ()): refetchVariables => {
+    pullRequestId: pullRequestId,
+  };
+  type variables = {pullRequestId: string};
 };
 
-open Unions;
+let unwrap_response_gitHub_node:
+  {. "__typename": string} =>
+  [
+    | `GitHubPullRequest(Types.response_gitHub_node_GitHubPullRequest)
+    | `UnselectedUnionMember(string)
+  ] =
+  u =>
+    switch (u##__typename) {
+    | "GitHubPullRequest" => `GitHubPullRequest(u->Obj.magic)
+    | v => `UnselectedUnionMember(v)
+    };
 
-module Types = {
-  type gitHub = {node: option(union_response_gitHub_node)};
-};
-
-open Types;
-
-type response = {gitHub: option(gitHub)};
-type refetchVariables = {pullRequestId: option(string)};
-let makeRefetchVariables = (~pullRequestId=?, ()): refetchVariables => {
-  pullRequestId: pullRequestId,
-};
-type variables = {pullRequestId: string};
+let wrap_response_gitHub_node:
+  [
+    | `GitHubPullRequest(Types.response_gitHub_node_GitHubPullRequest)
+    | `UnselectedUnionMember(string)
+  ] =>
+  {. "__typename": string} =
+  fun
+  | `GitHubPullRequest(v) => v->Obj.magic
+  | `UnselectedUnionMember(v) => {"__typename": v};
 
 module Internal = {
   type responseRaw;
@@ -74,7 +59,7 @@ module Internal = {
     {| {"__root":{"gitHub":{"n":""},"gitHub_node":{"n":"","u":"response_gitHub_node"},"gitHub_node_githubpullrequest":{"f":""}}} |}
   ];
   let responseConverterMap = {
-    "response_gitHub_node": Union_response_gitHub_node.unwrap,
+    "response_gitHub_node": unwrap_response_gitHub_node,
   };
   let convertResponse = v =>
     v
@@ -97,7 +82,14 @@ module Internal = {
       );
 };
 
-module Utils = {};
+type preloadToken;
+
+module Utils = {
+  open Types;
+  let makeVariables = (~pullRequestId): variables => {
+    pullRequestId: pullRequestId,
+  };
+};
 
 type operationType = ReasonRelay.queryNode;
 

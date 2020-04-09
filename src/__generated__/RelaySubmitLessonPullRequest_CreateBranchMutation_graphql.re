@@ -1,23 +1,23 @@
 /* @generated */
 
-module Unions = {};
-
 module Types = {
-  type ref_ = {
+  type response_gitHub_createBranch_oneGraph_ref_ = {
     name: string,
     id: string,
   };
-  type createBranch_oneGraph = {ref_};
-  type gitHub = {createBranch_oneGraph};
-};
+  type response_gitHub_createBranch_oneGraph = {
+    ref_: response_gitHub_createBranch_oneGraph_ref_,
+  };
+  type response_gitHub = {
+    createBranch_oneGraph: response_gitHub_createBranch_oneGraph,
+  };
 
-open Types;
-
-type response = {gitHub: option(gitHub)};
-type variables = {
-  repoOwner: string,
-  repoName: string,
-  branchName: string,
+  type response = {gitHub: option(response_gitHub)};
+  type variables = {
+    repoOwner: string,
+    repoName: string,
+    branchName: string,
+  };
 };
 
 module Internal = {
@@ -60,7 +60,31 @@ module Internal = {
       );
 };
 
-module Utils = {};
+module Utils = {
+  open Types;
+  let makeVariables = (~repoOwner, ~repoName, ~branchName): variables => {
+    repoOwner,
+    repoName,
+    branchName,
+  };
+
+  let make_response_gitHub_createBranch_oneGraph_ref_ =
+      (~name, ~id): response_gitHub_createBranch_oneGraph_ref_ => {
+    name,
+    id,
+  };
+
+  let make_response_gitHub_createBranch_oneGraph =
+      (~ref_): response_gitHub_createBranch_oneGraph => {
+    ref_: ref_,
+  };
+
+  let make_response_gitHub = (~createBranch_oneGraph): response_gitHub => {
+    createBranch_oneGraph: createBranch_oneGraph,
+  };
+
+  let makeOptimisticResponse = (~gitHub=?, ()): response => {gitHub: gitHub};
+};
 
 type operationType = ReasonRelay.mutationNode;
 
@@ -161,7 +185,7 @@ return {
   "kind": "Request",
   "fragment": {
     "kind": "Fragment",
-    "name": "RelaySubmitPullRequest_CreateBranchMutation",
+    "name": "RelaySubmitLessonPullRequest_CreateBranchMutation",
     "type": "Mutation",
     "metadata": null,
     "argumentDefinitions": (v0/*: any*/),
@@ -169,15 +193,15 @@ return {
   },
   "operation": {
     "kind": "Operation",
-    "name": "RelaySubmitPullRequest_CreateBranchMutation",
+    "name": "RelaySubmitLessonPullRequest_CreateBranchMutation",
     "argumentDefinitions": (v0/*: any*/),
     "selections": (v1/*: any*/)
   },
   "params": {
     "operationKind": "mutation",
-    "name": "RelaySubmitPullRequest_CreateBranchMutation",
+    "name": "RelaySubmitLessonPullRequest_CreateBranchMutation",
     "id": null,
-    "text": "mutation RelaySubmitPullRequest_CreateBranchMutation(\n  $repoOwner: String!\n  $repoName: String!\n  $branchName: String!\n) {\n  gitHub {\n    createBranch_oneGraph(input: {branchName: $branchName, repoName: $repoName, repoOwner: $repoOwner}) {\n      ref_: ref {\n        name\n        id\n      }\n    }\n  }\n}\n",
+    "text": "mutation RelaySubmitLessonPullRequest_CreateBranchMutation(\n  $repoOwner: String!\n  $repoName: String!\n  $branchName: String!\n) {\n  gitHub {\n    createBranch_oneGraph(input: {branchName: $branchName, repoName: $repoName, repoOwner: $repoOwner}) {\n      ref_: ref {\n        name\n        id\n      }\n    }\n  }\n}\n",
     "metadata": {}
   }
 };

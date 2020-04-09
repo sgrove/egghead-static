@@ -2,7 +2,7 @@
 let make =
     (
       ~course: EggheadData.course,
-      ~lesson: option(EggheadData.lesson),
+      ~lesson: option(EggheadData.editableLesson),
       ~onChange,
       ~onEditorDidMount,
     ) => {
@@ -37,13 +37,11 @@ let make =
            (),
          );
 
-       Js.log2("LessonEditor query result: ", query);
-
        switch (query) {
        | {gitHub: Some({repository: Some({object_: Some(obj)})})} =>
          switch (obj) {
          | `UnselectedUnionMember(_) => null
-         | `GitHubBlob({oid: _sha, text}) =>
+         | `GitHubBlob({sha: _sha, text}) =>
            <ReactMonacoLazy.Editor.Lazy
              className="transcript-editor"
              value={

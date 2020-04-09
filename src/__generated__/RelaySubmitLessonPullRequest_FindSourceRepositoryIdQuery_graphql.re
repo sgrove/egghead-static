@@ -1,26 +1,22 @@
 /* @generated */
 
-module Unions = {};
-
 module Types = {
-  type repository = {id: string};
-  type gitHub = {repository: option(repository)};
-};
+  type response_gitHub_repository = {id: string};
+  type response_gitHub = {repository: option(response_gitHub_repository)};
 
-open Types;
-
-type response = {gitHub: option(gitHub)};
-type refetchVariables = {
-  repoOwner: option(string),
-  repoName: option(string),
-};
-let makeRefetchVariables = (~repoOwner=?, ~repoName=?, ()): refetchVariables => {
-  repoOwner,
-  repoName,
-};
-type variables = {
-  repoOwner: string,
-  repoName: string,
+  type response = {gitHub: option(response_gitHub)};
+  type refetchVariables = {
+    repoOwner: option(string),
+    repoName: option(string),
+  };
+  let makeRefetchVariables = (~repoOwner=?, ~repoName=?, ()): refetchVariables => {
+    repoOwner,
+    repoName,
+  };
+  type variables = {
+    repoOwner: string,
+    repoName: string,
+  };
 };
 
 module Internal = {
@@ -50,7 +46,15 @@ module Internal = {
       );
 };
 
-module Utils = {};
+type preloadToken;
+
+module Utils = {
+  open Types;
+  let makeVariables = (~repoOwner, ~repoName): variables => {
+    repoOwner,
+    repoName,
+  };
+};
 
 type operationType = ReasonRelay.queryNode;
 
@@ -116,7 +120,7 @@ return {
   "kind": "Request",
   "fragment": {
     "kind": "Fragment",
-    "name": "RelaySubmitPullRequest_FindSourceRepositoryIdQuery",
+    "name": "RelaySubmitLessonPullRequest_FindSourceRepositoryIdQuery",
     "type": "Query",
     "metadata": null,
     "argumentDefinitions": (v0/*: any*/),
@@ -124,15 +128,15 @@ return {
   },
   "operation": {
     "kind": "Operation",
-    "name": "RelaySubmitPullRequest_FindSourceRepositoryIdQuery",
+    "name": "RelaySubmitLessonPullRequest_FindSourceRepositoryIdQuery",
     "argumentDefinitions": (v0/*: any*/),
     "selections": (v1/*: any*/)
   },
   "params": {
     "operationKind": "query",
-    "name": "RelaySubmitPullRequest_FindSourceRepositoryIdQuery",
+    "name": "RelaySubmitLessonPullRequest_FindSourceRepositoryIdQuery",
     "id": null,
-    "text": "query RelaySubmitPullRequest_FindSourceRepositoryIdQuery(\n  $repoOwner: String!\n  $repoName: String!\n) {\n  gitHub {\n    repository(owner: $repoOwner, name: $repoName) {\n      id\n    }\n  }\n}\n",
+    "text": "query RelaySubmitLessonPullRequest_FindSourceRepositoryIdQuery(\n  $repoOwner: String!\n  $repoName: String!\n) {\n  gitHub {\n    repository(owner: $repoOwner, name: $repoName) {\n      id\n    }\n  }\n}\n",
     "metadata": {}
   }
 };

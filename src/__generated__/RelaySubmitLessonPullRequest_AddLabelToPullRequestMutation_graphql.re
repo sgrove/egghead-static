@@ -1,27 +1,34 @@
 /* @generated */
 
-module Unions = {};
-
 module Types = {
-  type nodes = {name: string};
-  type labels = {nodes: option(array(option(nodes)))};
-  type labelable = {
+  type response_gitHub_addLabelsToLabelable_labelable_labels_nodes = {
+    name: string,
+  };
+  type response_gitHub_addLabelsToLabelable_labelable_labels = {
+    nodes:
+      option(
+        array(
+          option(response_gitHub_addLabelsToLabelable_labelable_labels_nodes),
+        ),
+      ),
+  };
+  type response_gitHub_addLabelsToLabelable_labelable = {
     __typename: string,
-    labels: option(labels),
+    labels: option(response_gitHub_addLabelsToLabelable_labelable_labels),
   };
-  type addLabelsToLabelable = {
+  type response_gitHub_addLabelsToLabelable = {
     clientMutationId: option(string),
-    labelable: option(labelable),
+    labelable: option(response_gitHub_addLabelsToLabelable_labelable),
   };
-  type gitHub = {addLabelsToLabelable: option(addLabelsToLabelable)};
-};
+  type response_gitHub = {
+    addLabelsToLabelable: option(response_gitHub_addLabelsToLabelable),
+  };
 
-open Types;
-
-type response = {gitHub: option(gitHub)};
-type variables = {
-  labelIds: array(string),
-  labelableId: string,
+  type response = {gitHub: option(response_gitHub)};
+  type variables = {
+    labelIds: array(string),
+    labelableId: string,
+  };
 };
 
 module Internal = {
@@ -64,7 +71,43 @@ module Internal = {
       );
 };
 
-module Utils = {};
+module Utils = {
+  open Types;
+  let makeVariables = (~labelIds, ~labelableId): variables => {
+    labelIds,
+    labelableId,
+  };
+
+  let make_response_gitHub_addLabelsToLabelable_labelable_labels_nodes =
+      (~name): response_gitHub_addLabelsToLabelable_labelable_labels_nodes => {
+    name: name,
+  };
+
+  let make_response_gitHub_addLabelsToLabelable_labelable_labels =
+      (~nodes=?, ()): response_gitHub_addLabelsToLabelable_labelable_labels => {
+    nodes: nodes,
+  };
+
+  let make_response_gitHub_addLabelsToLabelable_labelable =
+      (~__typename, ~labels=?, ())
+      : response_gitHub_addLabelsToLabelable_labelable => {
+    __typename,
+    labels,
+  };
+
+  let make_response_gitHub_addLabelsToLabelable =
+      (~clientMutationId=?, ~labelable=?, ())
+      : response_gitHub_addLabelsToLabelable => {
+    clientMutationId,
+    labelable,
+  };
+
+  let make_response_gitHub = (~addLabelsToLabelable=?, ()): response_gitHub => {
+    addLabelsToLabelable: addLabelsToLabelable,
+  };
+
+  let makeOptimisticResponse = (~gitHub=?, ()): response => {gitHub: gitHub};
+};
 
 type operationType = ReasonRelay.mutationNode;
 
@@ -127,7 +170,7 @@ return {
   "kind": "Request",
   "fragment": {
     "kind": "Fragment",
-    "name": "RelaySubmitPullRequest_AddLabelToPullRequestMutation",
+    "name": "RelaySubmitLessonPullRequest_AddLabelToPullRequestMutation",
     "type": "Mutation",
     "metadata": null,
     "argumentDefinitions": (v0/*: any*/),
@@ -194,7 +237,7 @@ return {
   },
   "operation": {
     "kind": "Operation",
-    "name": "RelaySubmitPullRequest_AddLabelToPullRequestMutation",
+    "name": "RelaySubmitLessonPullRequest_AddLabelToPullRequestMutation",
     "argumentDefinitions": (v0/*: any*/),
     "selections": [
       {
@@ -266,9 +309,9 @@ return {
   },
   "params": {
     "operationKind": "mutation",
-    "name": "RelaySubmitPullRequest_AddLabelToPullRequestMutation",
+    "name": "RelaySubmitLessonPullRequest_AddLabelToPullRequestMutation",
     "id": null,
-    "text": "mutation RelaySubmitPullRequest_AddLabelToPullRequestMutation(\n  $labelIds: [ID!]!\n  $labelableId: ID!\n) {\n  gitHub {\n    addLabelsToLabelable(input: {labelIds: $labelIds, labelableId: $labelableId}) {\n      clientMutationId\n      labelable {\n        __typename\n        labels {\n          nodes {\n            name\n            id\n          }\n        }\n      }\n    }\n  }\n}\n",
+    "text": "mutation RelaySubmitLessonPullRequest_AddLabelToPullRequestMutation(\n  $labelIds: [ID!]!\n  $labelableId: ID!\n) {\n  gitHub {\n    addLabelsToLabelable(input: {labelIds: $labelIds, labelableId: $labelableId}) {\n      clientMutationId\n      labelable {\n        __typename\n        labels {\n          nodes {\n            name\n            id\n          }\n        }\n      }\n    }\n  }\n}\n",
     "metadata": {}
   }
 };

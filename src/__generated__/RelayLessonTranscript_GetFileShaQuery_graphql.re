@@ -1,70 +1,65 @@
 /* @generated */
 
-module Unions = {
-  module Union_response_gitHub_repository_object_: {
-    type wrapped;
-    type response_gitHub_repository_object__gitHubBlob = {
-      text: option(string),
-      oid: string,
-    };
-    type gitHubBlob = response_gitHub_repository_object__gitHubBlob;
-    type t = [ | `GitHubBlob(gitHubBlob) | `UnselectedUnionMember(string)];
-    let unwrap: wrapped => t;
-  } = {
-    type wrapped;
-    type response_gitHub_repository_object__gitHubBlob = {
-      text: option(string),
-      oid: string,
-    };
-    type gitHubBlob = response_gitHub_repository_object__gitHubBlob;
-    external __unwrap_union: wrapped => {. "__typename": string} =
-      "%identity";
-    type t = [ | `GitHubBlob(gitHubBlob) | `UnselectedUnionMember(string)];
-    external __unwrap_gitHubBlob: wrapped => gitHubBlob = "%identity";
-    external __toJson: wrapped => Js.Json.t = "%identity";
-    let unwrap = wrapped => {
-      let unwrappedUnion = wrapped |> __unwrap_union;
-      switch (unwrappedUnion##__typename) {
-      | "GitHubBlob" => `GitHubBlob(wrapped |> __unwrap_gitHubBlob)
-      | typename => `UnselectedUnionMember(typename)
-      };
-    };
+module Types = {
+  type response_gitHub_repository_object__GitHubBlob = {
+    text: option(string),
+    sha: string,
   };
-
-  type union_response_gitHub_repository_object_ = [
-    | `GitHubBlob(Union_response_gitHub_repository_object_.gitHubBlob)
+  type response_gitHub_repository_object_ = [
+    | `GitHubBlob(response_gitHub_repository_object__GitHubBlob)
     | `UnselectedUnionMember(string)
   ];
-};
-
-open Unions;
-
-module Types = {
-  type repository = {
-    object_: option(union_response_gitHub_repository_object_),
+  type response_gitHub_repository = {
+    object_:
+      option(
+        [
+          | `GitHubBlob(response_gitHub_repository_object__GitHubBlob)
+          | `UnselectedUnionMember(string)
+        ],
+      ),
   };
-  type gitHub = {repository: option(repository)};
+  type response_gitHub = {repository: option(response_gitHub_repository)};
+
+  type response = {gitHub: option(response_gitHub)};
+  type refetchVariables = {
+    repoName: option(string),
+    repoOwner: option(string),
+    branchAndFilePath: option(string),
+  };
+  let makeRefetchVariables =
+      (~repoName=?, ~repoOwner=?, ~branchAndFilePath=?, ()): refetchVariables => {
+    repoName,
+    repoOwner,
+    branchAndFilePath,
+  };
+  type variables = {
+    repoName: string,
+    repoOwner: string,
+    branchAndFilePath: string,
+  };
 };
 
-open Types;
+let unwrap_response_gitHub_repository_object_:
+  {. "__typename": string} =>
+  [
+    | `GitHubBlob(Types.response_gitHub_repository_object__GitHubBlob)
+    | `UnselectedUnionMember(string)
+  ] =
+  u =>
+    switch (u##__typename) {
+    | "GitHubBlob" => `GitHubBlob(u->Obj.magic)
+    | v => `UnselectedUnionMember(v)
+    };
 
-type response = {gitHub: option(gitHub)};
-type refetchVariables = {
-  repoName: option(string),
-  repoOwner: option(string),
-  branchAndFilePath: option(string),
-};
-let makeRefetchVariables =
-    (~repoName=?, ~repoOwner=?, ~branchAndFilePath=?, ()): refetchVariables => {
-  repoName,
-  repoOwner,
-  branchAndFilePath,
-};
-type variables = {
-  repoName: string,
-  repoOwner: string,
-  branchAndFilePath: string,
-};
+let wrap_response_gitHub_repository_object_:
+  [
+    | `GitHubBlob(Types.response_gitHub_repository_object__GitHubBlob)
+    | `UnselectedUnionMember(string)
+  ] =>
+  {. "__typename": string} =
+  fun
+  | `GitHubBlob(v) => v->Obj.magic
+  | `UnselectedUnionMember(v) => {"__typename": v};
 
 module Internal = {
   type responseRaw;
@@ -72,7 +67,7 @@ module Internal = {
     {| {"__root":{"gitHub":{"n":""},"gitHub_repository":{"n":""},"gitHub_repository_object_":{"n":"","u":"response_gitHub_repository_object_"},"gitHub_repository_object__githubblob_text":{"n":""}}} |}
   ];
   let responseConverterMap = {
-    "response_gitHub_repository_object_": Union_response_gitHub_repository_object_.unwrap,
+    "response_gitHub_repository_object_": unwrap_response_gitHub_repository_object_,
   };
   let convertResponse = v =>
     v
@@ -95,7 +90,16 @@ module Internal = {
       );
 };
 
-module Utils = {};
+type preloadToken;
+
+module Utils = {
+  open Types;
+  let makeVariables = (~repoName, ~repoOwner, ~branchAndFilePath): variables => {
+    repoName,
+    repoOwner,
+    branchAndFilePath,
+  };
+};
 
 type operationType = ReasonRelay.queryNode;
 
@@ -153,7 +157,7 @@ v4 = {
   "selections": [
     {
       "kind": "ScalarField",
-      "alias": null,
+      "alias": "sha",
       "name": "oid",
       "args": null,
       "storageKey": null
@@ -268,7 +272,7 @@ return {
     "operationKind": "query",
     "name": "RelayLessonTranscript_GetFileShaQuery",
     "id": null,
-    "text": "query RelayLessonTranscript_GetFileShaQuery(\n  $repoName: String!\n  $repoOwner: String!\n  $branchAndFilePath: String!\n) {\n  gitHub {\n    repository(name: $repoName, owner: $repoOwner) {\n      object_: object(expression: $branchAndFilePath) {\n        __typename\n        ... on GitHubBlob {\n          oid\n          text\n        }\n        id\n      }\n      id\n    }\n  }\n}\n",
+    "text": "query RelayLessonTranscript_GetFileShaQuery(\n  $repoName: String!\n  $repoOwner: String!\n  $branchAndFilePath: String!\n) {\n  gitHub {\n    repository(name: $repoName, owner: $repoOwner) {\n      object_: object(expression: $branchAndFilePath) {\n        __typename\n        ... on GitHubBlob {\n          sha: oid\n          text\n        }\n        id\n      }\n      id\n    }\n  }\n}\n",
     "metadata": {}
   }
 };

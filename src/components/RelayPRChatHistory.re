@@ -185,10 +185,24 @@ module Comment = {
 };
 
 module CommentableMessageCompose = {
+  let extractNewCommentId =
+      (response: AddPullRequestCommentMutation.Types.response) => {
+    switch (response) {
+    | {
+        gitHub:
+          Some({
+            addComment: Some({commentEdge: Some({node: Some({id})})}),
+          }),
+      } =>
+      Some(id)
+    | _ => None
+    };
+  };
+
   [@react.component]
   let make = (~commentableId) => {
     let (body, setBody) = React.useState(() => "");
-    let (addComment, _isMutating) = AddPullRequestCommentMutation.use();
+    let (addComment, isMutating) = AddPullRequestCommentMutation.use();
 
     let mutation = body =>
       addComment(
@@ -196,19 +210,14 @@ module CommentableMessageCompose = {
         ~updater=
           (store, response) => {
             ReasonRelay.(
-              switch (response) {
-              | {
-                  gitHub:
-                    Some({
-                      addComment:
-                        Some({commentEdge: Some({node: Some({id})})}),
-                    }),
-                } =>
+              switch (extractNewCommentId(response)) {
+              | Some(id) =>
                 switch (
                   store->RecordSourceSelectorProxy.get(~dataId=id->makeDataId)
                 ) {
                 | None => ()
                 | Some(node) =>
+                  let insertAt: ReasonRelayUtils.insertAt = Start;
                   ReasonRelayUtils.createAndAddEdgeToConnections(
                     ~store,
                     ~node,
@@ -220,12 +229,19 @@ module CommentableMessageCompose = {
                       },
                     ],
                     ~edgeName="GitHubIssueEdge",
-                    ~insertAt=End,
-                  )
+                    ~insertAt,
+                  );
                 }
-              | _ => Js.Console.warn("Could not find node id")
+              | None => Js.Console.warn("Could not find node id")
               }
             )
+          },
+        ~onCompleted=
+          (response, _errors) => {
+            switch (extractNewCommentId(response)) {
+            | Some(_) => setBody(_ => "")
+            | None => ()
+            }
           },
         (),
       );
@@ -243,7 +259,7 @@ module CommentableMessageCompose = {
           name="message-to-send"
           id="message-to-send"
           placeholder="Type your message"
-          disabled=false
+          disabled=isMutating
           rows=2
           value=body
           onChange={event => {

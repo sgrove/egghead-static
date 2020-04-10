@@ -277,6 +277,7 @@ video {
   margin-bottom: 650px;
   overflow-y: scroll;
   flex: 100;
+  min-height: 25%;
 }
 
 .chat .chat-history .chat-messages {

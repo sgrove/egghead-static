@@ -93,7 +93,7 @@ let wrap_response_gitHub_search_edges_node:
 module Internal = {
   type responseRaw;
   let responseConverter: Js.Dict.t(Js.Dict.t(Js.Dict.t(string))) = [%raw
-    {| {"__root":{"gitHub":{"n":""},"gitHub_search_edges":{"n":"","na":""},"gitHub_search_edges_node":{"n":"","u":"response_gitHub_search_edges_node"},"gitHub_search_edges_node_githubpullrequest_state":{"e":"enum_GitHubPullRequestState"}}} |}
+    {json| {"__root":{"gitHub":{"n":""},"gitHub_search_edges":{"n":"","na":""},"gitHub_search_edges_node":{"n":"","u":"response_gitHub_search_edges_node"},"gitHub_search_edges_node_githubpullrequest_state":{"e":"enum_GitHubPullRequestState"}}} |json}
   ];
   let responseConverterMap = {
     "response_gitHub_search_edges_node": unwrap_response_gitHub_search_edges_node,
@@ -108,7 +108,7 @@ module Internal = {
       );
 
   let variablesConverter: Js.Dict.t(Js.Dict.t(Js.Dict.t(string))) = [%raw
-    {| {} |}
+    {json| {} |json}
   ];
   let variablesConverterMap = ();
   let convertVariables = v =>
@@ -148,8 +148,8 @@ module Utils = {
 
 type operationType = ReasonRelay.queryNode;
 
-let node: operationType = [%bs.raw
-  {| (function(){
+let node: operationType = [%raw
+  {json| (function(){
 var v0 = [
   {
     "kind": "LocalArgument",
@@ -291,7 +291,7 @@ return {
   "kind": "Request",
   "fragment": {
     "kind": "Fragment",
-    "name": "RelayCourseTree_SearchForPullRequestsQuery",
+    "name": "CourseTree_SearchForPullRequestsQuery",
     "type": "Query",
     "metadata": null,
     "argumentDefinitions": (v0/*: any*/),
@@ -308,7 +308,7 @@ return {
           {
             "kind": "LinkedField",
             "alias": "search",
-            "name": "__RelayCourseTree_SearchForPullRequestsQuery_gitHub_search_connection",
+            "name": "__CourseTree_SearchForPullRequestsQuery_gitHub_search_connection",
             "storageKey": null,
             "args": [
               (v1/*: any*/),
@@ -324,7 +324,7 @@ return {
   },
   "operation": {
     "kind": "Operation",
-    "name": "RelayCourseTree_SearchForPullRequestsQuery",
+    "name": "CourseTree_SearchForPullRequestsQuery",
     "argumentDefinitions": (v0/*: any*/),
     "selections": [
       {
@@ -352,7 +352,7 @@ return {
             "name": "search",
             "args": (v4/*: any*/),
             "handle": "connection",
-            "key": "RelayCourseTree_SearchForPullRequestsQuery_gitHub_search",
+            "key": "CourseTree_SearchForPullRequestsQuery_gitHub_search",
             "filters": [
               "query",
               "type"
@@ -364,9 +364,9 @@ return {
   },
   "params": {
     "operationKind": "query",
-    "name": "RelayCourseTree_SearchForPullRequestsQuery",
+    "name": "CourseTree_SearchForPullRequestsQuery",
     "id": null,
-    "text": "query RelayCourseTree_SearchForPullRequestsQuery(\n  $query: String!\n  $last: Int!\n) {\n  gitHub {\n    search(query: $query, type: ISSUE, last: $last) {\n      edges {\n        node {\n          __typename\n          ... on GitHubPullRequest {\n            id\n            title\n            body\n            state\n            number\n          }\n        }\n        cursor\n      }\n      pageInfo {\n        hasPreviousPage\n        startCursor\n      }\n    }\n  }\n}\n",
+    "text": "query CourseTree_SearchForPullRequestsQuery(\n  $query: String!\n  $last: Int!\n) {\n  gitHub {\n    search(query: $query, type: ISSUE, last: $last) {\n      edges {\n        node {\n          __typename\n          ... on GitHubPullRequest {\n            id\n            title\n            body\n            state\n            number\n          }\n        }\n        cursor\n      }\n      pageInfo {\n        hasPreviousPage\n        startCursor\n      }\n    }\n  }\n}\n",
     "metadata": {
       "connection": [
         {
@@ -382,5 +382,5 @@ return {
     }
   }
 };
-})() |}
+})() |json}
 ];

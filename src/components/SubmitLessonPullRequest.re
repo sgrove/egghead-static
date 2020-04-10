@@ -23,7 +23,7 @@ module Result = {
 
 module FindSourceRepositoryIdQuery = [%relay.query
   {|
-     query RelaySubmitLessonPullRequest_FindSourceRepositoryIdQuery($repoOwner: String!, $repoName: String!) {
+     query SubmitLessonPullRequest_FindSourceRepositoryIdQuery($repoOwner: String!, $repoName: String!) {
        gitHub {
          repository(owner: $repoOwner, name: $repoName) {
            id
@@ -34,7 +34,7 @@ module FindSourceRepositoryIdQuery = [%relay.query
 ];
 
 module ForkGitHubRepoMutation = [%relay.mutation
-  {|mutation RelaySubmitLessonPullRequest_ForkGitHubRepoMutation($repoOwner: String!, $repoName: String!) {
+  {|mutation SubmitLessonPullRequest_ForkGitHubRepoMutation($repoOwner: String!, $repoName: String!) {
     gitHub {
       createFork_oneGraph(input: {repoOwner: $repoOwner, repoName: $repoName}) {
         repository {
@@ -48,7 +48,7 @@ module ForkGitHubRepoMutation = [%relay.mutation
 
 module DoIHaveARepoQuery = [%relay.query
   {|
-     query RelaySubmitLessonPullRequest_DoIHaveARepoQuery($repoOwner: String!, $repoName: String!) {
+     query SubmitLessonPullRequest_DoIHaveARepoQuery($repoOwner: String!, $repoName: String!) {
        gitHub {
          repository(owner: $repoOwner, name: $repoName) {
            id
@@ -59,7 +59,7 @@ module DoIHaveARepoQuery = [%relay.query
 ];
 
 module CreateBranchMutation = [%relay.mutation
-  {|mutation RelaySubmitLessonPullRequest_CreateBranchMutation(
+  {|mutation SubmitLessonPullRequest_CreateBranchMutation(
        $repoOwner: String!
        $repoName: String!
        $branchName: String!
@@ -82,7 +82,7 @@ module CreateBranchMutation = [%relay.mutation
 ];
 
 module UpdateFileContentMutation = [%relay.mutation
-  {|mutation RelaySubmitLessonPullRequest_UpdateFileMutation(
+  {|mutation SubmitLessonPullRequest_UpdateFileMutation(
        $repoOwner: String!
        $repoName: String!
        $branchName: String!
@@ -113,7 +113,7 @@ module UpdateFileContentMutation = [%relay.mutation
 
 module CreatePullRequestMutation = [%relay.mutation
   {|
-mutation RelaySubmitLessonPullRequest_CreatePullRequestMutation(
+mutation SubmitLessonPullRequest_CreatePullRequestMutation(
   $repoId: ID!
   $title: String!
   $headRefName: String!
@@ -144,7 +144,7 @@ mutation RelaySubmitLessonPullRequest_CreatePullRequestMutation(
 ];
 
 module AddLabelsToPullRequestMutation = [%relay.mutation
-  {|mutation RelaySubmitLessonPullRequest_AddLabelToPullRequestMutation(
+  {|mutation SubmitLessonPullRequest_AddLabelToPullRequestMutation(
        $labelIds: [ID!]!
        $labelableId: ID!
      ) {
@@ -194,20 +194,20 @@ let fetchFileShaAndContent =
   let (
     sourceRepoFileShaPromise:
       relayResult(
-        RelayLessonTranscript.GetFileShaAndContentQuery.Types.response_gitHub_repository_object__GitHubBlob,
+        LessonTranscript.GetFileShaAndContentQuery.Types.response_gitHub_repository_object__GitHubBlob,
       ),
     resolveSourceRepoFileShaPromise,
   ) =
     Promise.pending();
 
   /* Get file sha in source repo */
-  RelayLessonTranscript.GetFileShaAndContentQuery.fetch(
+  LessonTranscript.GetFileShaAndContentQuery.fetch(
     ~environment=relayEnv,
     ~variables={repoOwner, repoName, branchAndFilePath},
     ~onResult=result => {
     switch (result) {
     | Ok(query) =>
-      switch (RelayLessonTranscript.extractFileShaAndContents(query)) {
+      switch (LessonTranscript.extractFileShaAndContents(query)) {
       | None =>
         resolveSourceRepoFileShaPromise(
           Error([|{message: "File doesn't exist in source repository"}|]),

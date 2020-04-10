@@ -64,7 +64,7 @@ let wrap_response_gitHub_repository_object_:
 module Internal = {
   type responseRaw;
   let responseConverter: Js.Dict.t(Js.Dict.t(Js.Dict.t(string))) = [%raw
-    {| {"__root":{"gitHub":{"n":""},"gitHub_repository":{"n":""},"gitHub_repository_object_":{"n":"","u":"response_gitHub_repository_object_"},"gitHub_repository_object__githubblob_text":{"n":""}}} |}
+    {json| {"__root":{"gitHub":{"n":""},"gitHub_repository":{"n":""},"gitHub_repository_object_":{"n":"","u":"response_gitHub_repository_object_"},"gitHub_repository_object__githubblob_text":{"n":""}}} |json}
   ];
   let responseConverterMap = {
     "response_gitHub_repository_object_": unwrap_response_gitHub_repository_object_,
@@ -78,7 +78,7 @@ module Internal = {
       );
 
   let variablesConverter: Js.Dict.t(Js.Dict.t(Js.Dict.t(string))) = [%raw
-    {| {} |}
+    {json| {} |json}
   ];
   let variablesConverterMap = ();
   let convertVariables = v =>
@@ -103,8 +103,8 @@ module Utils = {
 
 type operationType = ReasonRelay.queryNode;
 
-let node: operationType = [%bs.raw
-  {| (function(){
+let node: operationType = [%raw
+  {json| (function(){
 var v0 = [
   {
     "kind": "LocalArgument",
@@ -276,5 +276,5 @@ return {
     "metadata": {}
   }
 };
-})() |}
+})() |json}
 ];

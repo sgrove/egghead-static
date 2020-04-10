@@ -52,7 +52,7 @@ module Types = {
 module Internal = {
   type fragmentRaw;
   let fragmentConverter: Js.Dict.t(Js.Dict.t(Js.Dict.t(string))) = [%raw
-    {| {"__root":{"state":{"e":"enum_GitHubPullRequestState"},"comments_edges":{"n":"","na":""},"comments_edges_node":{"n":"","f":""}}} |}
+    {json| {"__root":{"state":{"e":"enum_GitHubPullRequestState"},"comments_edges":{"n":"","na":""},"comments_edges_node":{"n":"","f":""}}} |json}
   ];
   let fragmentConverterMap = {
     "enum_GitHubPullRequestState": unwrap_enum_GitHubPullRequestState,
@@ -96,8 +96,8 @@ module Utils = {
 
 type operationType = ReasonRelay.fragmentNode;
 
-let node: operationType = [%bs.raw
-  {| (function(){
+let node: operationType = [%raw
+  {json| (function(){
 var v0 = {
   "kind": "ScalarField",
   "alias": null,
@@ -239,5 +239,5 @@ return {
     }
   ]
 };
-})() |}
+})() |json}
 ];

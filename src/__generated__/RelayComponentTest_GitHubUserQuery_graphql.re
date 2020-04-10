@@ -29,7 +29,7 @@ module Types = {
 module Internal = {
   type responseRaw;
   let responseConverter: Js.Dict.t(Js.Dict.t(Js.Dict.t(string))) = [%raw
-    {| {"__root":{"gitHub":{"n":""},"gitHub_licenses":{"na":""},"gitHub_user":{"n":"","f":""}}} |}
+    {json| {"__root":{"gitHub":{"n":""},"gitHub_licenses":{"na":""},"gitHub_user":{"n":"","f":""}}} |json}
   ];
   let responseConverterMap = ();
   let convertResponse = v =>
@@ -41,7 +41,7 @@ module Internal = {
       );
 
   let variablesConverter: Js.Dict.t(Js.Dict.t(Js.Dict.t(string))) = [%raw
-    {| {} |}
+    {json| {} |json}
   ];
   let variablesConverterMap = ();
   let convertVariables = v =>
@@ -62,8 +62,8 @@ module Utils = {
 
 type operationType = ReasonRelay.queryNode;
 
-let node: operationType = [%bs.raw
-  {| (function(){
+let node: operationType = [%raw
+  {json| (function(){
 var v0 = [
   {
     "kind": "LocalArgument",
@@ -232,5 +232,5 @@ return {
     "metadata": {}
   }
 };
-})() |}
+})() |json}
 ];

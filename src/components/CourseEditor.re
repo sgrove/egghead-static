@@ -72,7 +72,7 @@ module EditorContainer = {
         fallback={
           <div> "Loading lessons and pull requests..."->React.string </div>
         }>
-        <RelayCourseTree
+        <CourseTree
           course
           username
           onLessonSelected={(~lessonId) => {

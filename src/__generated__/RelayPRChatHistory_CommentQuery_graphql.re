@@ -74,7 +74,7 @@ let wrap_response_gitHub_search_edges_node:
 module Internal = {
   type responseRaw;
   let responseConverter: Js.Dict.t(Js.Dict.t(Js.Dict.t(string))) = [%raw
-    {| {"__root":{"gitHub":{"n":""},"gitHub_search_edges":{"n":"","na":""},"gitHub_search_edges_node":{"n":"","u":"response_gitHub_search_edges_node"},"gitHub_search_edges_node_githubpullrequest":{"f":""}}} |}
+    {json| {"__root":{"gitHub":{"n":""},"gitHub_search_edges":{"n":"","na":""},"gitHub_search_edges_node":{"n":"","u":"response_gitHub_search_edges_node"},"gitHub_search_edges_node_githubpullrequest":{"f":""}}} |json}
   ];
   let responseConverterMap = {
     "response_gitHub_search_edges_node": unwrap_response_gitHub_search_edges_node,
@@ -88,7 +88,7 @@ module Internal = {
       );
 
   let variablesConverter: Js.Dict.t(Js.Dict.t(Js.Dict.t(string))) = [%raw
-    {| {} |}
+    {json| {} |json}
   ];
   let variablesConverterMap = ();
   let convertVariables = v =>
@@ -128,8 +128,8 @@ module Utils = {
 
 type operationType = ReasonRelay.queryNode;
 
-let node: operationType = [%bs.raw
-  {| (function(){
+let node: operationType = [%raw
+  {json| (function(){
 var v0 = [
   {
     "kind": "LocalArgument",
@@ -498,5 +498,5 @@ return {
     }
   }
 };
-})() |}
+})() |json}
 ];

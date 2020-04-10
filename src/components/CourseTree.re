@@ -2,13 +2,13 @@ module Tree = BsReactAnimatedTree;
 
 module Query = [%relay.query
   {|
-query RelayCourseTree_SearchForPullRequestsQuery(
+query CourseTree_SearchForPullRequestsQuery(
   $query: String!
   $last: Int!
 ) {
   gitHub {
     search(query: $query, type: ISSUE, last: $last)
-      @connection(key:"RelayCourseTree_SearchForPullRequestsQuery_gitHub_search")
+      @connection(key:"CourseTree_SearchForPullRequestsQuery_gitHub_search")
       {
       edges {
         node {

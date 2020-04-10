@@ -23,7 +23,7 @@ module Types = {
 module Internal = {
   type wrapResponseRaw;
   let wrapResponseConverter: Js.Dict.t(Js.Dict.t(Js.Dict.t(string))) = [%raw
-    {| {"__root":{"gitHub":{"n":""}}} |}
+    {json| {"__root":{"gitHub":{"n":""}}} |json}
   ];
   let wrapResponseConverterMap = ();
   let convertWrapResponse = v =>
@@ -36,7 +36,7 @@ module Internal = {
 
   type responseRaw;
   let responseConverter: Js.Dict.t(Js.Dict.t(Js.Dict.t(string))) = [%raw
-    {| {"__root":{"gitHub":{"n":""}}} |}
+    {json| {"__root":{"gitHub":{"n":""}}} |json}
   ];
   let responseConverterMap = ();
   let convertResponse = v =>
@@ -48,7 +48,7 @@ module Internal = {
       );
 
   let variablesConverter: Js.Dict.t(Js.Dict.t(Js.Dict.t(string))) = [%raw
-    {| {} |}
+    {json| {} |json}
   ];
   let variablesConverterMap = ();
   let convertVariables = v =>
@@ -88,8 +88,8 @@ module Utils = {
 
 type operationType = ReasonRelay.mutationNode;
 
-let node: operationType = [%bs.raw
-  {| (function(){
+let node: operationType = [%raw
+  {json| (function(){
 var v0 = [
   {
     "kind": "LocalArgument",
@@ -185,7 +185,7 @@ return {
   "kind": "Request",
   "fragment": {
     "kind": "Fragment",
-    "name": "RelaySubmitLessonPullRequest_CreateBranchMutation",
+    "name": "SubmitLessonPullRequest_CreateBranchMutation",
     "type": "Mutation",
     "metadata": null,
     "argumentDefinitions": (v0/*: any*/),
@@ -193,17 +193,17 @@ return {
   },
   "operation": {
     "kind": "Operation",
-    "name": "RelaySubmitLessonPullRequest_CreateBranchMutation",
+    "name": "SubmitLessonPullRequest_CreateBranchMutation",
     "argumentDefinitions": (v0/*: any*/),
     "selections": (v1/*: any*/)
   },
   "params": {
     "operationKind": "mutation",
-    "name": "RelaySubmitLessonPullRequest_CreateBranchMutation",
+    "name": "SubmitLessonPullRequest_CreateBranchMutation",
     "id": null,
-    "text": "mutation RelaySubmitLessonPullRequest_CreateBranchMutation(\n  $repoOwner: String!\n  $repoName: String!\n  $branchName: String!\n) {\n  gitHub {\n    createBranch_oneGraph(input: {branchName: $branchName, repoName: $repoName, repoOwner: $repoOwner}) {\n      ref_: ref {\n        name\n        id\n      }\n    }\n  }\n}\n",
+    "text": "mutation SubmitLessonPullRequest_CreateBranchMutation(\n  $repoOwner: String!\n  $repoName: String!\n  $branchName: String!\n) {\n  gitHub {\n    createBranch_oneGraph(input: {branchName: $branchName, repoName: $repoName, repoOwner: $repoOwner}) {\n      ref_: ref {\n        name\n        id\n      }\n    }\n  }\n}\n",
     "metadata": {}
   }
 };
-})() |}
+})() |json}
 ];

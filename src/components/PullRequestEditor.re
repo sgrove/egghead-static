@@ -44,7 +44,7 @@ module EditorWithData = {
         ~onChange,
       ) => {
     let query =
-      RelayLessonTranscript.GetFileShaAndContentQuery.use(
+      LessonTranscript.GetFileShaAndContentQuery.use(
         ~variables={
           repoOwner: sourceRepo.owner,
           repoName: sourceRepo.name,
@@ -54,10 +54,10 @@ module EditorWithData = {
       );
 
     let initialContent =
-      RelayLessonTranscript.extractFileShaAndContents(query)
+      LessonTranscript.extractFileShaAndContents(query)
       ->Belt.Option.flatMap(
           (
-            blob: RelayLessonTranscript.GetFileShaAndContentQuery.Types.response_gitHub_repository_object__GitHubBlob,
+            blob: LessonTranscript.GetFileShaAndContentQuery.Types.response_gitHub_repository_object__GitHubBlob,
           ) =>
           blob.text
         );
@@ -117,7 +117,7 @@ let make =
       }
       rightPanel={
         <React.Suspense fallback={""->React.string}>
-          <RelayPRChatHistory myUsername=username pullRequestId />
+          <PullRequestChatHistory myUsername=username pullRequestId />
         </React.Suspense>
       }
       footer={"Footer"->string}

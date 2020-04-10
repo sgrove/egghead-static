@@ -22,7 +22,7 @@ module Types = {
 module Internal = {
   type responseRaw;
   let responseConverter: Js.Dict.t(Js.Dict.t(Js.Dict.t(string))) = [%raw
-    {| {"__root":{"gitHub":{"n":""},"gitHub_repository":{"n":""}}} |}
+    {json| {"__root":{"gitHub":{"n":""},"gitHub_repository":{"n":""}}} |json}
   ];
   let responseConverterMap = ();
   let convertResponse = v =>
@@ -34,7 +34,7 @@ module Internal = {
       );
 
   let variablesConverter: Js.Dict.t(Js.Dict.t(Js.Dict.t(string))) = [%raw
-    {| {} |}
+    {json| {} |json}
   ];
   let variablesConverterMap = ();
   let convertVariables = v =>
@@ -58,8 +58,8 @@ module Utils = {
 
 type operationType = ReasonRelay.queryNode;
 
-let node: operationType = [%bs.raw
-  {| (function(){
+let node: operationType = [%raw
+  {json| (function(){
 var v0 = [
   {
     "kind": "LocalArgument",
@@ -120,7 +120,7 @@ return {
   "kind": "Request",
   "fragment": {
     "kind": "Fragment",
-    "name": "RelaySubmitLessonPullRequest_FindSourceRepositoryIdQuery",
+    "name": "SubmitLessonPullRequest_FindSourceRepositoryIdQuery",
     "type": "Query",
     "metadata": null,
     "argumentDefinitions": (v0/*: any*/),
@@ -128,17 +128,17 @@ return {
   },
   "operation": {
     "kind": "Operation",
-    "name": "RelaySubmitLessonPullRequest_FindSourceRepositoryIdQuery",
+    "name": "SubmitLessonPullRequest_FindSourceRepositoryIdQuery",
     "argumentDefinitions": (v0/*: any*/),
     "selections": (v1/*: any*/)
   },
   "params": {
     "operationKind": "query",
-    "name": "RelaySubmitLessonPullRequest_FindSourceRepositoryIdQuery",
+    "name": "SubmitLessonPullRequest_FindSourceRepositoryIdQuery",
     "id": null,
-    "text": "query RelaySubmitLessonPullRequest_FindSourceRepositoryIdQuery(\n  $repoOwner: String!\n  $repoName: String!\n) {\n  gitHub {\n    repository(owner: $repoOwner, name: $repoName) {\n      id\n    }\n  }\n}\n",
+    "text": "query SubmitLessonPullRequest_FindSourceRepositoryIdQuery(\n  $repoOwner: String!\n  $repoName: String!\n) {\n  gitHub {\n    repository(owner: $repoOwner, name: $repoName) {\n      id\n    }\n  }\n}\n",
     "metadata": {}
   }
 };
-})() |}
+})() |json}
 ];

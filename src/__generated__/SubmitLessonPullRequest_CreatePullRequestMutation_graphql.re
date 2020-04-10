@@ -28,7 +28,7 @@ module Types = {
 module Internal = {
   type wrapResponseRaw;
   let wrapResponseConverter: Js.Dict.t(Js.Dict.t(Js.Dict.t(string))) = [%raw
-    {| {"__root":{"gitHub":{"n":""},"gitHub_createPullRequest":{"n":""},"gitHub_createPullRequest_pullRequest":{"n":""}}} |}
+    {json| {"__root":{"gitHub":{"n":""},"gitHub_createPullRequest":{"n":""},"gitHub_createPullRequest_pullRequest":{"n":""}}} |json}
   ];
   let wrapResponseConverterMap = ();
   let convertWrapResponse = v =>
@@ -41,7 +41,7 @@ module Internal = {
 
   type responseRaw;
   let responseConverter: Js.Dict.t(Js.Dict.t(Js.Dict.t(string))) = [%raw
-    {| {"__root":{"gitHub":{"n":""},"gitHub_createPullRequest":{"n":""},"gitHub_createPullRequest_pullRequest":{"n":""}}} |}
+    {json| {"__root":{"gitHub":{"n":""},"gitHub_createPullRequest":{"n":""},"gitHub_createPullRequest_pullRequest":{"n":""}}} |json}
   ];
   let responseConverterMap = ();
   let convertResponse = v =>
@@ -53,7 +53,7 @@ module Internal = {
       );
 
   let variablesConverter: Js.Dict.t(Js.Dict.t(Js.Dict.t(string))) = [%raw
-    {| {} |}
+    {json| {} |json}
   ];
   let variablesConverterMap = ();
   let convertVariables = v =>
@@ -100,8 +100,8 @@ module Utils = {
 
 type operationType = ReasonRelay.mutationNode;
 
-let node: operationType = [%bs.raw
-  {| (function(){
+let node: operationType = [%raw
+  {json| (function(){
 var v0 = [
   {
     "kind": "LocalArgument",
@@ -245,7 +245,7 @@ return {
   "kind": "Request",
   "fragment": {
     "kind": "Fragment",
-    "name": "RelaySubmitLessonPullRequest_CreatePullRequestMutation",
+    "name": "SubmitLessonPullRequest_CreatePullRequestMutation",
     "type": "Mutation",
     "metadata": null,
     "argumentDefinitions": (v0/*: any*/),
@@ -253,17 +253,17 @@ return {
   },
   "operation": {
     "kind": "Operation",
-    "name": "RelaySubmitLessonPullRequest_CreatePullRequestMutation",
+    "name": "SubmitLessonPullRequest_CreatePullRequestMutation",
     "argumentDefinitions": (v0/*: any*/),
     "selections": (v1/*: any*/)
   },
   "params": {
     "operationKind": "mutation",
-    "name": "RelaySubmitLessonPullRequest_CreatePullRequestMutation",
+    "name": "SubmitLessonPullRequest_CreatePullRequestMutation",
     "id": null,
-    "text": "mutation RelaySubmitLessonPullRequest_CreatePullRequestMutation(\n  $repoId: ID!\n  $title: String!\n  $headRefName: String!\n  $baseRefName: String!\n  $body: String!\n) {\n  gitHub {\n    createPullRequest(input: {title: $title, headRefName: $headRefName, baseRefName: $baseRefName, repositoryId: $repoId, maintainerCanModify: true, body: $body}) {\n      pullRequest {\n        url\n        id\n        number\n        title\n        permalink\n      }\n    }\n  }\n}\n",
+    "text": "mutation SubmitLessonPullRequest_CreatePullRequestMutation(\n  $repoId: ID!\n  $title: String!\n  $headRefName: String!\n  $baseRefName: String!\n  $body: String!\n) {\n  gitHub {\n    createPullRequest(input: {title: $title, headRefName: $headRefName, baseRefName: $baseRefName, repositoryId: $repoId, maintainerCanModify: true, body: $body}) {\n      pullRequest {\n        url\n        id\n        number\n        title\n        permalink\n      }\n    }\n  }\n}\n",
     "metadata": {}
   }
 };
-})() |}
+})() |json}
 ];

@@ -100,7 +100,7 @@ let make =
     <EditorControls
       title={
               let lessonTitle = lesson.title;
-              {j|"Viewing pull request for $lessonTitle"|j}->string;
+              {j|Viewing pull request for $lessonTitle|j}->string;
             }
       leftPanel=courseTree
       centerPanel={

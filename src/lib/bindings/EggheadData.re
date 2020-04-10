@@ -61,6 +61,14 @@ let courseSlug = (course: course) =>
   ->Js.String2.replaceByRe([%bs.re "/\\W+/g"], "-")
   ->Js.String2.toLocaleLowerCase;
 
+let filePathOfCourseLesson = (course: course, lesson: lesson) => {
+  let lessonSlug = lesson.slug;
+  let courseSlug = courseSlug(course);
+  let filePath = {j|$courseSlug/lessons/$lessonSlug.md|j};
+
+  filePath;
+};
+
 type repo = {
   owner: string,
   name: string,

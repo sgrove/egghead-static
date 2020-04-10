@@ -91,6 +91,7 @@ let make =
       ~onEditorDidMount,
       ~username,
       ~onChange,
+      ~pullRequestId,
     ) => {
   let branch = "master"; /* Always edit master version of a lesson */
   let filePath = EggheadData.filePathOfCourseLesson(course, lesson);
@@ -98,8 +99,8 @@ let make =
   React.(
     <EditorControls
       title={
-              let title = lesson.title;
-              {j|Editing "$title"|j}->string;
+              let lessonTitle = lesson.title;
+              {j|"Viewing pull request for $lessonTitle"|j}->string;
             }
       leftPanel=courseTree
       centerPanel={
@@ -116,16 +117,10 @@ let make =
       }
       rightPanel={
         <React.Suspense fallback={""->React.string}>
-          <RelaySubmitLessonPullRequest
-            sourceRepo
-            course
-            lesson
-            username
-            editedText=""
-            existingSha="x"
-          />
+          <RelayPRChatHistory myUsername=username pullRequestId />
         </React.Suspense>
       }
+      footer={"Footer"->string}
     />
   );
 };

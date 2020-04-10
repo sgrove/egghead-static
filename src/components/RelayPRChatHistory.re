@@ -47,6 +47,7 @@ fragment RelayPRChatHistory_PullRequestFragment on GitHubPullRequest {
   body
   state
   number
+  url
   comments(last: 100) @connection(key: "RelayPRChatHistory_PullRequestFragment_comments") {
     edges {
       node {
@@ -305,6 +306,9 @@ module PullRequestChat = {
         <div className="chat-about">
           <div className="chat-with">
             {string(prTitle)}
+            <a alt={j|$prTitle on GitHub|j} target="_blank" href={pr.url}>
+              {string({j|⤴|j})}
+            </a>
             <button> {string("Refresh")} </button>
           </div>
         </div>
@@ -315,26 +319,24 @@ module PullRequestChat = {
   };
 };
 
-module PullRequestContainer = {
-  [@react.component]
-  let make = (~pullRequestId, ~myUsername) => {
-    let query =
-      PullRequestContainerQuery.use(
-        ~variables={pullRequestId: pullRequestId},
-        (),
-      );
-
-    React.(
-      <div className="chat-widget-container clearfix">
-        {switch (query) {
-         | {gitHub: Some({node: Some(`GitHubPullRequest(pullRequest))})} =>
-           <PullRequestChat
-             pullRequest={pullRequest.getFragmentRefs()}
-             myUsername
-           />
-         | _ => null
-         }}
-      </div>
+[@react.component]
+let make = (~pullRequestId, ~myUsername) => {
+  let query =
+    PullRequestContainerQuery.use(
+      ~variables={pullRequestId: pullRequestId},
+      (),
     );
-  };
+
+  React.(
+    <div className="chat-widget-container clearfix">
+      {switch (query) {
+       | {gitHub: Some({node: Some(`GitHubPullRequest(pullRequest))})} =>
+         <PullRequestChat
+           pullRequest={pullRequest.getFragmentRefs()}
+           myUsername
+         />
+       | _ => null
+       }}
+    </div>
+  );
 };

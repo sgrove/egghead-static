@@ -21,7 +21,6 @@ let extractFileShaAndContents =
   switch (query) {
   | {gitHub: Some({repository: Some({object_: Some(`GitHubBlob(blob))})})} =>
     Some(blob)
-
   | _ => None
   };
 };

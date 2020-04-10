@@ -44,6 +44,7 @@ module Types = {
     body: string,
     state: [ | `CLOSED | `MERGED | `OPEN | `FutureAddedValue(string)],
     number: int,
+    url: string,
     comments: fragment_comments,
   };
 };
@@ -148,6 +149,13 @@ return {
       "kind": "ScalarField",
       "alias": null,
       "name": "number",
+      "args": null,
+      "storageKey": null
+    },
+    {
+      "kind": "ScalarField",
+      "alias": null,
+      "name": "url",
       "args": null,
       "storageKey": null
     },

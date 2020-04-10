@@ -548,12 +548,13 @@ let make =
     (
       ~course: EggheadData.course,
       ~sourceRepo: EggheadData.repo,
-      ~editableLesson: EggheadData.editableLesson,
+      ~lesson: EggheadData.lesson,
+      ~editedText,
+      ~existingSha,
       ~username,
     ) => {
-  let editedText = editableLesson.editedTranscript;
-  let existingFileSha = editableLesson.existingSha;
-  let filePath = EggheadData.filepathOfEditableLesson(course, editableLesson);
+  let existingFileSha = existingSha;
+  let filePath = EggheadData.filePathOfCourseLesson(course, lesson);
 
   let doIHaveARepoQuery =
     DoIHaveARepoQuery.use(
@@ -579,7 +580,7 @@ let make =
     | _ => None
     };
 
-  let lessonId = editableLesson.id;
+  let lessonId = lesson.id;
 
   let (state, dispatch) =
     React.useReducer(

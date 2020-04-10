@@ -235,6 +235,13 @@ return {
                     "storageKey": null
                   },
                   {
+                    "kind": "ScalarField",
+                    "alias": null,
+                    "name": "url",
+                    "args": null,
+                    "storageKey": null
+                  },
+                  {
                     "kind": "LinkedField",
                     "alias": null,
                     "name": "comments",
@@ -356,7 +363,7 @@ return {
     "operationKind": "query",
     "name": "RelayPRChatHistory_PullRequestContainerQuery",
     "id": null,
-    "text": "query RelayPRChatHistory_PullRequestContainerQuery(\n  $pullRequestId: ID!\n) {\n  gitHub {\n    node(id: $pullRequestId) {\n      __typename\n      ... on GitHubPullRequest {\n        ...RelayPRChatHistory_PullRequestFragment\n      }\n      id\n    }\n  }\n}\n\nfragment RelayPRChatHistory_CommentFragment on GitHubComment {\n  id\n  author {\n    __typename\n    login\n    avatarUrl\n  }\n  createdAt\n  body\n}\n\nfragment RelayPRChatHistory_PullRequestFragment on GitHubPullRequest {\n  id\n  title\n  body\n  state\n  number\n  comments(last: 100) {\n    edges {\n      node {\n        id\n        ...RelayPRChatHistory_CommentFragment\n        __typename\n      }\n      cursor\n    }\n    pageInfo {\n      hasPreviousPage\n      startCursor\n    }\n  }\n}\n",
+    "text": "query RelayPRChatHistory_PullRequestContainerQuery(\n  $pullRequestId: ID!\n) {\n  gitHub {\n    node(id: $pullRequestId) {\n      __typename\n      ... on GitHubPullRequest {\n        ...RelayPRChatHistory_PullRequestFragment\n      }\n      id\n    }\n  }\n}\n\nfragment RelayPRChatHistory_CommentFragment on GitHubComment {\n  id\n  author {\n    __typename\n    login\n    avatarUrl\n  }\n  createdAt\n  body\n}\n\nfragment RelayPRChatHistory_PullRequestFragment on GitHubPullRequest {\n  id\n  title\n  body\n  state\n  number\n  url\n  comments(last: 100) {\n    edges {\n      node {\n        id\n        ...RelayPRChatHistory_CommentFragment\n        __typename\n      }\n      cursor\n    }\n    pageInfo {\n      hasPreviousPage\n      startCursor\n    }\n  }\n}\n",
     "metadata": {}
   }
 };

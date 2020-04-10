@@ -15,7 +15,8 @@ let auth = isSsr ? None : Some(OneGraphAuth.create(authConfig));
 
 /* RelayEnv.re */
 /* This is just a custom exception to indicate that something went wrong. */
-exception Graphql_error(string);
+exception GraphqlError(string);
+
 /**
  * A standard fetch that sends our operation and variables to the
  * GraphQL server, and then decodes and returns the response.
@@ -54,9 +55,7 @@ let fetchQuery: ReasonRelay.Network.fetchFunctionPromise =
              Response.json(resp);
            } else {
              Js.Promise.reject(
-               Graphql_error(
-                 "Request failed: " ++ Response.statusText(resp),
-               ),
+               GraphqlError("Request failed: " ++ Response.statusText(resp)),
              );
            }
          )

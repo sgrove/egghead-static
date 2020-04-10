@@ -1,13 +1,13 @@
-[@bs.send]
-external getDOMAttribute: ('t, string) => Js.Nullable.t(string) =
-  "getAttribute";
-
 let sourceRepo: EggheadData.repo = {
   owner: "eggheadio",
   name: "egghead-asciicasts",
 };
 
 module ContentPreview = {
+  [@bs.send]
+  external getDOMAttribute: ('t, string) => Js.Nullable.t(string) =
+    "getAttribute";
+
   [@react.component]
   let make = (~editor, ~content) => {
     [@react.component]

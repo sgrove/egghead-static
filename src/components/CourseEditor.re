@@ -161,11 +161,14 @@ module Eggy = {
 [@react.component]
 let make = (~course: EggheadData.courseWithNullableLessons) => {
   /* Because we can't completely trust every course to have lessons, we filter out all null lessons here */
+  Js.log2("Course: ", course);
+
   let lessons =
     switch (Js.Nullable.toOption(course.lessons)) {
     | None => [||]
     | Some(lessons) => lessons
     };
+
   /* We then create an EggheadData.course (as opposed to a
      EggheadData.courseWithNullableLessons) so that the rest of our code doesn't
      have to deal with nullable lessons. It's now incumbent on our data
@@ -181,6 +184,7 @@ let make = (~course: EggheadData.courseWithNullableLessons) => {
     title: course.title,
     lessons,
   };
+
   React.(
     switch (course.lessons->Belt.List.fromArray) {
     | [] => "No lessons"->string

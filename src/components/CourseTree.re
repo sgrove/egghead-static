@@ -1,5 +1,3 @@
-module Tree = BsReactAnimatedTree;
-
 module Query = [%relay.query
   {|
 query CourseTree_SearchForPullRequestsQuery(
@@ -52,6 +50,8 @@ let make =
       ~onLessonSelected,
       ~onPullRequestSelected,
     ) => {
+  module Tree = BsReactAnimatedTree;
+
   let relayEnv = ReasonRelay.useEnvironmentFromContext();
 
   let (allPullRequests: state, setPullRequests) =

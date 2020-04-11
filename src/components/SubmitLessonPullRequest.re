@@ -705,10 +705,7 @@ let make =
         | SetTitle(title) => {...state, title}
         | SetBody(body) => {...state, body}
         },
-      {
-        title: "New Relay PullRequest",
-        body: "Example body with egghead metadata",
-      },
+      {title: "", body: ""},
     );
 
   let relayEnv = ReasonRelay.useEnvironmentFromContext();

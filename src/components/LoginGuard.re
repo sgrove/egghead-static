@@ -274,3 +274,114 @@ let make = (~auth, ~children) => {
     </div>
   };
 };
+
+module StaticPlaceholder = {
+  module LoginIcon = {
+    [@react.component]
+    let make =
+        (~service: OneGraphAuthEnhanced.service, ~serviceState, ~whyMessage) => {
+      let (serviceName, friendlyName) =
+        switch (service) {
+        | Egghead => ("eggheadio", "Egghead")
+        | GitHub => ("github", "GitHub")
+        };
+
+      let container =
+        ReactDOMRe.Style.make(
+          ~display="flex",
+          ~position="relative",
+          ~flexDirection="column",
+          ~width="100%",
+          ~alignItems="center",
+          (),
+        );
+
+      let textStyle =
+        ReactDOMRe.Style.make(
+          ~fontSize="large",
+          ~fontWeight="bold",
+          ~color="black",
+          (),
+        );
+
+      React.(
+        switch (serviceState) {
+        | LoggedIn(_me) =>
+          <button style=container disabled=true>
+            <ServiceIcon serviceName friendlyName />
+            {checkmark("250px", "250px")}
+            <span style=textStyle>
+              {j|Logged into $friendlyName!|j}->string
+            </span>
+          </button>
+        | Loading =>
+          <button style=container disabled=true>
+            <ServiceIcon serviceName friendlyName />
+            <LoadingSpinner
+              height="250px"
+              width="250px"
+              style={ReactDOMRe.Style.make(~position="absolute", ())}
+            />
+            <span style=textStyle>
+              {j|Logging into $friendlyName...|j}->string
+            </span>
+          </button>
+        | LoggedOut =>
+          <button style=container>
+            <ServiceIcon serviceName friendlyName onClick={_ => ()} />
+            <span style=textStyle> {string(whyMessage)} </span>
+          </button>
+        }
+      );
+    };
+  };
+  [@react.component]
+  let make = () => {
+    <div>
+      <div
+        className="content-left-padding"
+        style={ReactDOMRe.Style.make(
+          ~backgroundColor="#1e1e1e",
+          ~width="20%",
+          (),
+        )}
+      />
+      <div
+        style={ReactDOMRe.Style.make(
+          ~width="60%",
+          ~backgroundColor="#fff",
+          ~textAlign="center",
+          ~alignItems="center",
+          ~justifyContent="center",
+          ~display="flex",
+          (),
+        )}>
+        <div
+          style={ReactDOMRe.Style.make(
+            ~alignSelf="center",
+            ~borderRadius="4000px",
+            (),
+          )}>
+          <LoginIcon
+            serviceState=LoggedOut
+            service=GitHub
+            whyMessage="Log into GitHub so we can submit your changes to our repository"
+          />
+          <LoginIcon
+            serviceState=LoggedOut
+            service=Egghead
+            whyMessage="Log into Egghead so we can thank you for your contributions"
+          />
+        </div>
+      </div>
+      <div
+        className="content-right-padding"
+        style={ReactDOMRe.Style.make(
+          ~backgroundColor="#1e1e1e",
+          ~width="20%",
+          (),
+        )}
+      />
+    </div>;
+  };
+};

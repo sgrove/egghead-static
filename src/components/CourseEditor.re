@@ -321,7 +321,7 @@ let make = (~course: EggheadData.courseWithNullableLessons) => {
            <LoginGuard auth>
              {(username => <Eggy course username />)}
            </LoginGuard>
-         | _ => "Loading the Egghead™ lesson editor..."->React.string
+         | _ => <LoginGuard.StaticPlaceholder />
          }}
       </React.Suspense>
     }

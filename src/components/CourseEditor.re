@@ -235,7 +235,6 @@ module EditorContainer = {
         sourceRepo
         username
         onEditorDidMount
-        onChange
         pullRequestId
       />
 
@@ -278,7 +277,7 @@ module Eggy = {
         onEditorDidMount={(~editor, ~content) => {
           setState(_ => {content, editor: Some(editor)})
         }}
-        onChange={(~value) => {
+        onChange={(~value, ~originalSha as _) => {
           setState(state => {...state, content: value})
         }}
       />

@@ -7,7 +7,6 @@ let make =
       ~lesson: EggheadData.lesson,
       ~onEditorDidMount,
       ~username,
-      ~onChange,
       ~pullRequestId,
     ) => {
   let branch = "master"; /* Always edit master version of a lesson */
@@ -28,7 +27,7 @@ let make =
             branch
             filePath
             onEditorDidMount
-            onChange
+            onChange={(~result as _) => ()}
           />
         </React.Suspense>
       }

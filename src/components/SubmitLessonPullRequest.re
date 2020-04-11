@@ -413,11 +413,12 @@ let commitLessonFileChange =
   commitLessonFileChangePromise;
 };
 
-let createPullRequestFileChange =
+let createPullRequest =
     (~relayEnv, ~repoId, ~title, ~headRefName, ~baseRefName, ~body) => {
   let (
-    createPullRequestFileChangePromise: relayResult(unit),
-    resolveCreatePullRequestFileChangePromise,
+    createPullRequestPromise:
+      relayResult(CreatePullRequestMutation.Types.response),
+    resolveCreatePullRequestPromise,
   ) =
     Promise.pending();
 
@@ -429,18 +430,18 @@ let createPullRequestFileChange =
         (data, errors) => {
           let result =
             switch (data, errors) {
-            | (Some(_data), None) => Ok()
+            | (Some(data), None) => Ok(data)
             | (_, Some(errors)) => Error(errors)
             | _ => Error([|{message: "Unrecognized return value"}|])
             };
-          resolveCreatePullRequestFileChangePromise(result);
+          resolveCreatePullRequestPromise(result);
         },
       (),
     );
 
   disposable->ignore;
 
-  createPullRequestFileChangePromise;
+  createPullRequestPromise;
 };
 
 type status =
@@ -609,7 +610,7 @@ $eggheadMetaText|j};
   setStatus("Creating pull request..."->React.string);
 
   let%Promise.Wrap createPullRequestResult =
-    createPullRequestFileChange(
+    createPullRequest(
       ~relayEnv,
       ~repoId=sourceRepositoryId,
       ~title=pullRequestTitle,
@@ -622,12 +623,38 @@ $eggheadMetaText|j};
     {j|Failed to create pull request|j}->React.string,
   );
 
-  setStatus(
-    ~inProgress=false,
-    "Successfully submit lesson change!"->React.string,
-  );
+  let%Result.Wrap createPullRequestData = createPullRequestResult;
 
-  createPullRequestResult;
+  let message =
+    switch (createPullRequestData) {
+    | {
+        gitHub:
+          Some({
+            createPullRequest:
+              Some({
+                pullRequest:
+                  Some(
+                    (
+                      pullRequest: CreatePullRequestMutation.Types.response_gitHub_createPullRequest_pullRequest
+                    ),
+                  ),
+              }),
+          }),
+      } =>
+      open React;
+      let number = pullRequest.number->string_of_int;
+      <>
+        "Submitted lesson change! "->string
+        <a href={pullRequest.url} target="_blank">
+          {j|#$number⤴|j}->string
+        </a>
+      </>;
+    | _ =>
+      "Submitted change, but unable to find resulting pull request number. Please check on Github to confirm the pull request was submitted successfully."
+      ->React.string
+    };
+
+  setStatus(~inProgress=false, message);
 };
 
 [@react.component]
@@ -690,66 +717,82 @@ let make =
     switch (sourceRepositoryId, editedText) {
     | (None, _) => "Couldn't find source repository id"->string
     | (Some(sourceRepositoryId), editedText) =>
-      <div
-        style={ReactDOMRe.Style.make(
-          ~flex="0 0 auto",
-          ~display="flex",
-          ~flexWrap="nowrap",
-          ~flexDirection="column",
-          ~justifyContent="flex-start",
-          ~alignItems="stretch",
-          ~alignContent="stretch",
-          (),
-        )}>
-        <h4> {string("Title of your change")} </h4>
-        <input
-          type_="text"
-          onChange={event =>
-            dispatch(SetTitle(ReactEvent.Form.target(event)##value))
-          }
-          value={state.title}
-        />
-        <h4> {string("What did you change?")} </h4>
-        <textarea
-          onChange={event =>
-            dispatch(SetBody(ReactEvent.Form.target(event)##value))
-          }
-          value={state.body}
-        />
-        <button
-          disabled={Belt.Option.isNone(editedText)}
-          onClick={_ => {
-            editedText
-            ->Belt.Option.map(editedText => {
-                Js.Console.info("Submitting...");
+      let disabled =
+        switch (editedText, status) {
+        | (None, _)
+        | (_, InProgress(_)) => true
+        | (_, Idle)
+        | (_, Finished(_)) => false
+        };
 
-                submitPullRequest(
-                  ~relayEnv,
-                  ~branchName=
-                    Utils.String.toBranchName(state.title, username),
-                  ~username,
-                  ~userSubmittedTitle=state.title,
-                  ~userSubmittedBody=state.body,
-                  ~editedContent=editedText,
-                  ~filePath,
-                  ~lessonId,
-                  ~sourceRepositoryId,
-                  ~existingFileSha,
-                  ~needsFork,
-                  ~sourceRepo,
-                  ~setStatus,
-                );
-              })
-            ->ignore
-          }}>
-          {let buttonLabel =
-             needsFork
-               ? "Fork Egghead repo and submit pull request"
-               : "Submit pull request";
-           string(buttonLabel)}
-        </button>
-        <div> status->statusEl </div>
-      </div>
+      <div>
+        <form
+          disabled
+          style={ReactDOMRe.Style.make(
+            ~flex="0 0 auto",
+            ~display="flex",
+            ~flexWrap="nowrap",
+            ~flexDirection="column",
+            ~justifyContent="flex-start",
+            ~alignItems="stretch",
+            ~alignContent="stretch",
+            (),
+          )}>
+          <h4> {string("Title of your change")} </h4>
+          <input
+            type_="text"
+            disabled
+            onChange={event =>
+              dispatch(SetTitle(ReactEvent.Form.target(event)##value))
+            }
+            value={state.title}
+          />
+          <h4> {string("What did you change?")} </h4>
+          <textarea
+            disabled
+            onChange={event =>
+              dispatch(SetBody(ReactEvent.Form.target(event)##value))
+            }
+            value={state.body}
+          />
+          <button
+            disabled
+            onClick={event => {
+              event->ReactEvent.Mouse.stopPropagation;
+              event->ReactEvent.Mouse.preventDefault;
+
+              editedText
+              ->Belt.Option.map(editedText => {
+                  Js.Console.info("Submitting...");
+
+                  submitPullRequest(
+                    ~relayEnv,
+                    ~branchName=
+                      Utils.String.toBranchName(state.title, username),
+                    ~username,
+                    ~userSubmittedTitle=state.title,
+                    ~userSubmittedBody=state.body,
+                    ~editedContent=editedText,
+                    ~filePath,
+                    ~lessonId,
+                    ~sourceRepositoryId,
+                    ~existingFileSha,
+                    ~needsFork,
+                    ~sourceRepo,
+                    ~setStatus,
+                  );
+                })
+              ->ignore;
+            }}>
+            {let buttonLabel =
+               needsFork
+                 ? "Fork Egghead repo and submit pull request"
+                 : "Submit pull request";
+             string(buttonLabel)}
+          </button>
+          <div> status->statusEl </div>
+        </form>
+      </div>;
     }
   );
 };

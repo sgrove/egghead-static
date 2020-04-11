@@ -1,3 +1,17 @@
+type updated = {
+  text: string,
+  originalSha: string,
+};
+
+type notFound = {
+  branch: string,
+  filePath: string,
+};
+
+type remoteFileEditorUpdated =
+  | Updated(updated)
+  | NotFound(notFound);
+
 module ContentEditor = {
   [@react.component]
   let make = (~content, ~onChange, ~onEditorDidMount) => {
@@ -44,26 +58,39 @@ let make =
       ~onEditorDidMount,
       ~onChange,
     ) => {
+  let branchAndFilePath = {j|$branch:$filePath|j};
+
   let query =
     RemoteFile.Query.use(
       ~variables={
         repoOwner: sourceRepo.owner,
         repoName: sourceRepo.name,
-        branchAndFilePath: {j|$branch:$filePath|j},
+        branchAndFilePath,
       },
       (),
     );
 
-  let initialContent =
-    RemoteFile.extractFileShaAndContents(query)
-    ->Belt.Option.flatMap(
-        (
-          blob: RemoteFile.Query.Types.response_gitHub_repository_object__GitHubBlob,
-        ) =>
-        blob.text
-      );
+  let initialBlob = RemoteFile.extractFileShaAndContents(query);
+  let initialContent = initialBlob->Belt.Option.flatMap(blob => blob.text);
+  let originalSha = initialBlob->Belt.Option.map(blob => blob.sha);
 
   let (content, setContent) = React.useState(() => initialContent);
+
+  React.useEffect1(
+    () => {
+      switch (initialContent, originalSha) {
+      | (Some(text), Some(originalSha)) =>
+        setContent(_ => Some(text));
+        onChange(~result=Updated({text, originalSha}));
+      | _ =>
+        setContent(_ => None);
+        onChange(~result=NotFound({branch, filePath}));
+      };
+
+      None;
+    },
+    [|branchAndFilePath|],
+  );
 
   React.(
     switch (content) {
@@ -72,8 +99,12 @@ let make =
       <ContentEditor
         onEditorDidMount
         onChange={(~value) => {
-          setContent(_ => Some(value));
-          onChange(~value);
+          switch (originalSha) {
+          | Some(originalSha) =>
+            setContent(_ => Some(value));
+            onChange(~result=Updated({text: value, originalSha}));
+          | _ => ()
+          }
         }}
         content
       />

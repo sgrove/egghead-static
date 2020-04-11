@@ -310,9 +310,11 @@ let make = (~course: EggheadData.courseWithNullableLessons) => {
     lessons,
   };
 
+  let title = course.title;
+
   React.(
     switch (course.lessons->Belt.List.fromArray) {
-    | [] => "No lessons"->string
+    | [] => {j|No lessons found for course $title|j}->string
     | _ =>
       <React.Suspense
         fallback={<div> "One second, loading..."->React.string </div>}>

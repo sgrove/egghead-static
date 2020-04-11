@@ -3,6 +3,7 @@ const _ = require('lodash')
 const axios = require('axios')
 const { createFilePath } = require('gatsby-source-filesystem')
 const { urlResolve, createContentDigest } = require('gatsby-core-utils')
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin')
 
 const mdxResolverPassthrough = fieldName => async (
   source,
@@ -248,6 +249,20 @@ exports.onCreateWebpackConfig = ({ actions, loaders }) => {
         $components: path.resolve(__dirname, 'src/components'),
       },
     },
+    plugins: [
+      new MonacoWebpackPlugin({
+        features: ['!gotoSymbol'],
+        // available options are documented at https://github.com/Microsoft/monaco-editor-webpack-plugin#options
+        languages: [
+          'graphql',
+          'javascript',
+          'markdown',
+          'python',
+          'reasonml',
+          'ruby',
+        ],
+      }),
+    ],
   })
 }
 

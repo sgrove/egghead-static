@@ -8,11 +8,26 @@ module ContentPreview = {
   external getDOMAttribute: ('t, string) => Js.Nullable.t(string) =
     "getAttribute";
 
+  /* We want our wrapping divs that capture introspection clicks to not affect
+     the layout if at all possible */
+  let introspectionDivStyle =
+    ReactDOMRe.Style.make(~display="inline-block", ());
+
+  let emptyStyle = ReactDOMRe.Style.make();
+
   [@react.component]
   let make = (~editor, ~content) => {
     [@react.component]
-    let wrapedMarkdownToForwardIntrospectionClick = (~value: Js.t({..})) =>
+    let wrappedRootForIntrospectionClick = (~value) => {
       <div
+        style={ReactDOMRe.Style.make(
+          ~padding="20px",
+          ~width="60%",
+          ~backgroundColor="#fff",
+          ~borderRadius="4px",
+          (),
+        )}
+        className="markdown-content"
         onClick={event =>
           switch (ReactEvent.Mouse.altKey(event), editor) {
           | (true, Some(editorHandle)) =>
@@ -38,12 +53,83 @@ module ContentPreview = {
         }>
         {value##children}
       </div>;
+    };
 
-    <ReactMarkdown
-      source=content
-      sourcePos=true
-      renderers={"root": wrapedMarkdownToForwardIntrospectionClick}
-    />;
+    [@react.component]
+    let wrapForIntrospectionClick =
+        (~style=emptyStyle, elRender, props: ReactGitHubMarkdown.props) => {
+      <div
+        className="introspection-middleware"
+        style={ReactDOMRe.Style.combine(introspectionDivStyle, style)}
+        onClick={event => {
+          switch (ReactEvent.Mouse.altKey(event), editor) {
+          | (true, Some(editorHandle)) =>
+            event->ReactEvent.Mouse.stopPropagation;
+            props.sourcePos
+            ->Utils.extractSourcePosition
+            ->Belt.Option.forEach(((from, to_)) => {
+                /* Lots of imperative calls to set the Monaco editor state */
+                BsReactMonaco.revealLine(editorHandle, from.line);
+                BsReactMonaco.setSelection(
+                  editorHandle,
+                  {
+                    startLineNumber: from.line,
+                    startColumn: from.char,
+                    endLineNumber: to_.line,
+                    endColumn: to_.char,
+                  },
+                );
+                BsReactMonaco.focus(editorHandle);
+              });
+          | _ => ()
+          }
+        }}>
+        {elRender(props)}
+      </div>;
+    };
+
+    let renderers = {
+      "link": wrapForIntrospectionClick(ReactGitHubMarkdown.renderers.link),
+      "blockquote":
+        wrapForIntrospectionClick(ReactGitHubMarkdown.renderers.blockquote),
+      "list": wrapForIntrospectionClick(ReactGitHubMarkdown.renderers.list),
+      "listItem":
+        wrapForIntrospectionClick(ReactGitHubMarkdown.renderers.listItem),
+      "paragraph":
+        wrapForIntrospectionClick(ReactGitHubMarkdown.renderers.paragraph),
+      "strong":
+        wrapForIntrospectionClick(ReactGitHubMarkdown.renderers.strong),
+      "heading":
+        wrapForIntrospectionClick(ReactGitHubMarkdown.renderers.heading),
+      "inlineCode":
+        wrapForIntrospectionClick(ReactGitHubMarkdown.renderers.inlineCode),
+      "code":
+        wrapForIntrospectionClick(
+          ReactGitHubMarkdown.renderers.code,
+          ~style=ReactDOMRe.Style.make(~display="block", ()),
+        ),
+      "root": wrappedRootForIntrospectionClick,
+    };
+
+    <div style={ReactDOMRe.Style.make(~display="flex", ())}>
+      <div
+        className="content-left-padding"
+        style={ReactDOMRe.Style.make(
+          ~backgroundColor="#1e1e1e",
+          ~width="20%",
+          (),
+        )}
+      />
+      <ReactMarkdown source=content sourcePos=true renderers />
+      <div
+        className="content-right-padding"
+        style={ReactDOMRe.Style.make(
+          ~backgroundColor="#1e1e1e",
+          ~width="20%",
+          (),
+        )}
+      />
+    </div>;
   };
 };
 
@@ -142,7 +228,13 @@ module Eggy = {
     let (state, setState) =
       React.useState(() => {content: "", editor: None});
 
-    <div style={ReactDOMRe.Style.make(~marginBottom="250px", ())}>
+    <div
+      style={ReactDOMRe.Style.make(
+        ~paddingBottom="550px",
+        ~paddingTop="50px",
+        ~backgroundColor="#1e1e1e",
+        (),
+      )}>
       <ContentPreview editor={state.editor} content={state.content} />
       <EditorContainer
         course

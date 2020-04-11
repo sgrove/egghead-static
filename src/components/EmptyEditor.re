@@ -4,7 +4,7 @@ let make = (~courseTree: React.element) => {
     <EditorControls
       title={"Eggy editor"->string}
       leftPanel=courseTree
-      centerPanel=null
+      centerPanel=React.null
       rightPanel=null
     />
   );

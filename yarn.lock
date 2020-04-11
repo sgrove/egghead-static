@@ -7549,6 +7549,11 @@ hex-color-regex@^1.1.0:
   resolved "https://registry.yarnpkg.com/hex-color-regex/-/hex-color-regex-1.1.0.tgz#4c06fccb4602fe2602b3c93df82d7e7dbf1a8a8e"
   integrity sha512-l9sfDFsuqtOqKDsQdqrMRk0U85RZc0RtOR9yPI7mRVOa4FsR/BVnZ0shmQRM96Ji99kYZP/7hn1cedc1+ApsTQ==
 
+highlight.js@^9.13.1, highlight.js@^9.18.1:
+  version "9.18.1"
+  resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-9.18.1.tgz#ed21aa001fe6252bb10a3d76d47573c6539fe13c"
+  integrity sha512-OrVKYz70LHsnCgmbXctv/bfuvntIKDz177h0Co37DQ5jamGZLVmoCVMtjMtNZY3X9DrCcKfklHPNeA0uPZhSJg==
+
 hmac-drbg@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/hmac-drbg/-/hmac-drbg-1.0.1.tgz#d2745701025a6c775a6c545793ed502fc0c649a1"
@@ -11860,6 +11865,13 @@ react-live@^2.1.2:
     prop-types "^15.5.8"
     react-simple-code-editor "^0.9.0"
     unescape "^0.2.0"
+
+react-markdown-github-renderers@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/react-markdown-github-renderers/-/react-markdown-github-renderers-1.0.3.tgz#c90f0f8354e97afd60ae8876f6d038557e1ec8aa"
+  integrity sha512-Gn83IjUBXWmkAsg52RHcwQo1YGmOzh/miKZYkRFviYMbBfXjUkhng9tO4l2iFKYJQ4qUE4brN+P+M0iHZD9lHg==
+  dependencies:
+    highlight.js "^9.13.1"
 
 react-markdown@^4.3.1:
   version "4.3.1"

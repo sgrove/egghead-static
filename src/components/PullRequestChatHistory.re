@@ -325,7 +325,6 @@ module PullRequestChat = {
             <a alt={j|$prTitle on GitHub|j} target="_blank" href={pr.url}>
               {string({j|⤴|j})}
             </a>
-            <button> {string("Refresh")} </button>
           </div>
         </div>
       </div>

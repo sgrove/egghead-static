@@ -504,3 +504,369 @@ video {
 #eggy-editor-container .chat-closed {
     display: none;
 }
+
+/* Demo CSS for markdown rendering */
+.page-header {
+  color: #fff;
+  background: #191818;
+  margin: 0;
+  padding: 10px 20px;
+}
+
+.editor-pane {
+  position: fixed;
+  top: 57px;
+  left: 0;
+  bottom: 0;
+  width: 50%;
+  height: auto;
+  overflow: auto;
+  box-shadow: -10px 2px 6px 10px rgba(0, 0, 0, 0.4);
+}
+
+.result-pane > div {
+  position: fixed;
+  top: 57px;
+  right: 0;
+  left: 50%;
+  bottom: 0;
+  overflow: auto;
+  padding: 10px;
+  padding-left: 20px;
+  color: #444;
+  font-family: Georgia, Palatino, 'Palatino Linotype', Times, 'Times New Roman', serif;
+  font-size: 16px;
+  line-height: 1.5em;
+}
+
+.editor textarea {
+  padding: 20px;
+}
+
+.editor-pane textarea {
+  min-height: 500px;
+}
+
+.markdown-controls {
+  position: relative;
+  z-index: 5;
+  text-align: right;
+  color: #fff;
+  float: right;
+}
+
+.markdown-controls form {
+  background-color: rgba(39, 40, 34, 0.5);
+  margin-right: 20px;
+}
+
+.markdown-controls legend {
+  border-bottom: 0;
+  color: #fff;
+  font-size: 1.25em;
+  margin: 0;
+  padding: 10px 0 0 0;
+}
+
+.CodeMirror {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: auto;
+
+  font-size: 16px;
+}
+
+pre {
+  border: 1px solid #ccc;
+}
+
+blockquote {
+  color: #666;
+  margin: 0;
+  padding-left: 3em;
+  border-left: 0.5em #eee solid;
+}
+
+tr {
+  border-top: 1px solid #c6cbd1;
+  background: #fff;
+}
+
+th,
+td {
+  padding: 6px 13px;
+  border: 1px solid #dfe2e5;
+}
+
+table tr:nth-child(2n) {
+  background: #f6f8fa;
+}
+
+/* Demo GitHub rendering styling for markdown */
+.hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 0.5em;
+    color: #333;
+    background:#f8f8f8
+}
+
+.hljs-comment, .hljs-quote {
+    color: #998;
+    font-style:italic
+}
+
+.hljs-keyword, .hljs-selector-tag, .hljs-subst {
+    color: #333;
+    font-weight:bold
+}
+
+.hljs-number, .hljs-literal, .hljs-variable, .hljs-template-variable, .hljs-tag .hljs-attr {
+    color:#008080
+}
+
+.hljs-string, .hljs-doctag {
+    color:#d14
+}
+
+.hljs-title, .hljs-section, .hljs-selector-id {
+    color: #900;
+    font-weight:bold
+}
+
+.hljs-subst {
+    font-weight:normal
+}
+
+.hljs-type, .hljs-class .hljs-title {
+    color: #458;
+    font-weight:bold
+}
+
+.hljs-tag, .hljs-name, .hljs-attribute {
+    color: #000080;
+    font-weight:normal
+}
+
+.hljs-regexp, .hljs-link {
+    color:#009926
+}
+
+.hljs-symbol, .hljs-bullet {
+    color:#990073
+}
+
+.hljs-built_in, .hljs-builtin-name {
+    color:#0086b3
+}
+
+.hljs-meta {
+    color: #999;
+    font-weight:bold
+}
+
+.hljs-deletion {
+    background:#fdd
+}
+
+.hljs-addition {
+    background:#dfd
+}
+
+.hljs-emphasis {
+    font-style:italic
+}
+
+.hljs-strong {
+    font-weight: bold
+}
+
+
+.markdown-content html {
+    font-family: sans-serif;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust:100%
+}
+
+
+.markdown-content article, aside, details, figcaption, figure, footer, header, hgroup, main, menu, nav, section, summary {
+    display:block
+}
+
+.markdown-content audio, canvas, progress, video {
+    display: inline-block;
+    vertical-align:baseline
+}
+
+.markdown-content audio:not([controls]) {
+    display: none;
+    height:0
+}
+
+.markdown-content [hidden], template {
+    display:none
+}
+
+.markdown-content a {
+    background-color:transparent
+}
+
+.markdown-content a:active, a:hover {
+    outline:0
+}
+
+.markdown-content abbr[title] {
+    border-bottom:1px dotted
+}
+
+.markdown-content b, strong {
+    font-weight:700
+}
+
+.markdown-content dfn {
+    font-style:italic
+}
+
+.markdown-content h1 {
+    font-size: 2em;
+    margin:.67em 0
+}
+
+.markdown-content mark {
+    background: #ff0;
+    color:#000
+}
+
+.markdown-content small {
+    font-size:80%
+}
+
+.markdown-content sub, sup {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align:baseline
+}
+
+.markdown-content sup {
+    top:-.5em
+}
+
+.markdown-content sub {
+    bottom:-.25em
+}
+
+.markdown-content img {
+    border:0
+}
+
+.markdown-content svg:not(:root) {
+    overflow:hidden
+}
+
+.markdown-content figure {
+    margin:1em 40px
+}
+
+.markdown-content hr {
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
+    height:0
+}
+
+.markdown-content pre {
+    overflow:auto
+}
+
+.markdown-content code, kbd, pre, samp {
+    font-family: monospace, monospace;
+    font-size:1em
+}
+
+.markdown-content button, input, optgroup, select, textarea {
+    color: inherit;
+    font: inherit;
+    margin:0
+}
+
+.markdown-content button {
+    overflow:visible
+}
+
+.markdown-content button, select {
+    text-transform:none
+}
+
+.markdown-content button, html input[type=button], input[type=reset], input[type=submit] {
+    -webkit-appearance: button;
+    cursor:pointer
+}
+
+.markdown-content button[disabled], html input[disabled] {
+    cursor:default
+}
+
+.markdown-content button::-moz-focus-inner, input::-moz-focus-inner {
+    border: 0;
+    padding:0
+}
+
+.markdown-content input {
+    line-height:normal
+}
+
+.markdown-content input[type=checkbox], input[type=radio] {
+    box-sizing: border-box;
+    padding:0
+}
+
+.markdown-content input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button {
+    height:auto
+}
+
+.markdown-content input[type=search] {
+    -webkit-appearance: textfield;
+    -moz-box-sizing: content-box;
+    -webkit-box-sizing: content-box;
+    box-sizing:content-box
+}
+
+.markdown-content input[type=search]::-webkit-search-cancel-button, input[type=search]::-webkit-search-decoration {
+    -webkit-appearance:none
+}
+
+.markdown-content fieldset {
+    border: 1px solid silver;
+    margin: 0 2px;
+    padding:.35em .625em .75em
+}
+
+.markdown-content legend {
+    border: 0;
+    padding:0
+}
+
+.markdown-content textarea {
+    overflow:auto
+}
+
+.markdown-content optgroup {
+    font-weight:700
+}
+
+.markdown-content table {
+    border-collapse: collapse;
+    border-spacing:0
+}
+
+.markdown-content td, th {
+    padding:0
+}
+
+.markdown-content .hidden, [hidden] {
+    display:none !important
+}

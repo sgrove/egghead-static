@@ -23,9 +23,7 @@ module String = {
   let toBranchName = (string, username) => {
     let sanitized =
       Js.String.replaceByRe([%bs.re {|/[^a-zA-Z0-9]+/g|}], "-", string);
-    Js.String.toLocaleLowerCase(
-      "branch-name-" ++ sanitized ++ {j|$username|j},
-    );
+    Js.String.toLocaleLowerCase(sanitized ++ {j|$username|j});
   };
 };
 
@@ -33,7 +31,9 @@ type lineChar = {
   line: int,
   char: int,
 };
+
 type sourcePosition = (lineChar, lineChar);
+
 let extractSourcePosition = string =>
   switch (Js.Nullable.toOption(string)) {
   | None => None

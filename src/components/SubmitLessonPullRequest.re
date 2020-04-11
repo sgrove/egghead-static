@@ -14,6 +14,12 @@ module Promise = {
 };
 
 module Result = {
+  let errorEffect = (result, handler) =>
+    switch (result) {
+    | Ok(_) => ()
+    | Error(err) => handler(err)
+    };
+
   let let_ = Belt.Result.flatMap;
 
   module Wrap = {
@@ -194,20 +200,20 @@ let fetchFileShaAndContent =
   let (
     sourceRepoFileShaPromise:
       relayResult(
-        LessonTranscript.GetFileShaAndContentQuery.Types.response_gitHub_repository_object__GitHubBlob,
+        RemoteFile.Query.Types.response_gitHub_repository_object__GitHubBlob,
       ),
     resolveSourceRepoFileShaPromise,
   ) =
     Promise.pending();
 
   /* Get file sha in source repo */
-  LessonTranscript.GetFileShaAndContentQuery.fetch(
+  RemoteFile.Query.fetch(
     ~environment=relayEnv,
     ~variables={repoOwner, repoName, branchAndFilePath},
     ~onResult=result => {
     switch (result) {
     | Ok(query) =>
-      switch (LessonTranscript.extractFileShaAndContents(query)) {
+      switch (RemoteFile.extractFileShaAndContents(query)) {
       | None =>
         resolveSourceRepoFileShaPromise(
           Error([|{message: "File doesn't exist in source repository"}|]),
@@ -437,6 +443,30 @@ let createPullRequestFileChange =
   createPullRequestFileChangePromise;
 };
 
+type status =
+  | Idle
+  | InProgress(React.element)
+  | Finished(React.element);
+
+let displayInlineStyle =
+  ReactDOMRe.Style.make(
+    ~display="inline",
+    /* Seriously, I suck at css */
+    ~float="left",
+    (),
+  );
+
+let statusEl = (status: status) =>
+  switch (status) {
+  | Idle => React.null
+  | InProgress(message) =>
+    <div>
+      <LoadingSpinner width="50px" height="50px" style=displayInlineStyle />
+      message
+    </div>
+  | Finished(message) => <> message </>
+  };
+
 let submitPullRequest =
     (
       ~relayEnv,
@@ -451,6 +481,7 @@ let submitPullRequest =
       ~needsFork,
       ~existingFileSha,
       ~sourceRepo: EggheadData.repo,
+      ~setStatus,
     ) => {
   /*
    1. DoIHaveARepoQuery
@@ -462,6 +493,20 @@ let submitPullRequest =
    6. UpdateFileContentMutation - set to new value
    7. CreatePullRequestMutation
    */
+
+  let setIfError = (result, message) => {
+    result->Result.errorEffect(error => {
+      Js.Console.warn3("Failed to submit pull request: ", message, error);
+
+      setStatus(_ => Finished(message));
+    });
+  };
+
+  let setStatus = (~inProgress=true, message) => {
+    let finished = !inProgress;
+    Js.Console.info2(message, {j| - finished? $finished|j});
+    setStatus(_ => inProgress ? InProgress(message) : Finished(message));
+  };
 
   let eggheadMeta = {lessonId, filePath, username};
 
@@ -483,6 +528,13 @@ let submitPullRequest =
 $eggheadMetaText|j};
   };
 
+  let nameWithOwner = {
+    let {owner, name}: EggheadData.repo = sourceRepo;
+    {j|$owner/$name|j};
+  };
+
+  setStatus("Forking source repository..."->React.string);
+
   let%Promise.Wrap result: relayResult(unit) =
     forkRepository(
       ~relayEnv,
@@ -491,7 +543,13 @@ $eggheadMetaText|j};
       ~repoName=sourceRepo.name,
     );
 
+  result->setIfError(
+    {j|Failed to fork GitHub repo $nameWithOwner|j}->React.string,
+  );
+
   let%Result.Wrap () = result;
+
+  setStatus("Creating new branch..."->React.string);
 
   let%Promise.Wrap createBranchResult =
     createBranch(
@@ -501,7 +559,16 @@ $eggheadMetaText|j};
       ~branchName,
     );
 
+  createBranchResult->setIfError(
+    <>
+      {j|Failed to create branch |j}->React.string
+      <code> branchName->React.string </code>
+    </>,
+  );
+
   let%Result.Wrap () = createBranchResult;
+
+  setStatus("Syncing lesson file..."->React.string);
 
   /* At this point, we should have a repo fork */
   let%Promise.Wrap syncResult =
@@ -515,7 +582,12 @@ $eggheadMetaText|j};
     );
 
   let%Promise.Wrap syncResult = syncResult;
+
+  syncResult->setIfError({j|Failed to sync lesson file|j}->React.string);
+
   let%Result.Wrap () = syncResult;
+
+  setStatus("Committing lesson changes to Github..."->React.string);
 
   let%Promise.Wrap commitResult =
     commitLessonFileChange(
@@ -528,7 +600,13 @@ $eggheadMetaText|j};
       ~existingFileSha,
     );
 
+  commitResult->setIfError(
+    {j|Failed to commit changes to Github|j}->React.string,
+  );
+
   let%Result.Wrap () = commitResult;
+
+  setStatus("Creating pull request..."->React.string);
 
   let%Promise.Wrap createPullRequestResult =
     createPullRequestFileChange(
@@ -539,6 +617,15 @@ $eggheadMetaText|j};
       ~baseRefName,
       ~body=pullRequestBody,
     );
+
+  createPullRequestResult->setIfError(
+    {j|Failed to create pull request|j}->React.string,
+  );
+
+  setStatus(
+    ~inProgress=false,
+    "Successfully submit lesson change!"->React.string,
+  );
 
   createPullRequestResult;
 };
@@ -582,6 +669,8 @@ let make =
 
   let lessonId = lesson.id;
 
+  let (status, setStatus) = React.useState(() => Idle);
+
   let (state, dispatch) =
     React.useReducer(
       (state, action) =>
@@ -598,9 +687,9 @@ let make =
   let relayEnv = ReasonRelay.useEnvironmentFromContext();
 
   React.(
-    switch (sourceRepositoryId) {
-    | None => "Couldn't find source repository id"->string
-    | Some(sourceRepositoryId) =>
+    switch (sourceRepositoryId, editedText) {
+    | (None, _) => "Couldn't find source repository id"->string
+    | (Some(sourceRepositoryId), editedText) =>
       <div
         style={ReactDOMRe.Style.make(
           ~flex="0 0 auto",
@@ -628,24 +717,30 @@ let make =
           value={state.body}
         />
         <button
+          disabled={Belt.Option.isNone(editedText)}
           onClick={_ => {
-            Js.log("Submitting...");
+            editedText
+            ->Belt.Option.map(editedText => {
+                Js.Console.info("Submitting...");
 
-            submitPullRequest(
-              ~relayEnv,
-              ~branchName=Utils.String.toBranchName(state.title, username),
-              ~username,
-              ~userSubmittedTitle=state.title,
-              ~userSubmittedBody=state.body,
-              ~editedContent=editedText,
-              ~filePath,
-              ~lessonId,
-              ~sourceRepositoryId,
-              ~existingFileSha,
-              ~needsFork,
-              ~sourceRepo,
-            )
-            ->ignore;
+                submitPullRequest(
+                  ~relayEnv,
+                  ~branchName=
+                    Utils.String.toBranchName(state.title, username),
+                  ~username,
+                  ~userSubmittedTitle=state.title,
+                  ~userSubmittedBody=state.body,
+                  ~editedContent=editedText,
+                  ~filePath,
+                  ~lessonId,
+                  ~sourceRepositoryId,
+                  ~existingFileSha,
+                  ~needsFork,
+                  ~sourceRepo,
+                  ~setStatus,
+                );
+              })
+            ->ignore
           }}>
           {let buttonLabel =
              needsFork
@@ -653,6 +748,7 @@ let make =
                : "Submit pull request";
            string(buttonLabel)}
         </button>
+        <div> status->statusEl </div>
       </div>
     }
   );

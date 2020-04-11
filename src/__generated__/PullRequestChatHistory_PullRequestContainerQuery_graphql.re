@@ -6,7 +6,7 @@ module Types = {
       unit =>
       {
         .
-        "__$fragment_ref__RelayPRChatHistory_PullRequestFragment": RelayPRChatHistory_PullRequestFragment_graphql.t,
+        "__$fragment_ref__PullRequestChatHistory_PullRequestFragment": PullRequestChatHistory_PullRequestFragment_graphql.t,
       },
   };
   type response_gitHub_node = [
@@ -142,7 +142,7 @@ return {
   "kind": "Request",
   "fragment": {
     "kind": "Fragment",
-    "name": "RelayPRChatHistory_PullRequestContainerQuery",
+    "name": "PullRequestChatHistory_PullRequestContainerQuery",
     "type": "Query",
     "metadata": null,
     "argumentDefinitions": (v0/*: any*/),
@@ -172,7 +172,7 @@ return {
                 "selections": [
                   {
                     "kind": "FragmentSpread",
-                    "name": "RelayPRChatHistory_PullRequestFragment",
+                    "name": "PullRequestChatHistory_PullRequestFragment",
                     "args": null
                   }
                 ]
@@ -185,7 +185,7 @@ return {
   },
   "operation": {
     "kind": "Operation",
-    "name": "RelayPRChatHistory_PullRequestContainerQuery",
+    "name": "PullRequestChatHistory_PullRequestContainerQuery",
     "argumentDefinitions": (v0/*: any*/),
     "selections": [
       {
@@ -348,7 +348,7 @@ return {
                     "name": "comments",
                     "args": (v5/*: any*/),
                     "handle": "connection",
-                    "key": "RelayPRChatHistory_PullRequestFragment_comments",
+                    "key": "PullRequestChatHistory_PullRequestFragment_comments",
                     "filters": null
                   }
                 ]
@@ -361,9 +361,9 @@ return {
   },
   "params": {
     "operationKind": "query",
-    "name": "RelayPRChatHistory_PullRequestContainerQuery",
+    "name": "PullRequestChatHistory_PullRequestContainerQuery",
     "id": null,
-    "text": "query RelayPRChatHistory_PullRequestContainerQuery(\n  $pullRequestId: ID!\n) {\n  gitHub {\n    node(id: $pullRequestId) {\n      __typename\n      ... on GitHubPullRequest {\n        ...RelayPRChatHistory_PullRequestFragment\n      }\n      id\n    }\n  }\n}\n\nfragment RelayPRChatHistory_CommentFragment on GitHubComment {\n  id\n  author {\n    __typename\n    login\n    avatarUrl\n  }\n  createdAt\n  body\n}\n\nfragment RelayPRChatHistory_PullRequestFragment on GitHubPullRequest {\n  id\n  title\n  body\n  state\n  number\n  url\n  comments(last: 100) {\n    edges {\n      node {\n        id\n        ...RelayPRChatHistory_CommentFragment\n        __typename\n      }\n      cursor\n    }\n    pageInfo {\n      hasPreviousPage\n      startCursor\n    }\n  }\n}\n",
+    "text": "query PullRequestChatHistory_PullRequestContainerQuery(\n  $pullRequestId: ID!\n) {\n  gitHub {\n    node(id: $pullRequestId) {\n      __typename\n      ... on GitHubPullRequest {\n        ...PullRequestChatHistory_PullRequestFragment\n      }\n      id\n    }\n  }\n}\n\nfragment PullRequestChatHistory_CommentFragment on GitHubComment {\n  id\n  author {\n    __typename\n    login\n    avatarUrl\n  }\n  createdAt\n  body\n}\n\nfragment PullRequestChatHistory_PullRequestFragment on GitHubPullRequest {\n  id\n  title\n  body\n  state\n  number\n  url\n  comments(last: 100) {\n    edges {\n      node {\n        id\n        ...PullRequestChatHistory_CommentFragment\n        __typename\n      }\n      cursor\n    }\n    pageInfo {\n      hasPreviousPage\n      startCursor\n    }\n  }\n}\n",
     "metadata": {}
   }
 };

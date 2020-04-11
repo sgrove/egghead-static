@@ -142,7 +142,7 @@ return {
   "kind": "Request",
   "fragment": {
     "kind": "Fragment",
-    "name": "RelayPRChatHistory_AddPullRequestCommentMutation",
+    "name": "PullRequestChatHistory_AddPullRequestCommentMutation",
     "type": "Mutation",
     "metadata": null,
     "argumentDefinitions": (v0/*: any*/),
@@ -187,7 +187,7 @@ return {
                       (v3/*: any*/),
                       {
                         "kind": "FragmentSpread",
-                        "name": "RelayPRChatHistory_CommentFragment",
+                        "name": "PullRequestChatHistory_CommentFragment",
                         "args": null
                       }
                     ]
@@ -202,7 +202,7 @@ return {
   },
   "operation": {
     "kind": "Operation",
-    "name": "RelayPRChatHistory_AddPullRequestCommentMutation",
+    "name": "PullRequestChatHistory_AddPullRequestCommentMutation",
     "argumentDefinitions": (v0/*: any*/),
     "selections": [
       {
@@ -301,9 +301,9 @@ return {
   },
   "params": {
     "operationKind": "mutation",
-    "name": "RelayPRChatHistory_AddPullRequestCommentMutation",
+    "name": "PullRequestChatHistory_AddPullRequestCommentMutation",
     "id": null,
-    "text": "mutation RelayPRChatHistory_AddPullRequestCommentMutation(\n  $body: String!\n  $commentableId: ID!\n) {\n  gitHub {\n    addComment(input: {body: $body, subjectId: $commentableId}) {\n      clientMutationId\n      commentEdge {\n        node {\n          id\n          ...RelayPRChatHistory_CommentFragment\n        }\n      }\n    }\n  }\n}\n\nfragment RelayPRChatHistory_CommentFragment on GitHubComment {\n  id\n  author {\n    __typename\n    login\n    avatarUrl\n  }\n  createdAt\n  body\n}\n",
+    "text": "mutation PullRequestChatHistory_AddPullRequestCommentMutation(\n  $body: String!\n  $commentableId: ID!\n) {\n  gitHub {\n    addComment(input: {body: $body, subjectId: $commentableId}) {\n      clientMutationId\n      commentEdge {\n        node {\n          id\n          ...PullRequestChatHistory_CommentFragment\n        }\n      }\n    }\n  }\n}\n\nfragment PullRequestChatHistory_CommentFragment on GitHubComment {\n  id\n  author {\n    __typename\n    login\n    avatarUrl\n  }\n  createdAt\n  body\n}\n",
     "metadata": {}
   }
 };

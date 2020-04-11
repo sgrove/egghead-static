@@ -8,6 +8,12 @@ module ContentPreview = {
   external getDOMAttribute: ('t, string) => Js.Nullable.t(string) =
     "getAttribute";
 
+  module WithIntrospectionClick = {
+    [@react.component]
+    let make = (~onClick, ~children) =>
+      ReasonReact.cloneElement(children, ~props={"onClick": onClick}, [||]);
+  };
+
   /* We want our wrapping divs that capture introspection clicks to not affect
      the layout if at all possible */
   let introspectionDivStyle =
@@ -57,14 +63,47 @@ module ContentPreview = {
 
     [@react.component]
     let wrapForIntrospectionClick =
-        (~style=emptyStyle, elRender, props: ReactGitHubMarkdown.props) => {
-      <div
-        className="introspection-middleware"
-        style={ReactDOMRe.Style.combine(introspectionDivStyle, style)}
+        (elRender, props: ReactGitHubMarkdown.props) => {
+      <WithIntrospectionClick
         onClick={event => {
           switch (ReactEvent.Mouse.altKey(event), editor) {
           | (true, Some(editorHandle)) =>
             event->ReactEvent.Mouse.stopPropagation;
+            event->ReactEvent.Mouse.preventDefault;
+            props.sourcePos
+            ->Utils.extractSourcePosition
+            ->Belt.Option.forEach(((from, to_)) => {
+                /* Lots of imperative calls to set the Monaco editor state */
+                BsReactMonaco.revealLine(editorHandle, from.line);
+                BsReactMonaco.setSelection(
+                  editorHandle,
+                  {
+                    startLineNumber: from.line,
+                    startColumn: from.char,
+                    endLineNumber: to_.line,
+                    endColumn: to_.char,
+                  },
+                );
+                BsReactMonaco.focus(editorHandle);
+              });
+          | _ => ()
+          }
+        }}>
+        {elRender(props)}
+      </WithIntrospectionClick>;
+    };
+
+    /* TODO: This shouldn't be necessary, but I can't get introspection-click on
+       the codeblock (<pre><code></code></pre>) to work without it */
+    [@react.component]
+    let wrapWithDivForIntrospectionClick =
+        (elRender, props: ReactGitHubMarkdown.props) => {
+      <div
+        onClick={event => {
+          switch (ReactEvent.Mouse.altKey(event), editor) {
+          | (true, Some(editorHandle)) =>
+            event->ReactEvent.Mouse.stopPropagation;
+            event->ReactEvent.Mouse.preventDefault;
             props.sourcePos
             ->Utils.extractSourcePosition
             ->Belt.Option.forEach(((from, to_)) => {
@@ -104,10 +143,7 @@ module ContentPreview = {
       "inlineCode":
         wrapForIntrospectionClick(ReactGitHubMarkdown.renderers.inlineCode),
       "code":
-        wrapForIntrospectionClick(
-          ReactGitHubMarkdown.renderers.code,
-          ~style=ReactDOMRe.Style.make(~display="block", ()),
-        ),
+        wrapWithDivForIntrospectionClick(ReactGitHubMarkdown.renderers.code),
       "root": wrappedRootForIntrospectionClick,
     };
 
@@ -253,8 +289,6 @@ module Eggy = {
 [@react.component]
 let make = (~course: EggheadData.courseWithNullableLessons) => {
   /* Because we can't completely trust every course to have lessons, we filter out all null lessons here */
-  Js.log2("Course: ", course);
-
   let lessons =
     switch (Js.Nullable.toOption(course.lessons)) {
     | None => [||]

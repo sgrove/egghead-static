@@ -182,7 +182,7 @@ return {
   "kind": "Request",
   "fragment": {
     "kind": "Fragment",
-    "name": "RelayLessonTranscript_GetFileShaQuery",
+    "name": "RemoteFile_GetFileShaQuery",
     "type": "Query",
     "metadata": null,
     "argumentDefinitions": (v0/*: any*/),
@@ -226,7 +226,7 @@ return {
   },
   "operation": {
     "kind": "Operation",
-    "name": "RelayLessonTranscript_GetFileShaQuery",
+    "name": "RemoteFile_GetFileShaQuery",
     "argumentDefinitions": (v0/*: any*/),
     "selections": [
       {
@@ -270,9 +270,9 @@ return {
   },
   "params": {
     "operationKind": "query",
-    "name": "RelayLessonTranscript_GetFileShaQuery",
+    "name": "RemoteFile_GetFileShaQuery",
     "id": null,
-    "text": "query RelayLessonTranscript_GetFileShaQuery(\n  $repoName: String!\n  $repoOwner: String!\n  $branchAndFilePath: String!\n) {\n  gitHub {\n    repository(name: $repoName, owner: $repoOwner) {\n      object_: object(expression: $branchAndFilePath) {\n        __typename\n        ... on GitHubBlob {\n          sha: oid\n          text\n        }\n        id\n      }\n      id\n    }\n  }\n}\n",
+    "text": "query RemoteFile_GetFileShaQuery(\n  $repoName: String!\n  $repoOwner: String!\n  $branchAndFilePath: String!\n) {\n  gitHub {\n    repository(name: $repoName, owner: $repoOwner) {\n      object_: object(expression: $branchAndFilePath) {\n        __typename\n        ... on GitHubBlob {\n          sha: oid\n          text\n        }\n        id\n      }\n      id\n    }\n  }\n}\n",
     "metadata": {}
   }
 };

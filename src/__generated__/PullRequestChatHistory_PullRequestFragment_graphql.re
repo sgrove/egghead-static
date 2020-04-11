@@ -28,7 +28,7 @@ module Types = {
       unit =>
       {
         .
-        "__$fragment_ref__RelayPRChatHistory_CommentFragment": RelayPRChatHistory_CommentFragment_graphql.t,
+        "__$fragment_ref__PullRequestChatHistory_CommentFragment": PullRequestChatHistory_CommentFragment_graphql.t,
       },
   };
   type fragment_comments_edges = {
@@ -69,7 +69,7 @@ module Internal = {
 type t;
 type fragmentRef;
 type fragmentRefSelector('a) =
-  {.. "__$fragment_ref__RelayPRChatHistory_PullRequestFragment": t} as 'a;
+  {.. "__$fragment_ref__PullRequestChatHistory_PullRequestFragment": t} as 'a;
 external getFragmentRef: fragmentRefSelector('a) => fragmentRef = "%identity";
 
 module Utils = {
@@ -107,7 +107,7 @@ var v0 = {
 };
 return {
   "kind": "Fragment",
-  "name": "RelayPRChatHistory_PullRequestFragment",
+  "name": "PullRequestChatHistory_PullRequestFragment",
   "type": "GitHubPullRequest",
   "metadata": {
     "connection": [
@@ -162,7 +162,7 @@ return {
     {
       "kind": "LinkedField",
       "alias": "comments",
-      "name": "__RelayPRChatHistory_PullRequestFragment_comments_connection",
+      "name": "__PullRequestChatHistory_PullRequestFragment_comments_connection",
       "storageKey": null,
       "args": null,
       "concreteType": "GitHubIssueCommentConnection",
@@ -196,7 +196,7 @@ return {
                 },
                 {
                   "kind": "FragmentSpread",
-                  "name": "RelayPRChatHistory_CommentFragment",
+                  "name": "PullRequestChatHistory_CommentFragment",
                   "args": null
                 }
               ]

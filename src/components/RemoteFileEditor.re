@@ -45,7 +45,7 @@ let make =
       ~onChange,
     ) => {
   let query =
-    LessonTranscript.GetFileShaAndContentQuery.use(
+    RemoteFile.Query.use(
       ~variables={
         repoOwner: sourceRepo.owner,
         repoName: sourceRepo.name,
@@ -55,10 +55,10 @@ let make =
     );
 
   let initialContent =
-    LessonTranscript.extractFileShaAndContents(query)
+    RemoteFile.extractFileShaAndContents(query)
     ->Belt.Option.flatMap(
         (
-          blob: LessonTranscript.GetFileShaAndContentQuery.Types.response_gitHub_repository_object__GitHubBlob,
+          blob: RemoteFile.Query.Types.response_gitHub_repository_object__GitHubBlob,
         ) =>
         blob.text
       );

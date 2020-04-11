@@ -4,7 +4,7 @@ external prettyStringify: ('a, Js.Nullable.t(unit), int) => string =
 
 module CommentFragment = [%relay.fragment
   {|
-fragment RelayPRChatHistory_CommentFragment on GitHubComment {
+fragment PullRequestChatHistory_CommentFragment on GitHubComment {
   id
   author {
     __typename
@@ -18,7 +18,7 @@ fragment RelayPRChatHistory_CommentFragment on GitHubComment {
 ];
 
 module AddPullRequestCommentMutation = [%relay.mutation
-  {|mutation RelayPRChatHistory_AddPullRequestCommentMutation(
+  {|mutation PullRequestChatHistory_AddPullRequestCommentMutation(
   $body: String!
   $commentableId: ID!
 ) {
@@ -30,7 +30,7 @@ module AddPullRequestCommentMutation = [%relay.mutation
       commentEdge {
         node {
           id
-          ...RelayPRChatHistory_CommentFragment
+          ...PullRequestChatHistory_CommentFragment
         }
       }
     }
@@ -41,18 +41,18 @@ module AddPullRequestCommentMutation = [%relay.mutation
 
 module PullRequestFragment = [%relay.fragment
   {|
-fragment RelayPRChatHistory_PullRequestFragment on GitHubPullRequest {
+fragment PullRequestChatHistory_PullRequestFragment on GitHubPullRequest {
   id
   title
   body
   state
   number
   url
-  comments(last: 100) @connection(key: "RelayPRChatHistory_PullRequestFragment_comments") {
+  comments(last: 100) @connection(key: "PullRequestChatHistory_PullRequestFragment_comments") {
     edges {
       node {
       id
-       ...RelayPRChatHistory_CommentFragment
+       ...PullRequestChatHistory_CommentFragment
       }
     }
   }
@@ -62,12 +62,12 @@ fragment RelayPRChatHistory_PullRequestFragment on GitHubPullRequest {
 
 module PullRequestContainerQuery = [%relay.query
   {|
-query RelayPRChatHistory_PullRequestContainerQuery($pullRequestId: ID!) {
+query PullRequestChatHistory_PullRequestContainerQuery($pullRequestId: ID!) {
   gitHub {
     node(id: $pullRequestId) {
       __typename
       ... on GitHubPullRequest {
-        ...RelayPRChatHistory_PullRequestFragment
+        ...PullRequestChatHistory_PullRequestFragment
       }
     }
   }
@@ -77,19 +77,19 @@ query RelayPRChatHistory_PullRequestContainerQuery($pullRequestId: ID!) {
 
 module Query = [%relay.query
   {|
-query RelayPRChatHistory_CommentQuery(
+query PullRequestChatHistory_CommentQuery(
      $query: String!
      $last: Int!
    ) {
      gitHub {
        search(query: $query, type: ISSUE, last: $last)
-         @connection(key:"RelayPRChatHistory_CommentQuery_gitHub_search") {
+         @connection(key:"PullRequestChatHistory_CommentQuery_gitHub_search") {
          edges {
            node {
              __typename
              ... on GitHubPullRequest {
               id
-              ...RelayPRChatHistory_PullRequestFragment
+              ...PullRequestChatHistory_PullRequestFragment
              }
            }
          }
@@ -223,7 +223,7 @@ module CommentableMessageCompose = {
                     ~node,
                     ~connections=[
                       {
-                        key: "RelayPRChatHistory_PullRequestFragment_comments",
+                        key: "PullRequestChatHistory_PullRequestFragment_comments",
                         parentID: commentableId->makeDataId,
                         filters: None,
                       },

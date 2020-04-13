@@ -29,7 +29,10 @@ module Result = {
 
 module FindSourceRepositoryIdQuery = [%relay.query
   {|
-     query SubmitLessonPullRequest_FindSourceRepositoryIdQuery($repoOwner: String!, $repoName: String!) {
+     query SubmitLessonPullRequest_FindSourceRepositoryIdQuery(
+       $repoOwner: String!
+       $repoName: String!
+     ) {
        gitHub {
          repository(owner: $repoOwner, name: $repoName) {
            id
@@ -40,21 +43,28 @@ module FindSourceRepositoryIdQuery = [%relay.query
 ];
 
 module ForkGitHubRepoMutation = [%relay.mutation
-  {|mutation SubmitLessonPullRequest_ForkGitHubRepoMutation($repoOwner: String!, $repoName: String!) {
-    gitHub {
-      createFork_oneGraph(input: {repoOwner: $repoOwner, repoName: $repoName}) {
-        repository {
-          nameWithOwner
-        }
+  {|
+mutation SubmitLessonPullRequest_ForkGitHubRepoMutation(
+  $repoOwner: String!
+  $repoName: String!
+) {
+  gitHub {
+    createFork_oneGraph(input: { repoOwner: $repoOwner, repoName: $repoName }) {
+      repository {
+        nameWithOwner
       }
     }
   }
+}
 |}
 ];
 
 module DoIHaveARepoQuery = [%relay.query
   {|
-     query SubmitLessonPullRequest_DoIHaveARepoQuery($repoOwner: String!, $repoName: String!) {
+     query SubmitLessonPullRequest_DoIHaveARepoQuery(
+       $repoOwner: String!
+       $repoName: String!
+     ) {
        gitHub {
          repository(owner: $repoOwner, name: $repoName) {
            id
@@ -65,56 +75,58 @@ module DoIHaveARepoQuery = [%relay.query
 ];
 
 module CreateBranchMutation = [%relay.mutation
-  {|mutation SubmitLessonPullRequest_CreateBranchMutation(
-       $repoOwner: String!
-       $repoName: String!
-       $branchName: String!
-     ) {
-       gitHub {
-         createBranch_oneGraph(
-           input: {
-             branchName: $branchName
-             repoName: $repoName
-             repoOwner: $repoOwner
-           }
-         ) {
-           ref_: ref {
-             name
-             id
-           }
-         }
-       }
-     }|}
+  {|
+mutation SubmitLessonPullRequest_CreateBranchMutation(
+  $repoOwner: String!
+  $repoName: String!
+  $branchName: String!
+) {
+  gitHub {
+    createBranch_oneGraph(
+      input: {
+        branchName: $branchName
+        repoName: $repoName
+        repoOwner: $repoOwner
+      }
+    ) {
+      ref_: ref {
+        name
+        id
+      }
+    }
+  }
+}|}
 ];
 
 module UpdateFileContentMutation = [%relay.mutation
-  {|mutation SubmitLessonPullRequest_UpdateFileMutation(
-       $repoOwner: String!
-       $repoName: String!
-       $branchName: String!
-       $path: String!
-       $message: String!
-       $content: String!
-       $sha: String!
-     ) {
-       gitHub {
-         createOrUpdateFileContent_oneGraph(
-           input: {
-             message: $message
-             path: $path
-             repoName: $repoName
-             repoOwner: $repoOwner
-             branchName: $branchName
-             plainContent: $content
-             existingFileSha: $sha
-           }
-         ) {
-           commit {
-             message
-           }
-         }
-       }
-     }|}
+  {|
+mutation SubmitLessonPullRequest_UpdateFileMutation(
+  $repoOwner: String!
+  $repoName: String!
+  $branchName: String!
+  $path: String!
+  $message: String!
+  $content: String!
+  $sha: String!
+) {
+  gitHub {
+    createOrUpdateFileContent_oneGraph(
+      input: {
+        message: $message
+        path: $path
+        repoName: $repoName
+        repoOwner: $repoOwner
+        branchName: $branchName
+        plainContent: $content
+        existingFileSha: $sha
+      }
+    ) {
+      commit {
+        message
+      }
+    }
+  }
+}|}
 ];
 
 module CreatePullRequestMutation = [%relay.mutation
@@ -146,29 +158,27 @@ mutation SubmitLessonPullRequest_CreatePullRequestMutation(
 ];
 
 module AddLabelsToPullRequestMutation = [%relay.mutation
-  {|mutation SubmitLessonPullRequest_AddLabelToPullRequestMutation(
-       $labelIds: [ID!]!
-       $labelableId: ID!
-     ) {
-       gitHub {
-         addLabelsToLabelable(
-           input: {
-             labelIds: $labelIds
-             labelableId: $labelableId
-           }
-         ) {
-           clientMutationId
-           labelable {
-             __typename
-             labels {
-               nodes {
-                 name
-               }
-             }
-           }
-         }
-       }
-     }|}
+  {|
+mutation SubmitLessonPullRequest_AddLabelToPullRequestMutation(
+  $labelIds: [ID!]!
+  $labelableId: ID!
+) {
+  gitHub {
+    addLabelsToLabelable(
+      input: { labelIds: $labelIds, labelableId: $labelableId }
+    ) {
+      clientMutationId
+      labelable {
+        __typename
+        labels {
+          nodes {
+            name
+          }
+        }
+      }
+    }
+  }
+}|}
 ];
 
 type action =
@@ -424,7 +434,6 @@ let createPullRequest =
       ~variables={repoId, title, headRefName, baseRefName, body},
       ~updater=
         (store, response) => {
-          Js.log2("Response from CreatePR: ", response);
           ReasonRelay.(
             switch (response) {
             | {
@@ -434,28 +443,24 @@ let createPullRequest =
                   }),
               } =>
               let dataId = id->ReasonRelay.makeDataId;
-              Js.log2("\tdataId: ", dataId);
 
               switch (
                 store->RecordSourceSelectorProxy.get(~dataId),
-                store->RecordSourceSelectorProxy.getRootField(
-                  ~fieldName="gitHub",
-                ),
+                store
+                ->RecordSourceSelectorProxy.getRoot
+                ->RecordProxy.getLinkedRecord(~name="gitHub", ()),
               ) {
-              | (Some(node), Some(field)) =>
-                Js.log3("\tnode/field: ", node, field);
-
+              | (Some(node), Some(connectionParent)) =>
                 let cacheKey = CourseTree.makeSearchQuery(~username);
 
                 let insertAt: ReasonRelayUtils.insertAt = End;
-                [%bs.debugger];
                 ReasonRelayUtils.createAndAddEdgeToConnections(
                   ~store,
                   ~node,
                   ~connections=[
                     {
                       key: "CourseTree_SearchForPullRequestsQuery_gitHub_search",
-                      parentID: field->RecordProxy.getDataId,
+                      parentID: connectionParent->RecordProxy.getDataId,
                       filters: Some(makeArguments({"query": cacheKey})),
                     },
                   ],
@@ -466,7 +471,7 @@ let createPullRequest =
               };
             | _ => Js.Console.warn("Could not find node id")
             }
-          );
+          )
         },
       ~onCompleted=
         (data, errors) => {

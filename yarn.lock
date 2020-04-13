@@ -5107,6 +5107,11 @@ dom-helpers@^3.4.0:
   dependencies:
     "@babel/runtime" "^7.1.2"
 
+dom-highlight-range@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/dom-highlight-range/-/dom-highlight-range-3.0.1.tgz#f02d0baae04aa44ff87707782538f52713ed8e55"
+  integrity sha512-RLQuKlyrM5urZma8CZV/UvmQWPS+7eAzI36aE/bpg5lW7klaQRgYZ5S1Tyr/FaTEOye2SHFild3XV7gQnpljZA==
+
 dom-iterator@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/dom-iterator/-/dom-iterator-1.0.0.tgz#9c09899846ec41c2d257adc4d6015e4759ef05ad"
@@ -11667,6 +11672,11 @@ range-parser@^1.2.1, range-parser@~1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/range-parser/-/range-parser-1.2.1.tgz#3cf37023d199e1c24d1a55b84800c2f3e6468031"
   integrity sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==
+
+rangy@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/rangy/-/rangy-1.3.0.tgz#b7c9a70aea05e5d8cdc74a8d4c8273d697271904"
+  integrity sha1-t8mnCuoF5djNx0qNTIJz1pcnGQQ=
 
 raw-body@2.4.0:
   version "2.4.0"

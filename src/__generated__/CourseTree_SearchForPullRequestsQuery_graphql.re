@@ -23,11 +23,13 @@ let wrap_enum_GitHubPullRequestState: enum_GitHubPullRequestState => string =
 
 module Types = {
   type response_gitHub_search_edges_node_GitHubPullRequest = {
-    number: int,
-    state: [ | `CLOSED | `MERGED | `OPEN | `FutureAddedValue(string)],
-    body: string,
+    url: string,
     title: string,
+    state: [ | `CLOSED | `MERGED | `OPEN | `FutureAddedValue(string)],
+    permalink: string,
+    number: int,
     id: string,
+    body: string,
   };
   type response_gitHub_search_edges_node = [
     | `GitHubPullRequest(response_gitHub_search_edges_node_GitHubPullRequest)
@@ -169,12 +171,7 @@ v1 = {
   "name": "query",
   "variableName": "query"
 },
-v2 = {
-  "kind": "Literal",
-  "name": "type",
-  "value": "ISSUE"
-},
-v3 = [
+v2 = [
   {
     "kind": "LinkedField",
     "alias": null,
@@ -207,6 +204,13 @@ v3 = [
               {
                 "kind": "ScalarField",
                 "alias": null,
+                "name": "body",
+                "args": null,
+                "storageKey": null
+              },
+              {
+                "kind": "ScalarField",
+                "alias": null,
                 "name": "id",
                 "args": null,
                 "storageKey": null
@@ -214,14 +218,14 @@ v3 = [
               {
                 "kind": "ScalarField",
                 "alias": null,
-                "name": "title",
+                "name": "number",
                 "args": null,
                 "storageKey": null
               },
               {
                 "kind": "ScalarField",
                 "alias": null,
-                "name": "body",
+                "name": "permalink",
                 "args": null,
                 "storageKey": null
               },
@@ -235,7 +239,14 @@ v3 = [
               {
                 "kind": "ScalarField",
                 "alias": null,
-                "name": "number",
+                "name": "title",
+                "args": null,
+                "storageKey": null
+              },
+              {
+                "kind": "ScalarField",
+                "alias": null,
+                "name": "url",
                 "args": null,
                 "storageKey": null
               }
@@ -278,14 +289,18 @@ v3 = [
     ]
   }
 ],
-v4 = [
+v3 = [
   {
     "kind": "Variable",
     "name": "last",
     "variableName": "last"
   },
   (v1/*: any*/),
-  (v2/*: any*/)
+  {
+    "kind": "Literal",
+    "name": "type",
+    "value": "ISSUE"
+  }
 ];
 return {
   "kind": "Request",
@@ -311,12 +326,11 @@ return {
             "name": "__CourseTree_SearchForPullRequestsQuery_gitHub_search_connection",
             "storageKey": null,
             "args": [
-              (v1/*: any*/),
-              (v2/*: any*/)
+              (v1/*: any*/)
             ],
             "concreteType": "GitHubSearchResultItemConnection",
             "plural": false,
-            "selections": (v3/*: any*/)
+            "selections": (v2/*: any*/)
           }
         ]
       }
@@ -341,21 +355,20 @@ return {
             "alias": null,
             "name": "search",
             "storageKey": null,
-            "args": (v4/*: any*/),
+            "args": (v3/*: any*/),
             "concreteType": "GitHubSearchResultItemConnection",
             "plural": false,
-            "selections": (v3/*: any*/)
+            "selections": (v2/*: any*/)
           },
           {
             "kind": "LinkedHandle",
             "alias": null,
             "name": "search",
-            "args": (v4/*: any*/),
+            "args": (v3/*: any*/),
             "handle": "connection",
             "key": "CourseTree_SearchForPullRequestsQuery_gitHub_search",
             "filters": [
-              "query",
-              "type"
+              "query"
             ]
           }
         ]
@@ -366,7 +379,7 @@ return {
     "operationKind": "query",
     "name": "CourseTree_SearchForPullRequestsQuery",
     "id": null,
-    "text": "query CourseTree_SearchForPullRequestsQuery(\n  $query: String!\n  $last: Int!\n) {\n  gitHub {\n    search(query: $query, type: ISSUE, last: $last) {\n      edges {\n        node {\n          __typename\n          ... on GitHubPullRequest {\n            id\n            title\n            body\n            state\n            number\n          }\n        }\n        cursor\n      }\n      pageInfo {\n        hasPreviousPage\n        startCursor\n      }\n    }\n  }\n}\n",
+    "text": "query CourseTree_SearchForPullRequestsQuery(\n  $query: String!\n  $last: Int!\n) {\n  gitHub {\n    search(query: $query, type: ISSUE, last: $last) {\n      edges {\n        node {\n          __typename\n          ... on GitHubPullRequest {\n            body\n            id\n            number\n            permalink\n            state\n            title\n            url\n          }\n        }\n        cursor\n      }\n      pageInfo {\n        hasPreviousPage\n        startCursor\n      }\n    }\n  }\n}\n",
     "metadata": {
       "connection": [
         {

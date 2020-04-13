@@ -138,11 +138,7 @@ mutation SubmitLessonPullRequest_CreatePullRequestMutation(
       }
     ) {
       pullRequest {
-        url
-        id
-        number
-        title
-        permalink
+        ...CourseTree_GitHubPullRequest @relay(mask: false)
       }
     }
   }
@@ -414,7 +410,7 @@ let commitLessonFileChange =
 };
 
 let createPullRequest =
-    (~relayEnv, ~repoId, ~title, ~headRefName, ~baseRefName, ~body) => {
+    (~relayEnv, ~repoId, ~title, ~headRefName, ~baseRefName, ~username, ~body) => {
   let (
     createPullRequestPromise:
       relayResult(CreatePullRequestMutation.Types.response),
@@ -426,11 +422,58 @@ let createPullRequest =
     CreatePullRequestMutation.commitMutation(
       ~environment=relayEnv,
       ~variables={repoId, title, headRefName, baseRefName, body},
+      ~updater=
+        (store, response) => {
+          Js.log2("Response from CreatePR: ", response);
+          ReasonRelay.(
+            switch (response) {
+            | {
+                gitHub:
+                  Some({
+                    createPullRequest: Some({pullRequest: Some({id})}),
+                  }),
+              } =>
+              let dataId = id->ReasonRelay.makeDataId;
+              Js.log2("\tdataId: ", dataId);
+
+              switch (
+                store->RecordSourceSelectorProxy.get(~dataId),
+                store->RecordSourceSelectorProxy.getRootField(
+                  ~fieldName="gitHub",
+                ),
+              ) {
+              | (Some(node), Some(field)) =>
+                Js.log3("\tnode/field: ", node, field);
+
+                let cacheKey = CourseTree.makeSearchQuery(~username);
+
+                let insertAt: ReasonRelayUtils.insertAt = End;
+                [%bs.debugger];
+                ReasonRelayUtils.createAndAddEdgeToConnections(
+                  ~store,
+                  ~node,
+                  ~connections=[
+                    {
+                      key: "CourseTree_SearchForPullRequestsQuery_gitHub_search",
+                      parentID: field->RecordProxy.getDataId,
+                      filters: Some(makeArguments({"query": cacheKey})),
+                    },
+                  ],
+                  ~edgeName="GitHubSearchResultItemEdge",
+                  ~insertAt,
+                );
+              | _ => Js.Console.warn("Could not find node id")
+              };
+            | _ => Js.Console.warn("Could not find node id")
+            }
+          );
+        },
       ~onCompleted=
         (data, errors) => {
           let result =
             switch (data, errors) {
             | (Some(data), None) => Ok(data)
+
             | (_, Some(errors)) => Error(errors)
             | _ => Error([|{message: "Unrecognized return value"}|])
             };
@@ -617,6 +660,7 @@ $eggheadMetaText|j};
       ~headRefName,
       ~baseRefName,
       ~body=pullRequestBody,
+      ~username,
     );
 
   createPullRequestResult->setIfError(
@@ -655,6 +699,7 @@ $eggheadMetaText|j};
     };
 
   setStatus(~inProgress=false, message);
+  createPullRequestData;
 };
 
 [@react.component]

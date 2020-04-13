@@ -27,7 +27,7 @@ let assign = [%raw
 let toplevelMetaRegex = [%bs.re "/`{3}egghead-meta[\\s\\S]*?`{3}/g"];
 let metaContentRegex = [%bs.re " /`{3}egghead-meta([\\s\\S]*)`{3}/m"];
 
-let ofString = (string: string): 'a => {
+let ofString = (string: string): ('a, string) => {
   let metadata =
     switch (Js.String2.match(string, toplevelMetaRegex)) {
     | Some(matches) =>
@@ -57,7 +57,10 @@ let ofString = (string: string): 'a => {
       },
     );
 
-  result;
+  (
+    result,
+    string->Js.String2.replaceByRe(toplevelMetaRegex, "")->Js.String2.trim,
+  );
 };
 
 let toString = metadata => {

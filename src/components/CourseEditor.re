@@ -144,6 +144,7 @@ module ContentPreview = {
         wrapForIntrospectionClick(ReactGitHubMarkdown.renderers.inlineCode),
       "code":
         wrapWithDivForIntrospectionClick(ReactGitHubMarkdown.renderers.code),
+      /* "text": wrapWithDivForIntrospectionClick(ReactGitHubMarkdown.text), */
       "root": wrappedRootForIntrospectionClick,
     };
 

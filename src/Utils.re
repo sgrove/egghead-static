@@ -3,6 +3,8 @@ external prettyStringify:
   ('a, [@bs.as {json|null|json}] _, [@bs.as {json|2|json}] _) => string =
   "JSON.stringify";
 
+[@bs.val] external uglyStringify: 'a => string = "JSON.stringify";
+
 /* Using some raw JavaScript to assign a value to window for console debugging */
 let assignToWindowForDeveloperDebug =
     (~name as _name: string, _value: 'b): unit => [%bs.raw

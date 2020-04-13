@@ -1,12 +1,35 @@
 /* @generated */
 
+type enum_GitHubPullRequestState = [
+  | `CLOSED
+  | `MERGED
+  | `OPEN
+  | `FutureAddedValue(string)
+];
+
+let unwrap_enum_GitHubPullRequestState: string => enum_GitHubPullRequestState =
+  fun
+  | "CLOSED" => `CLOSED
+  | "MERGED" => `MERGED
+  | "OPEN" => `OPEN
+  | v => `FutureAddedValue(v);
+
+let wrap_enum_GitHubPullRequestState: enum_GitHubPullRequestState => string =
+  fun
+  | `CLOSED => "CLOSED"
+  | `MERGED => "MERGED"
+  | `OPEN => "OPEN"
+  | `FutureAddedValue(v) => v;
+
 module Types = {
   type response_gitHub_createPullRequest_pullRequest = {
-    url: string,
+    body: string,
     id: string,
     number: int,
-    title: string,
     permalink: string,
+    state: [ | `CLOSED | `MERGED | `OPEN | `FutureAddedValue(string)],
+    title: string,
+    url: string,
   };
   type response_gitHub_createPullRequest = {
     pullRequest: option(response_gitHub_createPullRequest_pullRequest),
@@ -28,9 +51,11 @@ module Types = {
 module Internal = {
   type wrapResponseRaw;
   let wrapResponseConverter: Js.Dict.t(Js.Dict.t(Js.Dict.t(string))) = [%raw
-    {json| {"__root":{"gitHub":{"n":""},"gitHub_createPullRequest":{"n":""},"gitHub_createPullRequest_pullRequest":{"n":""}}} |json}
+    {json| {"__root":{"gitHub":{"n":""},"gitHub_createPullRequest":{"n":""},"gitHub_createPullRequest_pullRequest":{"n":""},"gitHub_createPullRequest_pullRequest_state":{"e":"enum_GitHubPullRequestState"}}} |json}
   ];
-  let wrapResponseConverterMap = ();
+  let wrapResponseConverterMap = {
+    "enum_GitHubPullRequestState": wrap_enum_GitHubPullRequestState,
+  };
   let convertWrapResponse = v =>
     v
     ->ReasonRelay._convertObj(
@@ -41,9 +66,11 @@ module Internal = {
 
   type responseRaw;
   let responseConverter: Js.Dict.t(Js.Dict.t(Js.Dict.t(string))) = [%raw
-    {json| {"__root":{"gitHub":{"n":""},"gitHub_createPullRequest":{"n":""},"gitHub_createPullRequest_pullRequest":{"n":""}}} |json}
+    {json| {"__root":{"gitHub":{"n":""},"gitHub_createPullRequest":{"n":""},"gitHub_createPullRequest_pullRequest":{"n":""},"gitHub_createPullRequest_pullRequest_state":{"e":"enum_GitHubPullRequestState"}}} |json}
   ];
-  let responseConverterMap = ();
+  let responseConverterMap = {
+    "enum_GitHubPullRequestState": unwrap_enum_GitHubPullRequestState,
+  };
   let convertResponse = v =>
     v
     ->ReasonRelay._convertObj(
@@ -77,13 +104,15 @@ module Utils = {
   };
 
   let make_response_gitHub_createPullRequest_pullRequest =
-      (~url, ~id, ~number, ~title, ~permalink)
+      (~body, ~id, ~number, ~permalink, ~state, ~title, ~url)
       : response_gitHub_createPullRequest_pullRequest => {
-    url,
+    body,
     id,
     number,
-    title,
     permalink,
+    state,
+    title,
+    url,
   };
 
   let make_response_gitHub_createPullRequest =
@@ -202,7 +231,7 @@ v1 = [
               {
                 "kind": "ScalarField",
                 "alias": null,
-                "name": "url",
+                "name": "body",
                 "args": null,
                 "storageKey": null
               },
@@ -223,6 +252,20 @@ v1 = [
               {
                 "kind": "ScalarField",
                 "alias": null,
+                "name": "permalink",
+                "args": null,
+                "storageKey": null
+              },
+              {
+                "kind": "ScalarField",
+                "alias": null,
+                "name": "state",
+                "args": null,
+                "storageKey": null
+              },
+              {
+                "kind": "ScalarField",
+                "alias": null,
                 "name": "title",
                 "args": null,
                 "storageKey": null
@@ -230,7 +273,7 @@ v1 = [
               {
                 "kind": "ScalarField",
                 "alias": null,
-                "name": "permalink",
+                "name": "url",
                 "args": null,
                 "storageKey": null
               }
@@ -261,7 +304,7 @@ return {
     "operationKind": "mutation",
     "name": "SubmitLessonPullRequest_CreatePullRequestMutation",
     "id": null,
-    "text": "mutation SubmitLessonPullRequest_CreatePullRequestMutation(\n  $repoId: ID!\n  $title: String!\n  $headRefName: String!\n  $baseRefName: String!\n  $body: String!\n) {\n  gitHub {\n    createPullRequest(input: {title: $title, headRefName: $headRefName, baseRefName: $baseRefName, repositoryId: $repoId, maintainerCanModify: true, body: $body}) {\n      pullRequest {\n        url\n        id\n        number\n        title\n        permalink\n      }\n    }\n  }\n}\n",
+    "text": "mutation SubmitLessonPullRequest_CreatePullRequestMutation(\n  $repoId: ID!\n  $title: String!\n  $headRefName: String!\n  $baseRefName: String!\n  $body: String!\n) {\n  gitHub {\n    createPullRequest(input: {title: $title, headRefName: $headRefName, baseRefName: $baseRefName, repositoryId: $repoId, maintainerCanModify: true, body: $body}) {\n      pullRequest {\n        body\n        id\n        number\n        permalink\n        state\n        title\n        url\n      }\n    }\n  }\n}\n",
     "metadata": {}
   }
 };

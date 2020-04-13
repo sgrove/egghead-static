@@ -21,3 +21,8 @@ type t = {
 
 [@bs.module "react-markdown-github-renderers"]
 external renderers: t = "default";
+
+let text = (props): React.element => {
+  Js.log2("Text Props: ", props);
+  props##children /* <span> {props##children} </span> */;
+};

@@ -1,3 +1,17 @@
+module Fragment = [%relay.fragment
+  {|
+fragment CourseTree_GitHubPullRequest on GitHubPullRequest {
+  body
+  id
+  number
+  permalink
+  state
+  title
+  url
+}
+|}
+];
+
 module Query = [%relay.query
   {|
 query CourseTree_SearchForPullRequestsQuery(
@@ -6,23 +20,23 @@ query CourseTree_SearchForPullRequestsQuery(
 ) {
   gitHub {
     search(query: $query, type: ISSUE, last: $last)
-      @connection(key:"CourseTree_SearchForPullRequestsQuery_gitHub_search")
-      {
+      @connection(
+        key: "CourseTree_SearchForPullRequestsQuery_gitHub_search"
+        filters: ["query"]
+      ) {
       edges {
         node {
           __typename
           ... on GitHubPullRequest {
-            id
-            title
-            body
-            state
-            number
+            ...CourseTree_GitHubPullRequest
+              @relay(mask: false)
           }
         }
       }
     }
   }
-}|}
+}
+|}
 ];
 
 /* The main local state for our component is a map of Egghead lesson id =>
@@ -42,6 +56,10 @@ type state =
 
 let emptyPullRequestSet = Belt.Set.make(~id=(module PullRequestSetModule));
 
+let makeSearchQuery = (~username) => {
+  {j|repo:eggheadio/egghead-asciicasts [by $username] in:title|j};
+};
+
 [@react.component]
 let make =
     (
@@ -52,63 +70,62 @@ let make =
     ) => {
   module Tree = BsReactAnimatedTree;
 
-  let relayEnv = ReasonRelay.useEnvironmentFromContext();
-
   let (allPullRequests: state, setPullRequests) =
     React.useState(() => Belt.Map.Int.empty);
 
+  let search = makeSearchQuery(~username);
+
+  let query =
+    Query.use(
+      ~variables={
+        {query: search, last: 100};
+      },
+      (),
+    );
+
   React.useEffect1(
     () => {
-      Query.fetch(
-        ~environment=relayEnv,
-        ~variables={
-          query: {j|repo:eggheadio/egghead-asciicasts [by $username] in:title|j},
-          last: 100,
-        },
-        ~onResult=result => {
-        /* TODO: Handle error */
-        switch (result) {
-        | Ok({gitHub: Some({search})}) =>
-          let nodes = Query.getConnectionNodes_search(search);
+      switch (query) {
+      | {gitHub: Some({search})} =>
+        let nodes = Query.getConnectionNodes_search(search);
 
-          let gitHubPullRequests =
-            nodes->Belt.Array.keepMap(node => {
-              switch (node) {
-              | `GitHubPullRequest(pr) =>
-                let body = pr.body;
-                let metadata = EggheadMarkdownMeta.ofString(body);
+        let gitHubPullRequests =
+          nodes->Belt.Array.keepMap(node => {
+            switch (node) {
+            | `GitHubPullRequest(pr) =>
+              let body = pr.body;
+              let (metadata, _) = EggheadMarkdownMeta.ofString(body);
 
-                switch (metadata##lessonId) {
-                | None => None
-                | Some(lessonId) => Some((lessonId, pr))
-                };
+              switch (metadata##lessonId) {
+              | None => None
+              | Some(lessonId) => Some((lessonId, pr))
+              };
 
-              | _ => None
-              }
-            });
+            | _ => None
+            }
+          });
 
-          let newPullRequests =
-            gitHubPullRequests->Belt.Array.reduce(
-              allPullRequests, (acc, (lessonId, pr)) => {
-              Belt.Map.Int.update(
-                acc,
-                lessonId,
-                fun
-                | Some(pullRequestSet) =>
-                  Some(Belt.Set.add(pullRequestSet, pr))
-                | None => Some(Belt.Set.add(emptyPullRequestSet, pr)),
-              )
-            });
+        let newPullRequests =
+          gitHubPullRequests->Belt.Array.reduce(
+            allPullRequests, (acc, (lessonId, pr)) => {
+            Belt.Map.Int.update(
+              acc,
+              lessonId,
+              fun
+              | Some(pullRequestSet) =>
+                Some(Belt.Set.add(pullRequestSet, pr))
+              | None => Some(Belt.Set.add(emptyPullRequestSet, pr)),
+            )
+          });
 
-          setPullRequests(_existingPullRequests => newPullRequests);
+        setPullRequests(_existingPullRequests => newPullRequests);
 
-        | _ => ()
-        }
-      });
+      | _ => ()
+      };
 
       None;
     },
-    [|username|],
+    [|query|],
   );
 
   React.(

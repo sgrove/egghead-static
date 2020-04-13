@@ -1,6 +1,34 @@
 [@bs.val]
-external prettyStringify: ('a, Js.Nullable.t(unit), int) => string =
-  "JSON.stringify";
+external addDocumentEventListener: (string, 'event) => unit =
+  "document.addEventListener";
+
+[@bs.val]
+external removeDocumentEventListener: (string, 'event) => unit =
+  "document.removeEventListener";
+
+type quote = {
+  /* A serialized selection for later rendering */
+  range: Rangy.Serialized.range,
+  text: string,
+};
+
+type commentMetadata = {
+  /* What's the globally unique thing we're commenting on?
+     We can use this to have threaded comments */
+  commentableId: string,
+  /* The comment might be quoting from the commentable piece*/
+  quote: option(quote),
+};
+
+let parseCommentMetadata = meta => {
+  let commentableId = Js.Null_undefined.toOption(meta##commentableId);
+  let quote = Js.Null_undefined.toOption(meta##quote);
+
+  switch (commentableId, quote) {
+  | (Some(commentableId), quote) => Some({commentableId, quote})
+  | _ => None
+  };
+};
 
 module CommentFragment = [%relay.fragment
   {|
@@ -131,11 +159,18 @@ let timeSince: Js.Date.t => string = [%raw
 
 let username = "sgrove";
 
+Utils.assignToWindowForDeveloperDebug(~name="ss", Rangy.serializeSelection);
+Utils.assignToWindowForDeveloperDebug(~name="ds", Rangy.deserializeSelection);
+
 module Comment = {
   [@react.component]
   let make = (~comment, ~myUsername) => {
     let comment = CommentFragment.use(comment);
+    let (rawMeta, commentBody) = comment.body->EggheadMarkdownMeta.ofString;
+    let meta = rawMeta->parseCommentMetadata;
     open React;
+
+    let (removeHighlight, setRemoveHighlight) = useState(() => None);
 
     let timeEl =
       <span className="message-data-time">
@@ -177,14 +212,46 @@ module Comment = {
         className={
           "message "
           ++ (messageIsMe ? " my-message" : " other-message align-right")
+        }
+        onMouseEnter={_ => {
+          meta
+          ->Belt.Option.flatMap(meta => {meta.quote})
+          ->Belt.Option.forEach(quote => {
+              let root = [%bs.raw
+                "document.querySelector('.markdown-content')"
+              ];
+
+              try(
+                switch (
+                  quote.range
+                  ->Rangy.deserializeRange(root)
+                  ->Belt.Option.flatMap(Highlight.highlightRange)
+                ) {
+                | None => ()
+                | Some(removeHighlight) =>
+                  setRemoveHighlight(_ => Some(() => removeHighlight()))
+                }
+              ) {
+              | exn =>
+                Js.log2(
+                  "FIXME: Can't highlight twice with the same range: ",
+                  exn,
+                )
+              };
+            })
+        }}
+        onMouseLeave={_ =>
+          removeHighlight
+          ->Belt.Option.map(removeHighlight => removeHighlight())
+          ->ignore
         }>
-        {string(comment.body)}
+        {string(commentBody)}
       </div>
     </>;
   };
 };
 
-module CommentableMessageCompose = {
+module MessageCompose = {
   let extractNewCommentId =
       (response: AddPullRequestCommentMutation.Types.response) => {
     switch (response) {
@@ -202,9 +269,45 @@ module CommentableMessageCompose = {
   [@react.component]
   let make = (~commentableId) => {
     let (body, setBody) = React.useState(() => "");
+    let (quote, setQuote) = React.useState(() => None);
+
+    React.useEffect(() => {
+      let listener = () => {
+        let selection = Rangy.Selection.getCurrent();
+        let root = [%bs.raw "document.querySelector('.markdown-content')"];
+        selection->Rangy.Selection.isCollapsed
+          ? ()
+          : setQuote(_ => {
+              selection
+              ->Rangy.serializeSelection(~root)
+              ->Belt.Option.map(range => {
+                  {range, text: Rangy.Selection.toString(selection)}
+                })
+            });
+      };
+
+      addDocumentEventListener("selectionchange", listener);
+      Some(() => removeDocumentEventListener("selectionchange", listener));
+    });
+
     let (addComment, isMutating) = AddPullRequestCommentMutation.use();
 
-    let mutation = body =>
+    let mutation = body => {
+      let metaData = {commentableId, quote};
+
+      let metadataString = metaData->Utils.uglyStringify;
+
+      let quoteText =
+        quote->Belt.Option.mapWithDefault("", ({text}) => {j|> $text
+|j});
+
+      let body = {j|$quoteText
+$body
+
+```egghead-meta
+$metadataString
+```|j};
+
       addComment(
         ~variables={body, commentableId},
         ~updater=
@@ -245,6 +348,7 @@ module CommentableMessageCompose = {
           },
         (),
       );
+    };
 
     <div>
       <form
@@ -262,6 +366,7 @@ module CommentableMessageCompose = {
           disabled=isMutating
           rows=2
           value=body
+          style={ReactDOMRe.Style.make(~color="black", ())}
           onChange={event => {
             let value = ReactEvent.Form.currentTarget(event)##value;
             setBody(_ => value);
@@ -329,7 +434,7 @@ module PullRequestChat = {
         </div>
       </div>
       <div className="chat-history"> <Chat comments myUsername /> </div>
-      <CommentableMessageCompose commentableId={pr.id} />
+      <MessageCompose commentableId={pr.id} />
     </div>;
   };
 };

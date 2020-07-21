@@ -9,6 +9,7 @@
     "@loadable/component": "^5.12.0",
     "@mdx-js/mdx": "^1.5.7",
     "@mdx-js/react": "^1.5.7",
+    "@nivo/scatterplot": "^0.61.1",
     "@theme-ui/color": "^0.3.1",
     "@theme-ui/components": "^0.3.1",
     "@theme-ui/prism": "^0.3.0",
@@ -33,6 +34,7 @@
     "monaco-editor": "^0.17.1",
     "monaco-editor-webpack-plugin": "^1.7.0",
     "onegraph-auth": "2.0.6",
+    "onegraph-subscription-client": "^2.2.3",
     "pad-number": "^0.0.4",
     "parse-link-header": "^1.0.1",
     "prop-types": "^15.7.2",
@@ -52,9 +54,10 @@
     "react-relay": "0.0.0-experimental-8cc94ddc",
     "react-resizable": "^1.10.1",
     "react-resize-detector": "^4.2.1",
+    "react-use-audio-player": "^0.0.16",
     "reason-promise": "^1.0.2",
-    "reason-react": ">=0.7.0",
-    "reason-relay": "0.8.1",
+    "reason-react": ">=0.9.1",
+    "reason-relay": "0.9.2",
     "relay-compiler": "9.0.0",
     "relay-config": "9.0.0",
     "relay-runtime": "9.0.0",
@@ -69,7 +72,7 @@
   "devDependencies": {
     "babel-preset-gatsby": "^0.2.6",
     "bs-let": "^0.1.16",
-    "bs-platform": "7.3.0-dev.4",
+    "bs-platform": "7.3.2",
     "eslint-plugin-graphql": "^3.1.1",
     "gentype": "^3.18.0",
     "prettier": "^1.19.1"
@@ -92,7 +95,8 @@
     "reason": "bsb -clean-world && bsb -make-world -w",
     "emacs": "emacs",
     "relay": "reason-relay-compiler",
-    "relay:watch": "reason-relay-compiler --watch"
+    "relay:watch": "reason-relay-compiler --watch",
+    "update-graphql-schema": "npx get-graphql-schema https://serve.onegraph.com/graphql?app_id=f1b8d65a-c97c-43c3-ac72-9a289de3c257 > schema.graphql"
   },
   "eslint": {
     "ignorePatterns": [

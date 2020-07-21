@@ -105,25 +105,22 @@ query PullRequestChatHistory_PullRequestContainerQuery($pullRequestId: ID!) {
 
 module Query = [%relay.query
   {|
-query PullRequestChatHistory_CommentQuery(
-     $query: String!
-     $last: Int!
-   ) {
-     gitHub {
-       search(query: $query, type: ISSUE, last: $last)
-         @connection(key:"PullRequestChatHistory_CommentQuery_gitHub_search") {
-         edges {
-           node {
-             __typename
-             ... on GitHubPullRequest {
-              id
-              ...PullRequestChatHistory_PullRequestFragment
-             }
-           }
-         }
-       }
-     }
-   }
+query PullRequestChatHistory_CommentQuery($query: String!, $last: Int!) {
+  gitHub {
+    search(query: $query, type: ISSUE, last: $last)
+      @connection(key: "PullRequestChatHistory_CommentQuery_gitHub_search") {
+      edges {
+        node {
+          __typename
+          ... on GitHubPullRequest {
+            id
+            ...PullRequestChatHistory_PullRequestFragment
+          }
+        }
+      }
+    }
+  }
+}
 |}
 ];
 
@@ -395,8 +392,46 @@ module Chat = {
       ) => {
     open React;
 
+    // Filter out any duplicate comments we might have received from the subscription (this will go away in the next version of Relay)
+    let helper =
+        (arr: array(PullRequestFragment.Types.fragment_comments_edges_node)) => {
+      let arrLength = Belt.Array.length(arr);
+      let result = Belt.Array.make(arrLength, None);
+      let rec innerHelper = targetIdx => {
+        switch (targetIdx > arrLength) {
+        | false =>
+          let comment = Belt.Array.get(arr, targetIdx);
+          (
+            switch (
+              comment->Belt.Option.flatMap(comment =>
+                Belt.Array.getIndexBy(comments, other =>
+                  other.id == comment.id
+                )
+              )
+            ) {
+            | None => Belt.Array.set(result, targetIdx, comment)
+            | Some(idx) => Belt.Array.set(result, idx, comment)
+            }
+          )
+          ->ignore;
+          innerHelper(targetIdx + 1);
+        | true => result
+        };
+      };
+      innerHelper(0)
+      ->Belt.List.fromArray
+      ->Belt.List.reduce([], (acc, next) => {
+          switch (next) {
+          | None => acc
+          | Some(item) => [item, ...acc]
+          }
+        })
+      ->Belt.List.toArray;
+    };
+    let uniqueComments = helper(comments);
+
     let historyEl =
-      comments
+      uniqueComments
       ->Belt.Array.map(comment => {
           <li className="clearfix" key={comment.id}>
             <Comment comment={comment.getFragmentRefs()} myUsername />
@@ -411,9 +446,33 @@ module Chat = {
 let prTitle = (pr: PullRequestFragment.Types.fragment): string =>
   "#" ++ pr.number->string_of_int ++ ": " ++ pr.title;
 
+[@bs.get] external clientHeight: Dom.element => int = "clientHeight";
+[@bs.set] external setScrollTop: (Dom.element, int) => unit = "scrollTop";
+
 module PullRequestChat = {
   [@react.component]
   let make = (~pullRequest, ~myUsername) => {
+    let chatRef = React.useRef(Js.Nullable.null);
+
+    // Scroll to the bottom when the height changes
+    let chatRefHeight =
+      chatRef.current
+      ->Js.Nullable.toOption
+      ->Belt.Option.map(chatRef => clientHeight(chatRef))
+      ->Belt.Option.getWithDefault(0);
+
+    // TODO: Only do this if the scroll is at 98% or more (standard chat scroll behavior)
+    React.useEffect1(
+      () => {
+        switch (Js.Nullable.toOption(chatRef.current)) {
+        | None => None
+        | Some(chatDiv) =>
+          chatDiv->setScrollTop(chatRefHeight);
+          None;
+        }
+      },
+      [|chatRefHeight|],
+    );
     let pr = PullRequestFragment.use(pullRequest);
     open React;
 
@@ -433,7 +492,9 @@ module PullRequestChat = {
           </div>
         </div>
       </div>
-      <div className="chat-history"> <Chat comments myUsername /> </div>
+      <div className="chat-history" ref={ReactDOM.Ref.domRef(chatRef)}>
+        <Chat comments myUsername />
+      </div>
       <MessageCompose commentableId={pr.id} />
     </div>;
   };

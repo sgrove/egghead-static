@@ -140,7 +140,7 @@ return {
   "kind": "Request",
   "fragment": {
     "kind": "Fragment",
-    "name": "PullRequestChatHistory_CommentActivitySubscription",
+    "name": "PullRequestEditor_CommentActivitySubscription",
     "type": "Subscription",
     "metadata": null,
     "argumentDefinitions": (v0/*: any*/),
@@ -189,7 +189,7 @@ return {
   },
   "operation": {
     "kind": "Operation",
-    "name": "PullRequestChatHistory_CommentActivitySubscription",
+    "name": "PullRequestEditor_CommentActivitySubscription",
     "argumentDefinitions": (v0/*: any*/),
     "selections": [
       {
@@ -277,9 +277,9 @@ return {
   },
   "params": {
     "operationKind": "subscription",
-    "name": "PullRequestChatHistory_CommentActivitySubscription",
+    "name": "PullRequestEditor_CommentActivitySubscription",
     "id": null,
-    "text": "subscription PullRequestChatHistory_CommentActivitySubscription(\n  $repoName: String!\n  $repoOwner: String!\n) {\n  github {\n    issueCommentEvent(input: {repoOwner: $repoOwner, repoName: $repoName}) {\n      action\n      comment {\n        id\n        ...PullRequestChatHistory_CommentFragment\n      }\n    }\n  }\n}\n\nfragment PullRequestChatHistory_CommentFragment on GitHubComment {\n  id\n  author {\n    __typename\n    login\n    avatarUrl\n  }\n  createdAt\n  body\n}\n",
+    "text": "subscription PullRequestEditor_CommentActivitySubscription(\n  $repoName: String!\n  $repoOwner: String!\n) {\n  github {\n    issueCommentEvent(input: {repoOwner: $repoOwner, repoName: $repoName}) {\n      action\n      comment {\n        id\n        ...PullRequestChatHistory_CommentFragment\n      }\n    }\n  }\n}\n\nfragment PullRequestChatHistory_CommentFragment on GitHubComment {\n  id\n  author {\n    __typename\n    login\n    avatarUrl\n  }\n  createdAt\n  body\n}\n",
     "metadata": {}
   }
 };

@@ -383,6 +383,8 @@ $metadataString
 };
 
 module Chat = {
+  type commentNode = PullRequestFragment.Types.fragment_comments_edges_node;
+
   [@react.component]
   let make =
       (
@@ -393,41 +395,17 @@ module Chat = {
     open React;
 
     // Filter out any duplicate comments we might have received from the subscription (this will go away in the next version of Relay)
-    let helper =
-        (arr: array(PullRequestFragment.Types.fragment_comments_edges_node)) => {
-      let arrLength = Belt.Array.length(arr);
-      let result = Belt.Array.make(arrLength, None);
-      let rec innerHelper = targetIdx => {
-        switch (targetIdx > arrLength) {
-        | false =>
-          let comment = Belt.Array.get(arr, targetIdx);
-          (
-            switch (
-              comment->Belt.Option.flatMap(comment =>
-                Belt.Array.getIndexBy(comments, other =>
-                  other.id == comment.id
-                )
-              )
-            ) {
-            | None => Belt.Array.set(result, targetIdx, comment)
-            | Some(idx) => Belt.Array.set(result, idx, comment)
-            }
-          )
-          ->ignore;
-          innerHelper(targetIdx + 1);
-        | true => result
-        };
-      };
-      innerHelper(0)
-      ->Belt.List.fromArray
-      ->Belt.List.reduce([], (acc, next) => {
-          switch (next) {
-          | None => acc
-          | Some(item) => [item, ...acc]
-          }
-        })
-      ->Belt.List.toArray;
-    };
+    let helper = (arr: array(commentNode)) =>
+      Belt.Array.reduce(arr, []: list(commentNode), (acc, comment) =>
+        if (Belt.List.some(acc, ({id}) => id == comment.id)) {
+          acc;
+        } else {
+          [comment, ...acc];
+        }
+      )
+      ->Belt.List.toArray
+      ->Belt.Array.reverse;
+
     let uniqueComments = helper(comments);
 
     let historyEl =

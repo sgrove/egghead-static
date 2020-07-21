@@ -14,5 +14,4 @@ let highlightRange = (range: Rangy.Range.t) => {
 
 Utils.assignToWindowForDeveloperDebug(~name="ss", Rangy.serializeSelection);
 Utils.assignToWindowForDeveloperDebug(~name="ds", Rangy.deserializeSelection);
-
 Utils.assignToWindowForDeveloperDebug(~name="hr", highlightRange);

@@ -7,9 +7,13 @@ external prettyStringify:
 
 /* Using some raw JavaScript to assign a value to window for console debugging */
 let assignToWindowForDeveloperDebug =
-    (~name as _name: string, _value: 'b): unit => [%bs.raw
-  {|window[_name] = _value|}
-];
+    (~name as _name: string, _value: 'b): unit =>
+  switch ([%external window]) {
+  | Some(_) =>
+    %bs.raw
+    {|window[_name] = _value|}
+  | None => ()
+  };
 
 module String = {
   let random = length => {

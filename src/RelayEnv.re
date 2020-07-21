@@ -1,8 +1,4 @@
-let isSsr: bool = [%bs.raw {|typeof window === "undefined"|}];
-
 let appId = "f1b8d65a-c97c-43c3-ac72-9a289de3c257";
-
-let oneGraphUrl = {j|https://serve.onegraph.com/graphql?app_id=$appId|j};
 
 /* Determine if we're rendering in a non-browser environment (e.g. node) */
 let isSsr: bool = [%bs.raw {|typeof window === "undefined"|}];

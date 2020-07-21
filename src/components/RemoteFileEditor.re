@@ -19,7 +19,7 @@ module ContentEditor = {
 
     let _windowSize =
       Hooks.useWindowSize(size => {
-        switch (editorHandle->React.Ref.current, size) {
+        switch (editorHandle.current, size) {
         | (Some(editor), _) => BsReactMonaco.layout(editor)
         | _ => ()
         }
@@ -40,7 +40,8 @@ module ContentEditor = {
           "wordWrap": "on",
         }
         editorDidMount={(editor, _monaco) => {
-          React.Ref.setCurrent(editorHandle, Some(editor));
+          editorHandle.current = Some(editor);
+
           onEditorDidMount(~editor, ~content);
         }}
         onChange={(newValue, _event) => onChange(~value=newValue)}

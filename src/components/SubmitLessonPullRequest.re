@@ -249,7 +249,7 @@ let forkRepository = (~relayEnv, ~needsFork, ~repoOwner, ~repoName) => {
         ~environment=relayEnv,
         ~variables={repoOwner, repoName},
         ~onCompleted=
-          (result, errors) => {
+          (_result, errors) => {
             let result =
               switch (errors) {
               | None => Ok()
@@ -329,7 +329,7 @@ let syncTargetFileAcrossRepositories =
             sha: forkedFileSha->Belt.Option.getWithDefault(""),
           },
           ~onCompleted=
-            (result, errors) => {
+            (_result, errors) => {
               let result =
                 switch (errors) {
                 | None => Ok()
@@ -354,7 +354,7 @@ let createBranch = (~relayEnv, ~username, ~repoName, ~branchName) => {
       ~environment=relayEnv,
       ~variables={repoOwner: username, repoName, branchName},
       ~onCompleted=
-        (result, errors) => {
+        (_result, errors) => {
           let result =
             switch (errors) {
             | None => Ok()
@@ -399,7 +399,7 @@ let commitLessonFileChange =
         sha: existingFileSha,
       },
       ~onCompleted=
-        (result, errors) => {
+        (_result, errors) => {
           let result =
             switch (errors) {
             | None => Ok()

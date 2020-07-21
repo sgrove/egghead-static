@@ -1,19 +1,22 @@
 /* @generated */
 
 module Types = {
-  type fragment = {
-    bio: option(string),
-    avatarUrl: string,
-    isHireable: bool,
-    name: option(string),
-    login: string,
+  type fragment_t = {
+    amount: option(float),
+    id: string,
+    isClosed: bool,
+    isWon: bool,
+    name: string,
+    probability: option(float),
+    stageName: string,
   };
+  type fragment = array(fragment_t);
 };
 
 module Internal = {
   type fragmentRaw;
   let fragmentConverter: Js.Dict.t(Js.Dict.t(Js.Dict.t(string))) = [%raw
-    {json| {"__root":{"bio":{"n":""},"name":{"n":""}}} |json}
+    {json| {"__root":{"amount":{"n":""},"probability":{"n":""}}} |json}
   ];
   let fragmentConverterMap = ();
   let convertFragment = v =>
@@ -28,7 +31,9 @@ module Internal = {
 type t;
 type fragmentRef;
 type fragmentRefSelector('a) =
-  {.. "__$fragment_ref__RelayComponentTest_GitHubUser": t} as 'a;
+  array(
+    {.. "__$fragment_ref__SFDCQuickly_SalesforceOpportunityGraphFragment": t} as 'a,
+  );
 external getFragmentRef: fragmentRefSelector('a) => fragmentRef = "%identity";
 
 module Utils = {};
@@ -38,29 +43,38 @@ type operationType = ReasonRelay.fragmentNode;
 let node: operationType = [%raw
   {json| {
   "kind": "Fragment",
-  "name": "RelayComponentTest_GitHubUser",
-  "type": "GitHubUser",
-  "metadata": null,
+  "name": "SFDCQuickly_SalesforceOpportunityGraphFragment",
+  "type": "SalesforceOpportunity",
+  "metadata": {
+    "plural": true
+  },
   "argumentDefinitions": [],
   "selections": [
     {
       "kind": "ScalarField",
       "alias": null,
-      "name": "bio",
+      "name": "amount",
       "args": null,
       "storageKey": null
     },
     {
       "kind": "ScalarField",
       "alias": null,
-      "name": "avatarUrl",
+      "name": "id",
       "args": null,
       "storageKey": null
     },
     {
       "kind": "ScalarField",
       "alias": null,
-      "name": "isHireable",
+      "name": "isClosed",
+      "args": null,
+      "storageKey": null
+    },
+    {
+      "kind": "ScalarField",
+      "alias": null,
+      "name": "isWon",
       "args": null,
       "storageKey": null
     },
@@ -74,7 +88,14 @@ let node: operationType = [%raw
     {
       "kind": "ScalarField",
       "alias": null,
-      "name": "login",
+      "name": "probability",
+      "args": null,
+      "storageKey": null
+    },
+    {
+      "kind": "ScalarField",
+      "alias": null,
+      "name": "stageName",
       "args": null,
       "storageKey": null
     }

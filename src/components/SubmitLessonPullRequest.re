@@ -430,7 +430,6 @@ let createPullRequest =
       ~variables={repoId, title, headRefName, baseRefName, body},
       ~updater=
         (store, response) => {
-          Js.log2("Response from CreatePR: ", response);
           ReasonRelay.(
             switch (response) {
             | {
@@ -440,28 +439,24 @@ let createPullRequest =
                   }),
               } =>
               let dataId = id->ReasonRelay.makeDataId;
-              Js.log2("\tdataId: ", dataId);
 
               switch (
                 store->RecordSourceSelectorProxy.get(~dataId),
-                store->RecordSourceSelectorProxy.getRootField(
-                  ~fieldName="gitHub",
-                ),
+                store
+                ->RecordSourceSelectorProxy.getRoot
+                ->RecordProxy.getLinkedRecord(~name="gitHub", ()),
               ) {
-              | (Some(node), Some(field)) =>
-                Js.log3("\tnode/field: ", node, field);
-
+              | (Some(node), Some(connectionParent)) =>
                 let cacheKey = CourseTree.makeSearchQuery(~username);
 
                 let insertAt: ReasonRelayUtils.insertAt = End;
-                [%bs.debugger];
                 ReasonRelayUtils.createAndAddEdgeToConnections(
                   ~store,
                   ~node,
                   ~connections=[
                     {
                       key: "CourseTree_SearchForPullRequestsQuery_gitHub_search",
-                      parentID: field->RecordProxy.getDataId,
+                      parentID: connectionParent->RecordProxy.getDataId,
                       filters: Some(makeArguments({"query": cacheKey})),
                     },
                   ],
@@ -472,7 +467,7 @@ let createPullRequest =
               };
             | _ => Js.Console.warn("Could not find node id")
             }
-          );
+          )
         },
       ~onCompleted=
         (data, errors) => {
